@@ -30,6 +30,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
         user = self.Meta.model(**validated_data)
         user.set_password(password)
         user.save()
+        #print('qwqwqw')
         #Profile.objects.create(user=user)
         return user
 
@@ -63,15 +64,35 @@ class LoginSerializer(serializers.Serializer):
                 msg = _('Unable to log in with provided credentials.')
                 raise serializers.ValidationError(msg, code='authorization')
         else:
-            msg = _('Must include "username" and "password".')
+            msg = _('Must include "email" and "password".')
             raise serializers.ValidationError(msg, code='authorization')
 
         attrs['user'] = user
         return attrs
 
 
+class UserIsExistsSerializer(serializers.Serializer):
+    email = serializers.CharField(label=_("Email"))
 
-class ProfileSerializator(serializers.ModelSerializer):
+    def validate(self, attrs):
+        email = attrs.get('email')
+
+        if email:
+            user = UserModel.objects.filter(email=email).all()
+
+            if not user:
+                msg = _('User does not exists')
+                raise serializers.ValidationError(msg)
+        else:
+            msg = _('Must include "email".')
+            raise serializers.ValidationError(msg)
+
+        attrs['user'] = user
+        return attrs
+
+
+
+class ProfileSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         #instance.test = validated_data.get('test', instance.test)

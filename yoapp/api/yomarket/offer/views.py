@@ -3,6 +3,8 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
+from rest_framework import generics
+from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
 
 from ...views import custom_api_response
@@ -17,8 +19,8 @@ class OfferList(APIView):
     #ordering_fields = ('title', 'price')
 
     def get(self, request, format=None, pk=None):
-        #offers = OfferModel.objects.all()  # .filter(category__category_name__exact='cat two')
         offers = OfferModel.objects.all() # .filter(category_id=2)
+
         if pk is not None:
             #offers = get_object_or_404(offers, pk=pk)
             offers = OfferModel.objects.filter(pk=pk).all()
@@ -39,7 +41,6 @@ class OfferList(APIView):
                 ordering = ordering.split(',')
                 offers = offers.order_by(*ordering)
 
-            #offers = offers.order_by('-price', 'title')
             serializer = OfferSerializer(offers, many=True)
 
         response = Response(custom_api_response(serializer), status=status.HTTP_200_OK)
@@ -50,3 +51,25 @@ class OfferList(APIView):
         #usernames = [user.username for user in User.objects.all()]
         #return Response(usernames)
         pass
+
+
+
+class OfferSearchView(generics.ListAPIView):
+    queryset = OfferModel.objects.all()
+
+    serializer_class = OfferSerializer
+    permission_classes = (AllowAny,)
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('description',)
+
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        # page = self.paginate_queryset(queryset)
+        # if page is not None:
+        #     serializer = self.get_serializer(page, many=True)
+        #     return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(custom_api_response(serializer), status=status.HTTP_200_OK)

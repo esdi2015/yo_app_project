@@ -38,6 +38,7 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from rest_auth.models import TokenModel
 from rest_auth.app_settings import create_token
+from rest_framework.views import exception_handler
 
 
 
@@ -45,6 +46,20 @@ UserModel = get_user_model()
 CategoryModel = apps.get_model('common', 'Category')
 OfferModel = apps.get_model('yomarket', 'Offer')
 ShopModel = apps.get_model('yomarket', 'Shop')
+
+
+def custom_exception_handler(exc, context):
+    # Call REST framework's default exception handler first,
+    # to get the standard error response.
+    response = exception_handler(exc, context)
+    detail = response.data.get('detail')
+    if response is not None:
+        if detail:
+            response.data['metadata'] = {}
+            response.data['errors'] = {'non_field_errors': detail}
+            del response.data['detail']
+
+    return response
 
 
 def custom_api_response(serializer=None, content=None, errors=None, metadata=None):

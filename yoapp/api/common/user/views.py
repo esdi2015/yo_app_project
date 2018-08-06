@@ -15,9 +15,9 @@ from rest_auth.models import TokenModel
 from rest_auth.app_settings import create_token
 
 from ...views import custom_api_response
-from .serializers import CustomUserSerializer, LoginSerializer
+from .serializers import CustomUserSerializer, LoginSerializer, UserIsExistsSerializer
 
-from .serializers import ProfileSerializator
+from .serializers import ProfileSerializer
 from account.models import Profile
 
 
@@ -38,6 +38,33 @@ class Logout(APIView):
 
         content = {"detail": "Successfully user logged out"}
         return Response(custom_api_response(None, content), status=status.HTTP_200_OK)
+
+
+
+
+class UserMe(APIView):
+    permission_classes = (IsAuthenticated,)
+    #queryset = UserModel.objects.all()
+
+    def get(self, request, format=None):
+        #print('232323')
+        serializer = CustomUserSerializer(request.user)
+        return Response(custom_api_response(serializer=serializer), status=status.HTTP_200_OK)
+
+
+class UserIsExists(APIView):
+    permission_classes = (AllowAny,)
+    #queryset = UserModel.objects.all()
+
+    def post(self, request, format=None):
+        #print('232323')
+        serializer = UserIsExistsSerializer(data=request.data)
+        if serializer.is_valid():
+            return Response(custom_api_response(serializer=serializer), status=status.HTTP_200_OK)
+        return Response(custom_api_response(serializer=serializer), status=status.HTTP_400_BAD_REQUEST)
+
+
+
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -115,7 +142,7 @@ def login_view(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def profile_update_view(request):
-    serializer=ProfileSerializator(data=request.data)
+    serializer=ProfileSerializer(data=request.data)
     if serializer.is_valid():
         user_profile=Profile.objects.get(user=request.user)
         serializer.update(instance=user_profile,validated_data=serializer.validated_data)
