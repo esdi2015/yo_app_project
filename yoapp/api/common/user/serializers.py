@@ -5,8 +5,11 @@ from rest_framework import serializers
 from rest_framework.compat import authenticate
 
 from common.utils import ROLES, DEFAULT_USER_ROLE
+from account.models import Profile
+
 
 UserModel = get_user_model()
+
 
 class CustomUserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(allow_blank=False, write_only=True)
@@ -23,12 +26,11 @@ class CustomUserSerializer(serializers.ModelSerializer):
         return value
 
     def create(self, validated_data):
-        #print (validated_data)
-
         password = validated_data.pop('password', None)
         user = self.Meta.model(**validated_data)
         user.set_password(password)
         user.save()
+        #Profile.objects.create(user=user)
         return user
 
     class Meta:
@@ -66,3 +68,18 @@ class LoginSerializer(serializers.Serializer):
 
         attrs['user'] = user
         return attrs
+
+
+
+class ProfileSerializator(serializers.ModelSerializer):
+
+    def update(self, instance, validated_data):
+        #instance.test = validated_data.get('test', instance.test)
+        instance.date_birth = validated_data.get('date_birth', instance.date_birth)
+        instance.photo = validated_data.get('photo', instance.photo)
+        instance.save()
+        return instance
+
+    class Meta:
+        model = Profile
+        fields = ('date_birth', 'photo')

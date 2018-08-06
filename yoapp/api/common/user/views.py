@@ -17,6 +17,9 @@ from rest_auth.app_settings import create_token
 from ...views import custom_api_response
 from .serializers import CustomUserSerializer, LoginSerializer
 
+from .serializers import ProfileSerializator
+from account.models import Profile
+
 
 UserModel = get_user_model()
 
@@ -108,3 +111,13 @@ def login_view(request):
     else:
         return Response(custom_api_response(serializer), status=status.HTTP_400_BAD_REQUEST)
 
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def profile_update_view(request):
+    serializer=ProfileSerializator(data=request.data)
+    if serializer.is_valid():
+        user_profile=Profile.objects.get(user=request.user)
+        serializer.update(instance=user_profile,validated_data=serializer.validated_data)
+        return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
+    return Response(custom_api_response(serializer), status=status.HTTP_400_BAD_REQUEST)
