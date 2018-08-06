@@ -41,7 +41,7 @@ class Offer(models.Model):
     code_data = models.CharField(max_length=200, blank=True)
 
     class Meta:
-        ordering = ('title',)
+        ordering = ('-created',)
         #index_together = (('id', 'slug'),)
 
     def __str__(self):
