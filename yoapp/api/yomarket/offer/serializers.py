@@ -14,7 +14,7 @@ class OfferSerializer(serializers.ModelSerializer):
     class Meta:
         model = OfferModel
         fields = ('id', 'category', 'category_id', 'shop', 'title', 'image', 'short_description',
-                  'description', 'price', 'discount', 'discount_type', 'code_data')
+                  'description', 'price', 'discount', 'discount_type', 'code_data', 'created')
 
 
     def validate_catedory_id(value):

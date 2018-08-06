@@ -21,7 +21,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     role = models.CharField(max_length=50, choices=ROLES, default=DEFAULT_USER_ROLE)
 
     USERNAME_FIELD = 'email'
-    #REQUIRED_FIELDS = ['username', ]
+    REQUIRED_FIELDS = []
 
     objects = UserManager()
 
@@ -54,19 +54,6 @@ class Category(MPTTModel):
         return self.category_name
 
 
-# class Category(models.Model):
-#     name = models.CharField(max_length=200)
-#     parent = models.SmallIntegerField(default=0, editable=True)
-#
-#     class Meta:
-#         ordering = ('name',)
-#         verbose_name = "category"
-#         verbose_name_plural = "categories"
-#
-#     def __str__(self):
-#         return self.name
-
-
 class Region(models.Model):
     region_name = models.CharField(max_length=200)
 
@@ -82,9 +69,3 @@ class Region(models.Model):
 
 post_save.connect(receivers.create_auth_token, sender=get_user_model())
 
-
-# try:
-#     post_save.connect(receivers.create_auth_token, sender=get_user_model())
-#     #print ("qwerty - 12345")
-# except Exception as e:
-#     print (e)

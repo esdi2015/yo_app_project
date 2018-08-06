@@ -77,7 +77,7 @@ class UserViewSet(viewsets.ModelViewSet):
 @api_view(['POST'])
 @permission_classes(())
 def register_view(request):
-    # обработчик регистрации
+    # registration handler
     if request.user.is_authenticated == True:
         error = {"detail": "You must have to log out first"}
         return Response(custom_api_response(errors=error), status=status.HTTP_400_BAD_REQUEST)
@@ -93,7 +93,6 @@ def register_view(request):
 @api_view(['POST'])
 @permission_classes(())
 def login_view(request):
-    #serializer = AuthTokenSerializer(data=request.data)
     if request.user.is_authenticated == True:
         error = {"detail": "You must have to log out first"}
         return Response(custom_api_response(errors=error), status=status.HTTP_400_BAD_REQUEST)
@@ -106,7 +105,6 @@ def login_view(request):
         django_login(request, user)
         content = {'token': token.key, 'email': user.email, 'id': user.id}
         return Response(custom_api_response(serializer, content), status=status.HTTP_200_OK)
-        #return Response({'token': token.key, 'username': user.username, 'id': user.id})
     else:
         return Response(custom_api_response(serializer), status=status.HTTP_400_BAD_REQUEST)
 

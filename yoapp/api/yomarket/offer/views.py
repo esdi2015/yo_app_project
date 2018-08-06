@@ -14,6 +14,7 @@ OfferModel = apps.get_model('yomarket', 'Offer')
 
 class OfferList(APIView):
     permission_classes = (AllowAny,)
+    #ordering_fields = ('title', 'price')
 
     def get(self, request, format=None, pk=None):
         #offers = OfferModel.objects.all()  # .filter(category__category_name__exact='cat two')
@@ -33,8 +34,19 @@ class OfferList(APIView):
             if shop_id is not None:
                 offers = offers.filter(shop_id=shop_id)
 
+            ordering = self.request.query_params.get('ordering', None)
+            if ordering is not None:
+                ordering = ordering.split(',')
+                offers = offers.order_by(*ordering)
+
+            #offers = offers.order_by('-price', 'title')
             serializer = OfferSerializer(offers, many=True)
 
         response = Response(custom_api_response(serializer), status=status.HTTP_200_OK)
-        #return Response(serializer.data)
         return response
+
+
+    def post(self, request, format=None):
+        #usernames = [user.username for user in User.objects.all()]
+        #return Response(usernames)
+        pass
