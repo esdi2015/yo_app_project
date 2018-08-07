@@ -62,22 +62,22 @@ def custom_exception_handler(exc, context):
     return response
 
 
-def custom_api_response(serializer=None, content=None, errors=None, metadata=None):
+def custom_api_response(serializer=None, content=None, errors=None, metadata={}):
     if content:
-        response = {'metadata': {}, 'content': content}
+        response = {'metadata': metadata, 'content': content}
         return response
 
     if errors:
-        response = {'metadata': {}, 'errors': errors}
+        response = {'metadata': metadata, 'errors': errors}
         return response
 
     if not hasattr(serializer, '_errors') or len(serializer._errors) == 0:
         if hasattr(serializer, 'data'):
-            response = {'metadata': {}, 'content': serializer.data}
+            response = {'metadata': metadata, 'content': serializer.data}
         else:
-            response = {'metadata': {}, 'content': 'unknown'}
+            response = {'metadata': metadata, 'content': 'unknown'}
     else:
-        response = {'metadata': {}, 'errors': serializer._errors}
+        response = {'metadata': metadata, 'errors': serializer._errors}
     return response
 
 

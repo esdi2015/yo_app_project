@@ -10,11 +10,13 @@ from django_filters.rest_framework import DjangoFilterBackend
 from ...views import custom_api_response
 from .serializers import OfferSerializer
 
+from rest_framework.pagination import LimitOffsetPagination
+
 
 OfferModel = apps.get_model('yomarket', 'Offer')
 
 
-class OfferList(APIView):
+class OfferList(APIView):  #, LimitOffsetPagination
     permission_classes = (AllowAny,)
     #ordering_fields = ('title', 'price')
 
@@ -41,6 +43,11 @@ class OfferList(APIView):
                 ordering = ordering.split(',')
                 offers = offers.order_by(*ordering)
 
+            # page = self.paginate_queryset(offers)
+            # if page is not None:
+            #     serializer = self.get_serializer(page, many=True)
+            #     return self.get_paginated_response(serializer.data)
+
             serializer = OfferSerializer(offers, many=True)
 
         response = Response(custom_api_response(serializer), status=status.HTTP_200_OK)
@@ -66,10 +73,15 @@ class OfferSearchView(generics.ListAPIView):
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
 
-        # page = self.paginate_queryset(queryset)
-        # if page is not None:
-        #     serializer = self.get_serializer(page, many=True)
-        #     return self.get_paginated_response(serializer.data)
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            paginated_response = self.get_paginated_response(serializer.data)
+            content = paginated_response.data['results']
+            del paginated_response.data['results']
+            metadata = paginated_response.data
+            return Response(custom_api_response(content=content, metadata=metadata), status=status.HTTP_200_OK)
+
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)

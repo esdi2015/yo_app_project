@@ -171,9 +171,9 @@ REST_FRAMEWORK = {
             #'rest_framework.authentication.SessionAuthentication',
             #'rest_framework.authentication.BasicAuthentication',
      ),
-    'EXCEPTION_HANDLER': 'api.views.custom_exception_handler'
-    # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    # 'PAGE_SIZE': 10
+    'EXCEPTION_HANDLER': 'api.views.custom_exception_handler',
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 2
 }
 
 #REST_SESSION_LOGIN = False
