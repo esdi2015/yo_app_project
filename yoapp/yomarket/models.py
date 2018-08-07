@@ -15,6 +15,7 @@ class Shop(models.Model):
                              on_delete = models.DO_NOTHING)
     title = models.CharField(max_length=200)
     address = models.CharField(max_length=200, blank=True)
+    created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.title
@@ -39,6 +40,8 @@ class Offer(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     code_data = models.CharField(max_length=200, blank=True)
+    codes_count = models.SmallIntegerField(('codes count'), default=0, editable=True)
+    expire = models.DateTimeField(('expire date'), blank=True, null=True)
 
     class Meta:
         ordering = ('-created',)

@@ -7,10 +7,11 @@ ShopModel = apps.get_model('yomarket', 'Shop')
 
 class ShopSerializer(serializers.ModelSerializer):
     user = serializers.StringRelatedField()
+    user_id = serializers.IntegerField(allow_null=False)
 
     class Meta:
         model = ShopModel
-        fields = ('id', 'title', 'address', 'user')
+        fields = ('id', 'title', 'address', 'user', 'user_id')
 
     # def to_representation(self, instance):
     #     # instance is the model object. create the custom json format by accessing instance attributes normaly
