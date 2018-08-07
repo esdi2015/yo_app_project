@@ -115,7 +115,17 @@ def register_view(request):
     serializer = CustomUserSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save()
-        return Response(custom_api_response(serializer), status=status.HTTP_201_CREATED)
+        login_serializer = LoginSerializer(data=request.data)
+        if login_serializer.is_valid():
+            user = login_serializer.validated_data['user']
+            token = create_token(TokenModel, user, login_serializer)
+
+            django_login(request, user)
+            content = {'token': token.key, 'email': user.email, 'id': user.id}
+            #return Response(custom_api_response(serializer), status=status.HTTP_201_CREATED)
+            return Response(custom_api_response(login_serializer, content), status=status.HTTP_200_OK)
+        else:
+            return Response(custom_api_response(login_serializer), status=status.HTTP_400_BAD_REQUEST)
     else:
         return Response(custom_api_response(serializer), status=status.HTTP_400_BAD_REQUEST)
 

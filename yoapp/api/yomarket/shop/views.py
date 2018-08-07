@@ -18,7 +18,6 @@ class ShopList(APIView):
     def get(self, request, format=None):
         shops = ShopModel.objects.all()
         serializer = ShopSerializer(shops, many=True)
-        #return Response(serializer.data)
         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
 
 
@@ -29,16 +28,13 @@ class ShopViewSet(viewsets.ModelViewSet):
     permission_classes = (AllowAny,)
 
     def retrieve(self, request, pk=None):
-        #queryset = UserModel.objects.filter(role='CUSTOMER').all()
-        #user = get_object_or_404(queryset, pk=pk)
         queryset = ShopModel.objects.filter(pk=pk).all()
         serializer = ShopSerializer(queryset, many=True)
-        #serializer.is_valid()
         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
+
 
     def list(self, request, *args, **kwargs):
         queryset = ShopModel.objects.all()
-
         # page = self.paginate_queryset(queryset)
         # if page is not None:
         #     serializer = self.get_serializer(page, many=True)
@@ -47,13 +43,14 @@ class ShopViewSet(viewsets.ModelViewSet):
         serializer = ShopSerializer(queryset, many=True)
         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
 
+
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
-        #return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
         return Response(custom_api_response(serializer=serializer), status=status.HTTP_201_CREATED, headers=headers)
+
 
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
@@ -67,5 +64,4 @@ class ShopViewSet(viewsets.ModelViewSet):
             # forcibly invalidate the prefetch cache on the instance.
             instance._prefetched_objects_cache = {}
 
-        #return Response(serializer.data)
         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
