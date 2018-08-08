@@ -1,9 +1,16 @@
 from django.conf.urls import re_path, include, url
-from .views import ShopList
+from .views import ShopList, ShopViewSet
 from . import views as api_view
+from rest_framework import routers
 
 
-urlpatterns = [
-    url(r'^shops/$', ShopList.as_view(), name='shop-list'),
-    url(r'^shops/(?P<pk>[^/.]+)/$', ShopList.as_view(), name='shop-detail'),
+router = routers.DefaultRouter()
+router.include_format_suffixes = False
+router.register(r'shops', ShopViewSet, base_name='ShopView')
+
+urlpatterns = router.urls
+
+urlpatterns += [
+    #url(r'^shops/$', ShopList.as_view(), name='shop-list'),
+    #url(r'^shops/(?P<pk>[^/.]+)/$', ShopList.as_view(), name='shop-detail'),
 ]

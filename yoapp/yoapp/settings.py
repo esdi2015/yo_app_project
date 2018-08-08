@@ -30,6 +30,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '192.168.2.175']
 SITE_ID = 1
+CORS_ORIGIN_ALLOW_ALL = True
 
 # Application definition
 
@@ -49,6 +50,7 @@ INSTALLED_APPS = [
     'allauth.account',
     'mptt',
     'django_filters',
+    'corsheaders',
     #'oauth2_provider',
     'common.apps.CommonConfig',
     'api.apps.ApiConfig',
@@ -59,6 +61,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -171,8 +174,9 @@ REST_FRAMEWORK = {
             #'rest_framework.authentication.SessionAuthentication',
             #'rest_framework.authentication.BasicAuthentication',
      ),
-    # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    # 'PAGE_SIZE': 10
+    'EXCEPTION_HANDLER': 'api.views.custom_exception_handler',
+    #'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    #'PAGE_SIZE': 2
 }
 
 #REST_SESSION_LOGIN = False

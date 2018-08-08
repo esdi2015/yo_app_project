@@ -38,6 +38,7 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from rest_auth.models import TokenModel
 from rest_auth.app_settings import create_token
+from rest_framework.views import exception_handler
 
 
 
@@ -47,22 +48,36 @@ OfferModel = apps.get_model('yomarket', 'Offer')
 ShopModel = apps.get_model('yomarket', 'Shop')
 
 
-def custom_api_response(serializer=None, content=None, errors=None, metadata=None):
+def custom_exception_handler(exc, context):
+    # Call REST framework's default exception handler first,
+    # to get the standard error response.
+    response = exception_handler(exc, context)
+    detail = response.data.get('detail')
+    if response is not None:
+        if detail:
+            response.data['metadata'] = {}
+            response.data['errors'] = {'non_field_errors': detail}
+            del response.data['detail']
+
+    return response
+
+
+def custom_api_response(serializer=None, content=None, errors=None, metadata={}):
     if content:
-        response = {'metadata': {}, 'content': content}
+        response = {'metadata': metadata, 'content': content}
         return response
 
     if errors:
-        response = {'metadata': {}, 'errors': errors}
+        response = {'metadata': metadata, 'errors': errors}
         return response
 
     if not hasattr(serializer, '_errors') or len(serializer._errors) == 0:
         if hasattr(serializer, 'data'):
-            response = {'metadata': {}, 'content': serializer.data}
+            response = {'metadata': metadata, 'content': serializer.data}
         else:
-            response = {'metadata': {}, 'content': 'unknown'}
+            response = {'metadata': metadata, 'content': 'unknown'}
     else:
-        response = {'metadata': {}, 'errors': serializer._errors}
+        response = {'metadata': metadata, 'errors': serializer._errors}
     return response
 
 
