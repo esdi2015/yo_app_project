@@ -14,7 +14,7 @@ UserModel = get_user_model()
 class CustomUserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(allow_blank=False, write_only=True)
     role = serializers.CharField(allow_blank=True, default=DEFAULT_USER_ROLE)
-    creator_id = serializers.IntegerField(allow_null=True, write_only=True)
+    creator_id = serializers.IntegerField(allow_null=True, write_only=True, required=False)
 
     # def validate(self, attrs):
     #     if attrs['password'] != attrs.pop('confirm_password'):
