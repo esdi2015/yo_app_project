@@ -14,6 +14,10 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_auth.models import TokenModel
 from rest_auth.app_settings import create_token
 
+import httplib2
+from googleapiclient.discovery import build
+from oauth2client.client import AccessTokenCredentials
+
 from ...views import custom_api_response
 from .serializers import CustomUserSerializer, LoginSerializer, UserIsExistsSerializer
 
@@ -180,3 +184,43 @@ def profile_update_view(request):
         serializer.update(instance=user_profile,validated_data=serializer.validated_data)
         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
     return Response(custom_api_response(serializer), status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+@api_view(['POST'])
+@permission_classes(())
+def google_oauth(request):
+    if request.user.is_authenticated:
+        return Response({"detail": "You must have to log out first"})
+
+    access_token = request.data['access_token']
+    credentials = AccessTokenCredentials(access_token,'my-user-agent/1.0')
+    http = httplib2.Http()
+    http = credentials.authorize(http)
+    service = build('plus', 'v1', http=http)
+    result = service.people().get(userId='me').execute()
+
+    email = result['emails'][0]['value']
+    gender = result['gender']
+    first_name = result['name']['givenName']
+    last_name = result['name']['familyName']
+    photo = result['image']['url']
+
+    def create_login_token(user):
+        serializer = LoginSerializer()
+        token = create_token(TokenModel, user, serializer)
+        return token
+
+    try:
+        user = UserModel.objects.get(email=email)
+    except UserModel.DoesNotExist:
+        user = UserModel(email=email,last_name=last_name,first_name=first_name)
+        user.set_password('password')
+        user.save()
+
+    token = create_login_token(user)
+    #django_login(request, user)
+    content = {'token': token.key, 'email': user.email, 'id': user.id}
+    return Response(custom_api_response(content=content), status=status.HTTP_200_OK)
+    #return Response({'token':token.key})

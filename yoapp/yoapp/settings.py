@@ -51,7 +51,11 @@ INSTALLED_APPS = [
     'mptt',
     'django_filters',
     'corsheaders',
-    #'oauth2_provider',
+    'oauth2_provider',
+
+    # 'social_django',
+    # 'rest_social_auth',
+
     'common.apps.CommonConfig',
     'api.apps.ApiConfig',
     'account.apps.AccountConfig',
@@ -75,6 +79,9 @@ AUTHENTICATION_BACKENDS = [
     'allauth.account.auth_backends.AuthenticationBackend',
     'rest_framework.authentication.TokenAuthentication',
     'rest_framework.authentication.SessionAuthentication',
+
+    #'social_core.backends.facebook.FacebookOAuth2',
+    #'social_core.backends.google.GoogleOAuth2',
 ]
 
 ROOT_URLCONF = 'yoapp.urls'
@@ -173,6 +180,8 @@ REST_FRAMEWORK = {
             #'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
             #'rest_framework.authentication.SessionAuthentication',
             #'rest_framework.authentication.BasicAuthentication',
+            #'social_core.backends.facebook.FacebookOAuth2',
+            #'social_core.backends.google.GoogleOAuth2',
      ),
     'EXCEPTION_HANDLER': 'api.views.custom_exception_handler',
     #'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
@@ -193,3 +202,14 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # 1234567890qaz - pass for registered test users
 # 000 - pass for postgres user on the 192.168.2.175
+
+
+# SOCIAL_AUTH_FACEBOOK_KEY = '1923453891044213'
+# SOCIAL_AUTH_FACEBOOK_SECRET = 'e09891a80fcf40df729c15c5b6d97c34'
+# SOCIAL_AUTH_FACEBOOK_SCOPE = ['email', ]  # optional
+# SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {'locale': 'ru_RU'}  # optional
+#
+# SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '635837561500-etpcka3a7khibfvqiuek965d24sa61oj.apps.googleusercontent.com'
+# SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = 'UUvE6SJA-Vg5pZ8Hi14hfqRc'
+
+# ALLOWED_HOSTS=['seaw688.com',]
