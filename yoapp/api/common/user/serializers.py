@@ -14,6 +14,7 @@ UserModel = get_user_model()
 class CustomUserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(allow_blank=False, write_only=True)
     role = serializers.CharField(allow_blank=True, default=DEFAULT_USER_ROLE)
+    creator_id = serializers.IntegerField(allow_null=True, write_only=True)
 
     # def validate(self, attrs):
     #     if attrs['password'] != attrs.pop('confirm_password'):
@@ -28,6 +29,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         password = validated_data.pop('password', None)
         user = self.Meta.model(**validated_data)
+        #print (validated_data)
         user.set_password(password)
         user.save()
         #print('qwqwqw')
@@ -36,8 +38,8 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserModel
-        fields = ('id', 'password', 'username', 'first_name', 'last_name', 'email', 'role')
-        write_only_fields = ('password',)
+        fields = ('id', 'password', 'username', 'first_name', 'last_name', 'email', 'role', 'creator_id')
+        write_only_fields = ('password', )
 
 
 

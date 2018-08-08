@@ -1,7 +1,7 @@
 from django.apps import apps
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework import viewsets
 
@@ -34,7 +34,10 @@ class ShopViewSet(viewsets.ModelViewSet):
 
 
     def list(self, request, *args, **kwargs):
-        queryset = ShopModel.objects.all()
+        if request.user.role == 'OWNER':
+            queryset = ShopModel.objects.filter(user_id=request.user.pk).all()
+        else:
+            queryset = ShopModel.objects.all()
         # page = self.paginate_queryset(queryset)
         # if page is not None:
         #     serializer = self.get_serializer(page, many=True)
@@ -45,6 +48,7 @@ class ShopViewSet(viewsets.ModelViewSet):
 
 
     def create(self, request, *args, **kwargs):
+        request.data['user_id'] = request.user.pk
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
