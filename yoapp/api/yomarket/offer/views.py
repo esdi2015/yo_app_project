@@ -50,7 +50,7 @@ class OfferListView(generics.ListCreateAPIView):
         return Response(custom_api_response(serializer=serializer), status=status.HTTP_201_CREATED, headers=headers)
 
 
-class OfferDetailView(generics.RetrieveUpdateAPIView):
+class OfferDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = OfferModel.objects.all()
 
     serializer_class = OfferSerializer
