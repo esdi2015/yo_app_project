@@ -17,6 +17,7 @@ from rest_auth.app_settings import create_token
 import httplib2
 from googleapiclient.discovery import build
 from oauth2client.client import AccessTokenCredentials
+import facebook
 
 from ...views import custom_api_response
 from .serializers import CustomUserSerializer, LoginSerializer, UserIsExistsSerializer
@@ -224,3 +225,43 @@ def google_oauth(request):
     content = {'token': token.key, 'email': user.email, 'id': user.id}
     return Response(custom_api_response(content=content), status=status.HTTP_200_OK)
     #return Response({'token':token.key})
+
+
+
+@api_view(['POST'])
+@permission_classes(())
+def facebook_oauth(request):
+
+    if request.user.is_authenticated == True:
+        error = {"detail": "You must have to log out first"}
+        return Response(custom_api_response(errors=error), status=status.HTTP_400_BAD_REQUEST)
+
+    access_token = request.data['access_token']
+    graph = facebook.GraphAPI(access_token)
+    args = {'fields': 'id,email,birthday,gender,first_name,last_name,picture.height(300)'}
+    profile = graph.get_object('me', **args)
+
+    photo = profile.get('picture',{}).get('data',{}).get('url',{})
+    first_name = profile.get('first_name')
+    last_name = profile.get('last_name')
+    gender = profile.get('gender')
+    birthday = profile.get('birthday')
+
+    email = request.data['email']
+
+    def create_login_token(user):
+        serializer = LoginSerializer()
+        token = create_token(TokenModel, user, serializer)
+        return token
+
+    try:
+        user = UserModel.objects.get(email=email)
+    except UserModel.DoesNotExist:
+        user = UserModel(email=email, last_name=last_name, first_name=first_name)
+        user.save()
+
+    token = create_login_token(user)
+
+    content = {'token': token.key, 'email': user.email, 'id': user.id}
+    return Response(custom_api_response(content=content), status=status.HTTP_200_OK)
+    #return Response({'token': token.key})

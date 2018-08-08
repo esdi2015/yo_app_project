@@ -1,6 +1,6 @@
 from django.conf.urls import re_path, include, url
 from rest_framework import routers
-from .views import UserViewSet, Logout, UserMe, UserIsExists, google_oauth
+from .views import UserViewSet, Logout, UserMe, UserIsExists, google_oauth, facebook_oauth
 from . import views as api_view
 
 
@@ -19,4 +19,5 @@ urlpatterns += [
     url(r'^user/exists/', UserIsExists.as_view(), name='user_exists'),
     url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
     url(r'^login-google/$', google_oauth, name='google_login'),
+    url(r'^login-facebook/$',facebook_oauth , name='facebook_login'),
 ]
