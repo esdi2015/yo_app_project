@@ -34,7 +34,7 @@ class ShopViewSet(viewsets.ModelViewSet):
 
 
     def list(self, request, *args, **kwargs):
-        if request.user.role == 'OWNER':
+        if (request.user.is_authenticated == True) and (request.user.role == 'OWNER'):
             queryset = ShopModel.objects.filter(user_id=request.user.pk).all()
         else:
             queryset = ShopModel.objects.all()
