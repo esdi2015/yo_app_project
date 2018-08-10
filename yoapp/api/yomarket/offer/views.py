@@ -1,7 +1,7 @@
 from django.apps import apps
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework import generics
 from rest_framework import filters
@@ -20,13 +20,21 @@ class OfferListView(generics.ListCreateAPIView):
     queryset = OfferModel.objects.all()
 
     serializer_class = OfferSerializer
-    permission_classes = (AllowAny,)
+    #permission_classes = (AllowAny,)
     filter_backends = (filters.SearchFilter, DjangoFilterBackend, filters.OrderingFilter)
     search_fields = ('description',)
     filter_fields = ('category_id', 'shop_id', 'discount_type')
     ordering_fields = '__all__'
 
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny(), ]
+        else :
+            return [IsAuthenticated(), ]
+
+
     def list(self, request, *args, **kwargs):
+        # self.permission_classes = (IsAuthenticated,)
         queryset = self.filter_queryset(self.get_queryset())
 
         page = self.paginate_queryset(queryset)
@@ -54,7 +62,14 @@ class OfferDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = OfferModel.objects.all()
 
     serializer_class = OfferSerializer
-    permission_classes = (AllowAny,)
+    # permission_classes = (AllowAny,)
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny(), ]
+        else :
+            return [IsAuthenticated(), ]
+
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()

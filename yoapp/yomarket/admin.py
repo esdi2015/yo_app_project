@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Shop, Offer
+from .models import Shop, Offer, QRcoupon
 
 
 class OfferAdmin(admin.ModelAdmin):
@@ -18,5 +18,10 @@ class ShopAdmin(admin.ModelAdmin):
     ordering = ['-id', ]
 
 
+class QRcouponAdmin(admin.ModelAdmin):
+    list_display = ('uuid', 'short_uuid', 'available', 'expiry_date', 'user', 'offer')
+
+
 admin.site.register(Shop, ShopAdmin)
 admin.site.register(Offer, OfferAdmin)
+admin.site.register(QRcoupon, QRcouponAdmin)

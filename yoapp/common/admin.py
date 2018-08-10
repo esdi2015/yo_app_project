@@ -4,6 +4,7 @@ from django.contrib.auth.models import Group
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from mptt.admin import MPTTModelAdmin
+from oauth2_provider.models import Application, Grant, AccessToken, RefreshToken
 
 from .models import User, Category
 
@@ -87,6 +88,11 @@ admin.site.register(Category, MPTTModelAdmin)
 # ... and, since we're not using Django's built-in permissions,
 # unregister the Group model from admin.
 #admin.site.unregister(Group)
+
+admin.site.unregister(Application)
+admin.site.unregister(Grant)
+admin.site.unregister(AccessToken)
+admin.site.unregister(RefreshToken)
 
 # Register your models here.
 #admin.site.register(User)

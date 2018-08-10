@@ -16,6 +16,8 @@ class Shop(models.Model):
     title = models.CharField(max_length=200)
     address = models.CharField(max_length=200, blank=True)
     created = models.DateTimeField(auto_now_add=True)
+    manager = models.ForeignKey('common.User', related_name='shops_manager',
+                             on_delete = models.SET_NULL, null=True)
 
     def __str__(self):
         return self.title
@@ -27,8 +29,7 @@ class Shop(models.Model):
 class Offer(models.Model):
     category = models.ForeignKey('common.Category', related_name='offers_from_category',
                                  on_delete=models.DO_NOTHING)
-    shop = models.ForeignKey(Shop, related_name='shop_offer',
-                             on_delete=models.DO_NOTHING)
+    shop = models.ForeignKey(Shop, related_name='shop_offer', on_delete=models.SET_NULL, null=True)
     title = models.CharField(max_length=200, db_index=True)
     image = models.ImageField(upload_to='offers/%Y/%m/%d', blank=True)
     short_description = models.TextField(blank=True)
@@ -57,3 +58,21 @@ class Transaction(models.Model):
 
 class Qrcode(models.Model):
     pass
+
+
+class QRcoupon(models.Model):
+    uuid = models.CharField(max_length=36, unique=True)
+    short_uuid = models.CharField(max_length=8, unique=True)
+    available = models.BooleanField(default=True)
+    expiry_date = models.DateTimeField()
+    date_created = models.DateTimeField(('date created'), auto_now_add=True)
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
+    offer = models.ForeignKey(Offer, related_name='offer', on_delete=models.CASCADE, null=True)
+
+    class Meta:
+        verbose_name = "QRcoupon"
+        verbose_name_plural = "QRcoupons"
+
+    def __str__(self):
+        return 'QRcoupon {}'.format(self.short_uuid)

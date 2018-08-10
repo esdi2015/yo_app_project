@@ -27,6 +27,12 @@ class ShopViewSet(viewsets.ModelViewSet):
     serializer_class = ShopSerializer
     permission_classes = (AllowAny,)
 
+    def get_permissions(self):
+        if self.action == 'create':
+            return IsAuthenticated()
+        else :
+            return AllowAny()
+
     def retrieve(self, request, pk=None):
         queryset = ShopModel.objects.filter(pk=pk).all()
         serializer = ShopSerializer(queryset, many=True)
