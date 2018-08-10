@@ -29,9 +29,9 @@ class ShopViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.action == 'create':
-            return IsAuthenticated()
+            return [IsAuthenticated(), AllowAny(),] # AllowAny(), - remove it later !!!
         else :
-            return AllowAny()
+            return [AllowAny(), ]
 
     def retrieve(self, request, pk=None):
         queryset = ShopModel.objects.filter(pk=pk).all()

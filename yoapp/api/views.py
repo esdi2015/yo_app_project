@@ -52,7 +52,10 @@ def custom_exception_handler(exc, context):
     # Call REST framework's default exception handler first,
     # to get the standard error response.
     response = exception_handler(exc, context)
-    detail = response.data.get('detail')
+    try:
+        detail = response.data.get('detail')
+    except Exception as e:
+        detail = e
     if response is not None:
         if detail:
             response.data['metadata'] = {}
