@@ -67,7 +67,7 @@ class QRcoupon(models.Model):
     is_redeemed = models.BooleanField(default=False)
     in_transaction = models.BooleanField(default=False)
     expiry_date = models.DateTimeField()
-    transaction_start_time= models.DateTimeField()
+    transaction_start_time= models.DateTimeField(null=True)
     date_created = models.DateTimeField(('date created'), auto_now_add=True)
 
     offer = models.ForeignKey(Offer, related_name='offer', on_delete=models.CASCADE, null=True)
