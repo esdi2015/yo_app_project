@@ -4,6 +4,9 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework import viewsets
+# from rest_framework import generics
+from rest_framework import filters
+from django_filters.rest_framework import DjangoFilterBackend
 
 from ...views import custom_api_response
 from .serializers import ShopSerializer
@@ -12,26 +15,31 @@ from .serializers import ShopSerializer
 ShopModel = apps.get_model('yomarket', 'Shop')
 
 
-class ShopList(APIView):
-    permission_classes = (AllowAny,)
-
-    def get(self, request, format=None):
-        shops = ShopModel.objects.all()
-        serializer = ShopSerializer(shops, many=True)
-        return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
+# class ShopList(APIView):
+#     permission_classes = (AllowAny,)
+#
+#     def get(self, request, format=None):
+#         shops = ShopModel.objects.all()
+#         serializer = ShopSerializer(shops, many=True)
+#         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
 
 
 
 class ShopViewSet(viewsets.ModelViewSet):
     queryset = ShopModel.objects.all()
     serializer_class = ShopSerializer
-    permission_classes = (AllowAny,)
+    # permission_classes = (AllowAny,)
+
+    filter_backends = (filters.SearchFilter, DjangoFilterBackend, filters.OrderingFilter)
+    search_fields = ('title', 'address', )
+    filter_fields = ('manager_id', )
+    ordering_fields = '__all__'
 
     def get_permissions(self):
         if self.action == 'create':
-            return IsAuthenticated()
+            return [IsAuthenticated(), AllowAny(),] # AllowAny(), - remove it later !!!
         else :
-            return AllowAny()
+            return [AllowAny(), ]
 
     def retrieve(self, request, pk=None):
         queryset = ShopModel.objects.filter(pk=pk).all()
@@ -40,10 +48,14 @@ class ShopViewSet(viewsets.ModelViewSet):
 
 
     def list(self, request, *args, **kwargs):
+
         if (request.user.is_authenticated == True) and (request.user.role == 'OWNER'):
             queryset = ShopModel.objects.filter(user_id=request.user.pk).all()
         else:
             queryset = ShopModel.objects.all()
+
+        queryset = self.filter_queryset(queryset)
+
         # page = self.paginate_queryset(queryset)
         # if page is not None:
         #     serializer = self.get_serializer(page, many=True)
@@ -65,6 +77,7 @@ class ShopViewSet(viewsets.ModelViewSet):
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
+        request.data['user_id'] = request.user.pk
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)

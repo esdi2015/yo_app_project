@@ -1,5 +1,5 @@
 from django.conf.urls import re_path, include, url
-from .views import ShopList, ShopViewSet
+from .views import ShopViewSet  # ShopList,
 from . import views as api_view
 from rest_framework import routers
 

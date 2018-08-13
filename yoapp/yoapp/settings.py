@@ -28,7 +28,7 @@ SECRET_KEY = 'jol*#-so3w%w9%n-nti^acl43escr7h46hw*k1pb4)vnn(h4gy'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '192.168.2.175']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '192.168.2.175', 'vivat.sprava.net']
 SITE_ID = 1
 CORS_ORIGIN_ALLOW_ALL = True
 
