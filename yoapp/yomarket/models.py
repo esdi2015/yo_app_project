@@ -3,6 +3,8 @@ from django.conf import settings
 from django.apps import apps
 #from ..common import Category, User
 
+import uuid
+
 
 DISCOUNT_TYPES = (
     ('ABSOLUTE', 'ABSOLUTE'),
@@ -15,6 +17,9 @@ class Shop(models.Model):
                              on_delete = models.DO_NOTHING)
     title = models.CharField(max_length=200)
     address = models.CharField(max_length=200, blank=True)
+    created = models.DateTimeField(auto_now_add=True)
+    manager = models.ForeignKey('common.User', related_name='shops_manager',
+                             on_delete = models.SET_NULL, null=True)
 
     def __str__(self):
         return self.title
@@ -26,8 +31,7 @@ class Shop(models.Model):
 class Offer(models.Model):
     category = models.ForeignKey('common.Category', related_name='offers_from_category',
                                  on_delete=models.DO_NOTHING)
-    shop = models.ForeignKey(Shop, related_name='shop_offer',
-                             on_delete=models.DO_NOTHING)
+    shop = models.ForeignKey(Shop, related_name='shop_offer', on_delete=models.SET_NULL, null=True)
     title = models.CharField(max_length=200, db_index=True)
     image = models.ImageField(upload_to='offers/%Y/%m/%d', blank=True)
     short_description = models.TextField(blank=True)
@@ -39,6 +43,8 @@ class Offer(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     code_data = models.CharField(max_length=200, blank=True)
+    codes_count = models.SmallIntegerField(('codes count'), default=0, editable=True)
+    expire = models.DateTimeField(('expire date'), blank=True, null=True)
 
     class Meta:
         ordering = ('-created',)
@@ -54,3 +60,21 @@ class Transaction(models.Model):
 
 class Qrcode(models.Model):
     pass
+
+
+class QRcoupon(models.Model):
+    uuid_id = models.UUIDField(default=uuid.uuid4, editable=False,unique=True)
+    is_redeemed = models.BooleanField(default=False)
+    in_transaction = models.BooleanField(default=False)
+    expiry_date = models.DateTimeField()
+    transaction_start_time= models.DateTimeField()
+    date_created = models.DateTimeField(('date created'), auto_now_add=True)
+
+    offer = models.ForeignKey(Offer, related_name='offer', on_delete=models.CASCADE, null=True)
+
+    class Meta:
+        verbose_name = "QRcoupon"
+        verbose_name_plural = "QRcoupons"
+
+    def __str__(self):
+        return 'QRcoupon {}'.format(self.uuid_id)
