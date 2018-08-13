@@ -19,7 +19,7 @@ class ShopAdmin(admin.ModelAdmin):
 
 
 class QRcouponAdmin(admin.ModelAdmin):
-    list_display = ('uuid', 'short_uuid', 'available', 'expiry_date', 'user', 'offer')
+    list_display = ('uuid_id',  'expiry_date',  'offer')
 
 
 admin.site.register(Shop, ShopAdmin)

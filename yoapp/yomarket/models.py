@@ -3,6 +3,8 @@ from django.conf import settings
 from django.apps import apps
 #from ..common import Category, User
 
+import uuid
+
 
 DISCOUNT_TYPES = (
     ('ABSOLUTE', 'ABSOLUTE'),
@@ -61,13 +63,13 @@ class Qrcode(models.Model):
 
 
 class QRcoupon(models.Model):
-    uuid = models.CharField(max_length=36, unique=True)
-    short_uuid = models.CharField(max_length=8, unique=True)
-    available = models.BooleanField(default=True)
+    uuid_id = models.UUIDField(default=uuid.uuid4, editable=False,unique=True)
+    is_redeemed = models.BooleanField(default=False)
+    in_transaction = models.BooleanField(default=False)
     expiry_date = models.DateTimeField()
+    transaction_start_time= models.DateTimeField(null=True)
     date_created = models.DateTimeField(('date created'), auto_now_add=True)
 
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
     offer = models.ForeignKey(Offer, related_name='offer', on_delete=models.CASCADE, null=True)
 
     class Meta:
@@ -75,4 +77,4 @@ class QRcoupon(models.Model):
         verbose_name_plural = "QRcoupons"
 
     def __str__(self):
-        return 'QRcoupon {}'.format(self.short_uuid)
+        return 'QRcoupon {}'.format(self.uuid_id)

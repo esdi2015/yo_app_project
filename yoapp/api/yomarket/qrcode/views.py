@@ -8,24 +8,65 @@ from yomarket.models import Offer
 
 from ...views import custom_api_response
 
+from django.utils import timezone
+
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
-def qr_checkout(request, uuid):
-    coupon = QRcoupon.objects.get(uuid=uuid)
-    serializer = QRcouponSerializator(coupon)
-    serializer.validate_expiry_date(value=coupon.expiry_date)
+def qr_check(request, uuid):
+    code = QRcoupon.objects.filter(uuid_id=uuid).first()
+    if code!=None:
+        serializer = QRcouponSerializator(code)
+        serializer.validate_expiry_date(value=code.expiry_date)
+        code.save()
+        return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
+    else:
+        return Response({'code':uuid,'error':'code not found'},status=status.HTTP_400_BAD_REQUEST)
 
-    response = Response(custom_api_response(serializer), status=status.HTTP_200_OK)
-    coupon.available = False
-    coupon.save()
-    return response
 
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def offer_make_qr(request, offer_id):
-    offer = Offer.objects.get(id=offer_id)
-    serializer = QRcouponSerializator()
-    serializer.create(user=request.user, offer=offer)
-    return Response(status=status.HTTP_200_OK)
+def qr_checkout(request,uuid):
+    code = QRcoupon.objects.filter(uuid_id=uuid,in_transaction=True).first()
+    if code!=None:
+        code.in_transaction=False
+        code.is_redeemed=True
+        code.save()
+        return Response({'code':code.uuid_id,'redeemed':True},status=status.HTTP_200_OK)
+    else:
+        return Response({'error':'no available code in transaction'},status.HTTP_400_BAD_REQUEST)
+
+    offer = Offer.objects.get(pk=offer_id)
+    for x in range(int(quantity)):
+        code = QRcoupon(expiry_date=offer.expire,offer=offer)
+        code.save()
+    return Response({"quantity":quantity,"created":True}, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def make_qrs(request):
+    quantity = request.data['quantity']
+    offer_id = request.data['offer_id']
+
+    offer = Offer.objects.get(pk=offer_id)
+    for x in range(int(quantity)):
+        code = QRcoupon(expiry_date=offer.expire,offer=offer)
+        code.save()
+    return Response({"quantity":quantity,"created":True}, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def get_code(request):
+    offer_id = request.data['offer_id']
+    offer = Offer.objects.get(pk=offer_id)
+    code=QRcoupon.objects.filter(is_redeemed=False,in_transaction=False,offer=offer).first()
+    if code!=None:
+        code.in_transaction=True
+        code.transaction_start_time=timezone.now()
+        code.save()
+        return Response({'code':code.uuid_id},status.HTTP_200_OK)
+    else:
+        return Response({'error':'no available codes'},status.HTTP_400_BAD_REQUEST)

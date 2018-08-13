@@ -17,13 +17,11 @@ class QRcouponSerializator(serializers.ModelSerializer):
         pass
 
     def create(self, user, offer):
-        f_uuid = uuid.uuid4()
-        s_uuid = str(f_uuid)[:8]
-        qrcoupon = self.Meta.model(uuid=f_uuid, short_uuid=s_uuid, expiry_date=timezone.now(), user=user, offer=offer)
+        qrcoupon = self.Meta.model(expiry_date=timezone.now(),offer=offer)
         qrcoupon.save()
         return qrcoupon
 
 
     class Meta:
         model = QRcoupon
-        fields = ('short_uuid', 'uuid', 'offer', 'available')
+        fields = ('uuid_id', 'offer')
