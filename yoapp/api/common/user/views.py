@@ -108,3 +108,43 @@ def login_view(request):
     else:
         return Response(custom_api_response(serializer), status=status.HTTP_400_BAD_REQUEST)
 
+
+
+from google.oauth2 import id_token
+from google.auth.transport import requests
+
+@api_view(['POST'])
+@permission_classes(())
+def google_oauth(request):
+    if request.user.is_authenticated:
+        return Response({"detail": "You must have to log out first"})
+
+    token=request.data['id_token']
+
+    try:
+        idinfo = id_token.verify_oauth2_token(token, requests.Request(), "635837561500-3gn59mbjsd5g0tak2qdrnefputfinkbf.apps.googleusercontent.com")
+        if idinfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
+            raise ValueError('Wrong issuer.')
+    except ValueError:
+        return Response({"error":"wrong issuer"},status=status.HTTP_400_BAD_REQUEST)
+
+    email = idinfo['email']
+    photo = idinfo['picture']
+    last_name=idinfo['family_name']
+    first_name=['given_name']
+
+    def create_login_token(user):
+        serializer = LoginSerializer()
+        token = create_token(TokenModel, user, serializer)
+        return token
+
+    try:
+        user = UserModel.objects.get(email=email)
+    except UserModel.DoesNotExist:
+        user = UserModel(email=email, last_name=last_name, first_name=first_name)
+        user.save()
+
+    token = create_login_token(user)
+
+    content = {'token': token.key, 'email': user.email, 'id': user.id}
+    return Response(custom_api_response(content=content), status=status.HTTP_200_OK)
