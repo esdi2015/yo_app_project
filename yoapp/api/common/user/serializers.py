@@ -10,6 +10,8 @@ from account.models import Profile
 
 UserModel = get_user_model()
 
+APP = ('desktop', 'mobile')
+
 
 class CustomUserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(allow_blank=False, write_only=True)
@@ -50,10 +52,14 @@ class LoginSerializer(serializers.Serializer):
         style={'input_type': 'password'},
         trim_whitespace=False
     )
+    app = serializers.CharField(allow_blank=True, required=False, default=APP[1])
 
     def validate(self, attrs):
         email = attrs.get('email')
         password = attrs.get('password')
+        app = attrs.get('app')
+
+        print (app)
 
         if email and password:
             user = authenticate(request=self.context.get('request'),
@@ -69,6 +75,10 @@ class LoginSerializer(serializers.Serializer):
                 if user.role == 'ADMIN':
                     msg = _('Unable to log in with ADMIN role.')
                     raise serializers.ValidationError(msg, code='authorization')
+                else:
+                    if user.role == 'CUSTOMER' and app == APP[0]:
+                        msg = _('Unable to log in with CUSTOMER role.')
+                        raise serializers.ValidationError(msg, code='authorization')
         else:
             msg = _('Must include "email" and "password".')
             raise serializers.ValidationError(msg, code='authorization')
