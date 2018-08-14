@@ -176,6 +176,7 @@ def login_view(request):
         return Response(custom_api_response(serializer), status=status.HTTP_400_BAD_REQUEST)
 
 
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def profile_update_view(request):
@@ -189,24 +190,30 @@ def profile_update_view(request):
 
 
 
+
+from google.oauth2 import id_token
+from google.auth.transport import requests
+
+
 @api_view(['POST'])
 @permission_classes(())
 def google_oauth(request):
     if request.user.is_authenticated:
         return Response({"detail": "You must have to log out first"})
 
-    access_token = request.data['access_token']
-    credentials = AccessTokenCredentials(access_token,'my-user-agent/1.0')
-    http = httplib2.Http()
-    http = credentials.authorize(http)
-    service = build('plus', 'v1', http=http)
-    result = service.people().get(userId='me').execute()
+    token=request.data['id_token']
 
-    email = result['emails'][0]['value']
-    gender = result['gender']
-    first_name = result['name']['givenName']
-    last_name = result['name']['familyName']
-    photo = result['image']['url']
+    try:
+        idinfo = id_token.verify_oauth2_token(token, requests.Request(), "635837561500-3gn59mbjsd5g0tak2qdrnefputfinkbf.apps.googleusercontent.com")
+        if idinfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
+            raise ValueError('Wrong issuer.')
+    except ValueError:
+        return Response({"error":"wrong issuer"},status=status.HTTP_400_BAD_REQUEST)
+
+    email = idinfo['email']
+    photo = idinfo['picture']
+    last_name=idinfo['family_name']
+    first_name=['given_name']
 
     def create_login_token(user):
         serializer = LoginSerializer()
@@ -216,15 +223,13 @@ def google_oauth(request):
     try:
         user = UserModel.objects.get(email=email)
     except UserModel.DoesNotExist:
-        user = UserModel(email=email,last_name=last_name,first_name=first_name)
-        user.set_password('password')
+        user = UserModel(email=email, last_name=last_name, first_name=first_name)
         user.save()
 
     token = create_login_token(user)
-    #django_login(request, user)
+
     content = {'token': token.key, 'email': user.email, 'id': user.id}
     return Response(custom_api_response(content=content), status=status.HTTP_200_OK)
-    #return Response({'token':token.key})
 
 
 
