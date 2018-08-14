@@ -11,7 +11,7 @@ class OfferAdmin(admin.ModelAdmin):
 
 
 class ShopAdmin(admin.ModelAdmin):
-    list_display = ('title', 'address', 'user', 'created')
+    list_display = ('title', 'address', 'user', 'manager', 'created')
     list_filter = ('user',)
     search_fields = ('title', 'address')
     date_hierarchy = 'created'
