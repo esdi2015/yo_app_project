@@ -204,7 +204,7 @@ def google_oauth(request):
     token=request.data['id_token']
 
     try:
-        idinfo = id_token.verify_oauth2_token(token, requests.Request(), "635837561500-3gn59mbjsd5g0tak2qdrnefputfinkbf.apps.googleusercontent.com")
+        idinfo = id_token.verify_oauth2_token(token, requests.Request(), "440629677274-jkrfq9i93asr3j2du8t0jqggsegh3tk8.apps.googleusercontent.com")
         if idinfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
             raise ValueError('Wrong issuer.')
     except ValueError:
