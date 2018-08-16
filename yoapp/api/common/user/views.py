@@ -18,6 +18,8 @@ import httplib2
 from googleapiclient.discovery import build
 from oauth2client.client import AccessTokenCredentials
 import facebook
+from google.oauth2 import id_token
+from google.auth.transport import requests
 
 from ...views import custom_api_response
 from .serializers import CustomUserSerializer, LoginSerializer, UserIsExistsSerializer
@@ -47,7 +49,6 @@ class Logout(APIView):
 
 
 
-
 class UserMe(APIView):
     permission_classes = (IsAuthenticated,)
     #queryset = UserModel.objects.all()
@@ -70,9 +71,6 @@ class UserIsExists(APIView):
         return Response(custom_api_response(serializer=serializer), status=status.HTTP_400_BAD_REQUEST)
 
 
-
-
-
 class UserViewSet(viewsets.ModelViewSet):
     queryset = UserModel.objects.all()
     serializer_class = CustomUserSerializer
@@ -83,7 +81,6 @@ class UserViewSet(viewsets.ModelViewSet):
         #user = get_object_or_404(queryset, pk=pk)
         user = UserModel.objects.filter(pk=pk).all()
         serializer = CustomUserSerializer(user, many=True)
-        #serializer.is_valid()
         response = Response(custom_api_response(serializer), status=status.HTTP_200_OK)
         return response
 
@@ -98,23 +95,15 @@ class UserViewSet(viewsets.ModelViewSet):
 
         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
 
-
     def create(self, request, *args, **kwargs):
         self_user = request.user
-        #print (self_user.pk)
-        #print (self_user['id'])
-        #print(request.data)
         request.data['creator_id'] = self_user.pk
         request.data['role'] = 'MANAGER'
-        #print(request.data)
-        #print(ROLES.get('MANAGER'))
-        #return Response(custom_api_response(content=self_user), status=status.HTTP_201_CREATED)
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         return Response(custom_api_response(serializer=serializer), status=status.HTTP_201_CREATED, headers=headers)
-
 
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
@@ -168,13 +157,11 @@ def login_view(request):
     if serializer.is_valid():
         user = serializer.validated_data['user']
         token = create_token(TokenModel, user, serializer)
-        #token = Token.objects.get(user=user)
         django_login(request, user)
         content = {'token': token.key, 'email': user.email, 'id': user.id}
         return Response(custom_api_response(serializer, content), status=status.HTTP_200_OK)
     else:
         return Response(custom_api_response(serializer), status=status.HTTP_400_BAD_REQUEST)
-
 
 
 @api_view(['POST'])
@@ -188,13 +175,6 @@ def profile_update_view(request):
     return Response(custom_api_response(serializer), status=status.HTTP_400_BAD_REQUEST)
 
 
-
-
-
-from google.oauth2 import id_token
-from google.auth.transport import requests
-
-
 @api_view(['POST'])
 @permission_classes(())
 def google_oauth(request):
@@ -204,7 +184,7 @@ def google_oauth(request):
     token=request.data['id_token']
 
     try:
-        idinfo = id_token.verify_oauth2_token(token, requests.Request(), "440629677274-jkrfq9i93asr3j2du8t0jqggsegh3tk8.apps.googleusercontent.com")
+        idinfo = id_token.verify_oauth2_token(token, requests.Request(), "635837561500-3gn59mbjsd5g0tak2qdrnefputfinkbf.apps.googleusercontent.com")
         if idinfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
             raise ValueError('Wrong issuer.')
     except ValueError:
@@ -212,8 +192,9 @@ def google_oauth(request):
 
     email = idinfo['email']
     photo = idinfo['picture']
-    last_name=idinfo['family_name']
-    first_name=['given_name']
+    last_name = idinfo['family_name']
+    first_name = ['given_name']
+    first_login = False
 
     def create_login_token(user):
         serializer = LoginSerializer()
@@ -225,18 +206,18 @@ def google_oauth(request):
     except UserModel.DoesNotExist:
         user = UserModel(email=email, last_name=last_name, first_name=first_name)
         user.save()
+        first_login = True
+
 
     token = create_login_token(user)
 
-    content = {'token': token.key, 'email': user.email, 'id': user.id}
+    content = {'token': token.key, 'email': user.email, 'id': user.id, 'first_login': first_login}
     return Response(custom_api_response(content=content), status=status.HTTP_200_OK)
-
 
 
 @api_view(['POST'])
 @permission_classes(())
 def facebook_oauth(request):
-
     if request.user.is_authenticated == True:
         error = {"detail": "You must have to log out first"}
         return Response(custom_api_response(errors=error), status=status.HTTP_400_BAD_REQUEST)
@@ -253,6 +234,7 @@ def facebook_oauth(request):
     birthday = profile.get('birthday')
 
     email = request.data['email']
+    first_login = False
 
     def create_login_token(user):
         serializer = LoginSerializer()
@@ -264,9 +246,8 @@ def facebook_oauth(request):
     except UserModel.DoesNotExist:
         user = UserModel(email=email, last_name=last_name, first_name=first_name)
         user.save()
-
+        first_login = True
     token = create_login_token(user)
 
-    content = {'token': token.key, 'email': user.email, 'id': user.id}
+    content = {'token': token.key, 'email': user.email, 'id': user.id, 'first_login': first_login}
     return Response(custom_api_response(content=content), status=status.HTTP_200_OK)
-    #return Response({'token': token.key})
