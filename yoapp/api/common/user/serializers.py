@@ -17,6 +17,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(allow_blank=False, write_only=True)
     role = serializers.CharField(allow_blank=True, default=DEFAULT_USER_ROLE)
     creator_id = serializers.IntegerField(allow_null=True, write_only=True, required=False)
+    username = serializers.CharField(allow_blank=True, required=False)
 
     # def validate(self, attrs):
     #     if attrs['password'] != attrs.pop('confirm_password'):
@@ -28,13 +29,33 @@ class CustomUserSerializer(serializers.ModelSerializer):
         vp(value)
         return value
 
+    def validate_username(self, value):
+        try:
+            #method = self.context['request'].method
+            pk = int(self.context['request'].parser_context['kwargs']['pk'])
+        except:
+            #method = None
+            pk = None
+
+        try:
+            user = UserModel.objects.get(username=value)
+        except UserModel.DoesNotExist:
+            user = None
+
+        if user:
+            if user.pk != pk:
+                raise serializers.ValidationError("user with this username already exists.")
+            else:
+                return value
+        else:
+            return value
+
     def create(self, validated_data):
         password = validated_data.pop('password', None)
         user = self.Meta.model(**validated_data)
         #print (validated_data)
         user.set_password(password)
         user.save()
-        #print('qwqwqw')
         #Profile.objects.create(user=user)
         return user
 
@@ -42,7 +63,6 @@ class CustomUserSerializer(serializers.ModelSerializer):
         model = UserModel
         fields = ('id', 'password', 'username', 'first_name', 'last_name', 'email', 'role', 'creator_id')
         write_only_fields = ('password', )
-
 
 
 class LoginSerializer(serializers.Serializer):
@@ -103,7 +123,6 @@ class UserIsExistsSerializer(serializers.Serializer):
 
         attrs['user'] = user
         return attrs
-
 
 
 class ProfileSerializer(serializers.ModelSerializer):
