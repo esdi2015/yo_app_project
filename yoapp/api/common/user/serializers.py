@@ -59,8 +59,6 @@ class LoginSerializer(serializers.Serializer):
         password = attrs.get('password')
         app = attrs.get('app')
 
-        print (app)
-
         if email and password:
             user = authenticate(request=self.context.get('request'),
                                 email=email, password=password)
