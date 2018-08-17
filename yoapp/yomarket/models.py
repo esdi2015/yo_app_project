@@ -20,6 +20,8 @@ class Shop(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     manager = models.ForeignKey('common.User', related_name='shops_manager',
                              on_delete = models.SET_NULL, null=True)
+    latitude = models.DecimalField(max_digits=10, decimal_places=6)
+    longitude = models.DecimalField(max_digits=10, decimal_places=6)
 
     def __str__(self):
         return self.title
