@@ -13,7 +13,7 @@ class ShopSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ShopModel
-        fields = ('id', 'title', 'address', 'user', 'user_id', 'manager', 'manager_id')
+        fields = ('id', 'title', 'address', 'user', 'user_id', 'manager', 'manager_id', 'latitude', 'longitude')
 
     # def to_representation(self, instance):
     #     # instance is the model object. create the custom json format by accessing instance attributes normaly

@@ -1,5 +1,7 @@
 from django.contrib import admin
+from django.contrib.admin import SimpleListFilter
 from .models import Shop, Offer, QRcoupon, Transaction
+from common.models import User
 
 
 class OfferAdmin(admin.ModelAdmin):
@@ -16,6 +18,13 @@ class ShopAdmin(admin.ModelAdmin):
     search_fields = ('title', 'address')
     date_hierarchy = 'created'
     ordering = ['-id', ]
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "user":
+            kwargs["queryset"] = User.objects.filter(role="OWNER")
+        elif db_field.name == "manager":
+            kwargs["queryset"] = User.objects.filter(role="MANAGER")
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
 class QRcouponAdmin(admin.ModelAdmin):
