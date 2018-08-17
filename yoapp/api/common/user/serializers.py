@@ -30,11 +30,10 @@ class CustomUserSerializer(serializers.ModelSerializer):
         return value
 
     def validate_username(self, value):
+        # method = self.context['request'].method
         try:
-            #method = self.context['request'].method
             pk = int(self.context['request'].parser_context['kwargs']['pk'])
         except:
-            #method = None
             pk = None
 
         try:
@@ -53,7 +52,6 @@ class CustomUserSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         password = validated_data.pop('password', None)
         user = self.Meta.model(**validated_data)
-        #print (validated_data)
         user.set_password(password)
         user.save()
         #Profile.objects.create(user=user)
