@@ -20,6 +20,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     date_joined = models.DateTimeField(('date joined'), auto_now_add=True)
     role = models.CharField(max_length=50, choices=ROLES, default=DEFAULT_USER_ROLE)
     creator_id = models.SmallIntegerField(default=0)
+    fb_id = models.CharField(max_length=100, blank=True, unique=True, null=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []

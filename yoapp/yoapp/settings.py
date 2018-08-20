@@ -11,6 +11,12 @@ https://docs.djangoproject.com/en/2.0/ref/settings/
 """
 
 import os, sys
+from django.contrib import admin
+
+admin.site.site_header = "Halap-YO Admin"
+admin.site.site_title = "Halap-YO Admin Portal"
+admin.site.index_title = "Welcome to Halap-YO Admin Portal"
+
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
