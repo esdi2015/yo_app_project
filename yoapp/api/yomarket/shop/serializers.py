@@ -10,6 +10,8 @@ class ShopSerializer(serializers.ModelSerializer):
     user_id = serializers.IntegerField(allow_null=False)
     manager = serializers.StringRelatedField()
     manager_id = serializers.IntegerField(allow_null=True, required=False)
+    latitude = serializers.FloatField(allow_null=True, required=False)
+    longitude = serializers.FloatField(allow_null=True, required=False)
 
     class Meta:
         model = ShopModel

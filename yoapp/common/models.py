@@ -10,7 +10,7 @@ from . utils import ROLES, DEFAULT_USER_ROLE
 
 
 class User(AbstractBaseUser, PermissionsMixin):
-    username = models.CharField(max_length=100, blank=True, unique=True)
+    username = models.CharField(max_length=100, blank=True, unique=True, null=True)
     first_name = models.CharField(max_length=150, blank=True)
     last_name = models.CharField(max_length=150, blank=True)
     email = models.EmailField(max_length=255, unique=True)

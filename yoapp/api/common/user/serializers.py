@@ -30,6 +30,9 @@ class CustomUserSerializer(serializers.ModelSerializer):
         return value
 
     def validate_username(self, value):
+        if value == '':
+            return None
+
         # method = self.context['request'].method
         try:
             pk = int(self.context['request'].parser_context['kwargs']['pk'])
@@ -41,7 +44,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
         except UserModel.DoesNotExist:
             user = None
 
-        if user:
+        if user and user.username != '':
             if user.pk != pk:
                 raise serializers.ValidationError("user with this username already exists.")
             else:
