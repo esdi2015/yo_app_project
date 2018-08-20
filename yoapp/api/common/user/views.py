@@ -218,11 +218,19 @@ def google_oauth(request):
 @api_view(['POST'])
 @permission_classes(())
 def facebook_oauth(request):
+
+    def create_login_token(user):
+        serializer = LoginSerializer()
+        token = create_token(TokenModel, user, serializer)
+        return token
+
     if request.user.is_authenticated == True:
         error = {"detail": "You must have to log out first"}
         return Response(custom_api_response(errors=error), status=status.HTTP_400_BAD_REQUEST)
 
     access_token = request.data['access_token']
+    email = request.data['email']
+
     graph = facebook.GraphAPI(access_token)
     args = {'fields': 'id,email,birthday,gender,first_name,last_name,picture.height(300)'}
     profile = graph.get_object('me', **args)
@@ -232,22 +240,37 @@ def facebook_oauth(request):
     last_name = profile.get('last_name')
     gender = profile.get('gender')
     birthday = profile.get('birthday')
+    fb_id = profile.get('id')
 
-    email = request.data['email']
     first_login = False
-
-    def create_login_token(user):
-        serializer = LoginSerializer()
-        token = create_token(TokenModel, user, serializer)
-        return token
 
     try:
         user = UserModel.objects.get(email=email)
     except UserModel.DoesNotExist:
-        user = UserModel(email=email, last_name=last_name, first_name=first_name)
-        user.save()
-        first_login = True
-    token = create_login_token(user)
+        try:
+            user = UserModel.objects.get(fb_id=fb_id)
+            return Response({'error': 'already registered'}, status=status.HTTP_400_BAD_REQUEST)
+        except UserModel.DoesNotExist:
+            user = UserModel(email=email, last_name=last_name, first_name=first_name, fb_id=fb_id)
+            user.save()
+            first_login = True
 
-    content = {'token': token.key, 'email': user.email, 'id': user.id, 'first_login': first_login}
-    return Response(custom_api_response(content=content), status=status.HTTP_200_OK)
+        # user = UserModel(email=email, last_name=last_name, first_name=first_name)
+        # user.save()
+        # first_login = True
+
+    if user.fb_id == fb_id:
+        token = create_login_token(user)
+        content = {'token': token.key, 'email': user.email, 'id': user.id, 'first_login': first_login}
+        return Response(custom_api_response(content=content), status=status.HTTP_200_OK)
+    else:
+        return Response({'error': 'wrong id'}, status=status.HTTP_400_BAD_REQUEST)
+
+    # token = create_login_token(user)
+    #
+    # content = {'token': token.key, 'email': user.email, 'id': user.id, 'first_login': first_login}
+    # return Response(custom_api_response(content=content), status=status.HTTP_200_OK)
+
+
+
+
