@@ -36,10 +36,10 @@ class ShopViewSet(viewsets.ModelViewSet):
     ordering_fields = '__all__'
 
     def get_permissions(self):
-        if self.action == 'create':
-            return [IsAuthenticated(), AllowAny(),] # AllowAny(), - remove it later !!!
-        else :
+        if self.action == 'retrieve' or self.action == 'list':
             return [AllowAny(), ]
+        else :
+            return [IsAuthenticated(), AllowAny(), ] # AllowAny(), - remove it later !!!
 
     def retrieve(self, request, pk=None):
         queryset = ShopModel.objects.filter(pk=pk).all()

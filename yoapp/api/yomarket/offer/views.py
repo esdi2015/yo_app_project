@@ -6,6 +6,7 @@ from rest_framework.views import APIView
 from rest_framework import generics
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
+from django.contrib.auth import get_user_model
 
 from ...views import custom_api_response
 from .serializers import OfferSerializer
@@ -14,6 +15,8 @@ from rest_framework.pagination import LimitOffsetPagination
 
 
 OfferModel = apps.get_model('yomarket', 'Offer')
+ShopModel = apps.get_model('yomarket', 'Shop')
+UserModel = get_user_model()
 
 
 class OfferListView(generics.ListCreateAPIView):
@@ -34,8 +37,17 @@ class OfferListView(generics.ListCreateAPIView):
 
 
     def list(self, request, *args, **kwargs):
-        # self.permission_classes = (IsAuthenticated,)
         queryset = self.filter_queryset(self.get_queryset())
+
+        if request.user.is_authenticated == True:
+            if request.user.role == 'OWNER':
+                shops = ShopModel.objects.filter(user_id=request.user.pk).all()
+            elif request.user.role == 'MANAGER':
+                shops = ShopModel.objects.filter(manager_id=request.user.pk).all()
+
+            shops_ids = [x.id for x in shops]
+            if request.user.role in ['OWNER', 'MANAGER']:
+                queryset = queryset.filter(shop_id__in=shops_ids).all()
 
         page = self.paginate_queryset(queryset)
         if page is not None:

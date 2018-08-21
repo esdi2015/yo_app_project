@@ -10,7 +10,7 @@ from . utils import ROLES, DEFAULT_USER_ROLE
 
 
 class User(AbstractBaseUser, PermissionsMixin):
-    username = models.CharField(max_length=100, blank=True)
+    username = models.CharField(max_length=100, blank=True, unique=True, null=True)
     first_name = models.CharField(max_length=150, blank=True)
     last_name = models.CharField(max_length=150, blank=True)
     email = models.EmailField(max_length=255, unique=True)
@@ -20,6 +20,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     date_joined = models.DateTimeField(('date joined'), auto_now_add=True)
     role = models.CharField(max_length=50, choices=ROLES, default=DEFAULT_USER_ROLE)
     creator_id = models.SmallIntegerField(default=0)
+    fb_id = models.CharField(max_length=100, blank=True, unique=True, null=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []

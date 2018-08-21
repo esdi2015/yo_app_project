@@ -20,6 +20,8 @@ class Shop(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     manager = models.ForeignKey('common.User', related_name='shops_manager',
                              on_delete = models.SET_NULL, null=True)
+    latitude = models.DecimalField(max_digits=10, decimal_places=6, null=True)
+    longitude = models.DecimalField(max_digits=10, decimal_places=6, null=True)
 
     def __str__(self):
         return self.title
@@ -48,18 +50,33 @@ class Offer(models.Model):
 
     class Meta:
         ordering = ('-created',)
-        #index_together = (('id', 'slug'),)
 
     def __str__(self):
         return self.title
 
 
 class Transaction(models.Model):
-    pass
+    customer = models.ForeignKey('common.User', related_name='transactions_customer', on_delete=models.DO_NOTHING)
+    manager = models.ForeignKey('common.User', related_name='transactions_manager', on_delete=models.DO_NOTHING)
+    offer = models.ForeignKey('yomarket.Offer', related_name='transactions_offer', on_delete=models.DO_NOTHING)
+    points = models.IntegerField(default=0, editable=True)
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ('-created',)
+        verbose_name = "Transaction"
+        verbose_name_plural = "Transactions"
+
+    def __str__(self):
+        return 'Gets {}'.format(self.points)
 
 
-class Qrcode(models.Model):
-    pass
+
+
+
+
+# class Qrcode(models.Model):
+#     pass
 
 
 class QRcoupon(models.Model):

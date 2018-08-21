@@ -10,10 +10,12 @@ class ShopSerializer(serializers.ModelSerializer):
     user_id = serializers.IntegerField(allow_null=False)
     manager = serializers.StringRelatedField()
     manager_id = serializers.IntegerField(allow_null=True, required=False)
+    latitude = serializers.FloatField(allow_null=True, required=False)
+    longitude = serializers.FloatField(allow_null=True, required=False)
 
     class Meta:
         model = ShopModel
-        fields = ('id', 'title', 'address', 'user', 'user_id', 'manager', 'manager_id')
+        fields = ('id', 'title', 'address', 'user', 'user_id', 'manager', 'manager_id', 'latitude', 'longitude')
 
     # def to_representation(self, instance):
     #     # instance is the model object. create the custom json format by accessing instance attributes normaly
