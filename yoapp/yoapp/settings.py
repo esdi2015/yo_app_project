@@ -59,7 +59,10 @@ INSTALLED_APPS = [
     'common.apps.CommonConfig',
     'api.apps.ApiConfig',
     'account.apps.AccountConfig',
-    'yomarket.apps.YomarketConfig'
+    'yomarket.apps.YomarketConfig',
+    "push_notifications",
+    'django_celery_beat',
+    'notification.apps.NotificationConfig',
 ]
 
 MIDDLEWARE = [
@@ -112,12 +115,8 @@ WSGI_APPLICATION = 'yoapp.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'yodb',
-        'USER': 'yodbuser',
-        'PASSWORD': 'yodbpassword',
-        'HOST': '127.0.0.1',
-        'PORT': '5432',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': 'mydatabase',
     }
 }
 
@@ -203,13 +202,18 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 # 1234567890qaz - pass for registered test users
 # 000 - pass for postgres user on the 192.168.2.175
 
+PUSH_NOTIFICATIONS_SETTINGS = {
+    "FCM_API_KEY": "AAAASwElybY:APA91bFaTT_zKLcLYqB0soW8PJmFFG7x1F3wiR0MGta9lLsU22uAVa0VD_3zzz-OremJKDEWEf52OD554byamcwAmZldgrQKfwAjjbhZz_5DYT-z1gcflUBFSWVQQ9lSE9KwDBNHULvfVKmQwxa7xNwuPHz-VfdTbw",
+    'USER_MODEL': 'common.User',
+    'UPDATE_ON_DUPLICATE_REG_ID':True
+}
 
-# SOCIAL_AUTH_FACEBOOK_KEY = '1923453891044213'
-# SOCIAL_AUTH_FACEBOOK_SECRET = 'e09891a80fcf40df729c15c5b6d97c34'
-# SOCIAL_AUTH_FACEBOOK_SCOPE = ['email', ]  # optional
-# SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {'locale': 'ru_RU'}  # optional
-#
-# SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '635837561500-etpcka3a7khibfvqiuek965d24sa61oj.apps.googleusercontent.com'
-# SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = 'UUvE6SJA-Vg5pZ8Hi14hfqRc'
 
-# ALLOWED_HOSTS=['seaw688.com',]
+
+CELERY_BROKER_URL = 'redis://localhost:6379'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TASK_SERIALIZER = 'json'
+#CELERY_TIMEZONE = 'Asia/Makassar'
+CELERY_BEAT_SCHEDULE = {}
