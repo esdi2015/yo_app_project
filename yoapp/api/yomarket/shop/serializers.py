@@ -41,4 +41,5 @@ class ShopListSerializer(ShopSerializer):
 
     class Meta:
         model = ShopModel
-        fields = ('id', 'title', 'address', 'user', 'user_id', 'manager', 'manager_id')
+        fields = ('id', 'title', 'address', 'user', 'user_id', 'manager', 'manager_id',
+                  'outer_link', 'phone', 'image')
