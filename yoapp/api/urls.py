@@ -18,7 +18,8 @@ urlpatterns = urlpatterns + \
               offer_urls + \
               shop_urls + \
               qr_urls + \
-              transaction_urls
+              transaction_urls + \
+              notification_urls
 
 
 
