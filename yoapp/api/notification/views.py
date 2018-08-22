@@ -23,14 +23,6 @@ from django.db.models import Q
 from datetime import timedelta
 from django.utils import timezone
 
-@api_view(['POST'])
-@permission_classes(())
-def test_func(request):
-    subs=Subscription.objects.filter(type='category')
-    for sub in subs:
-        user = sub.user
-        pass
-
 
 @api_view(['POST'])
 @permission_classes(())
@@ -103,4 +95,24 @@ def get_subscription(request):
     subs=Subscription.objects.filter(user=request.user)
     serializer=SubscriptionSerializator(subs,many=True)
     return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
+
+
+
+@api_view(['POST'])
+@permission_classes(())
+def read_notification(request):
+    if request.user.is_authenticated == False:
+        error = {"detail": "You must have to log in first"}
+        return Response(custom_api_response(errors=error), status=status.HTTP_400_BAD_REQUEST)
+
+    notification_id=request.data.get('notification_id')
+
+    try:
+        notification=Notification.objects.get(id=notification_id)
+    except Notification.DoesNotExist:
+        return Response(custom_api_response(metadata={'error':'wrong id or no notification'}),status.HTTP_400_BAD_REQUEST)
+    notification.is_read=True
+    notification.save()
+
+    return Response(custom_api_response(metadata={'status':'ok'}), status=status.HTTP_200_OK)
 
