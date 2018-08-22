@@ -1,5 +1,5 @@
 from django.conf.urls import  url
-from .views import test_func,get_notifications,subscribe, unsubscribe,get_subscription
+from .views import test_func,get_notifications,subscribe, unsubscribe,get_subscription,read_notification
 from push_notifications.api.rest_framework import GCMDeviceAuthorizedViewSet
 
 urlpatterns = [
@@ -9,5 +9,6 @@ urlpatterns = [
     url(r'^subscribe/$', subscribe, name='subscribe'),
     url(r'^unsubscribe/$', unsubscribe, name='unsubscribe'),
     url(r'^get-subscription/$', get_subscription, name='get_subscription'),
+    url(r'^read-notification/$', read_notification, name='read_notification'),
 
 ]

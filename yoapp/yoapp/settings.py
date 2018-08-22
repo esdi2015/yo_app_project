@@ -13,9 +13,6 @@ https://docs.djangoproject.com/en/2.0/ref/settings/
 import os, sys
 from django.contrib import admin
 
-admin.site.site_header = "Halap-YO Admin"
-admin.site.site_title = "Halap-YO Admin Portal"
-admin.site.index_title = "Welcome to Halap-YO Admin Portal"
 
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -27,9 +24,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'jol*#-so3w%w9%n-nti^acl43escr7h46hw*k1pb4)vnn(h4gy'
-
+SECRET_KEY = 'dsadsadsadadsa31231231'
 # admin: s.dusanyuk@gmail.com/admin/adminpassword
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -69,6 +66,7 @@ INSTALLED_APPS = [
     "push_notifications",
     'django_celery_beat',
     'notification.apps.NotificationConfig',
+
 ]
 
 MIDDLEWARE = [
@@ -209,7 +207,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 # 000 - pass for postgres user on the 192.168.2.175
 
 PUSH_NOTIFICATIONS_SETTINGS = {
-    "FCM_API_KEY": "AAAASwElybY:APA91bFaTT_zKLcLYqB0soW8PJmFFG7x1F3wiR0MGta9lLsU22uAVa0VD_3zzz-OremJKDEWEf52OD554byamcwAmZldgrQKfwAjjbhZz_5DYT-z1gcflUBFSWVQQ9lSE9KwDBNHULvfVKmQwxa7xNwuPHz-VfdTbw",
+    "FCM_API_KEY": "AIzaSyDQ421g_j_CI77eIYk_nyQ64CjEMO2XnYE",
     'USER_MODEL': 'common.User',
     'UPDATE_ON_DUPLICATE_REG_ID':True
 }
@@ -223,3 +221,4 @@ CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TASK_SERIALIZER = 'json'
 #CELERY_TIMEZONE = 'Asia/Makassar'
 CELERY_BEAT_SCHEDULE = {}
+
