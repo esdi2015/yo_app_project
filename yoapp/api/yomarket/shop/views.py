@@ -31,17 +31,27 @@ class ShopViewSet(viewsets.ModelViewSet):
         else :
             return [IsAuthenticated(), AllowAny(), ] # AllowAny(), - remove it later !!!
 
-    def retrieve(self, request, pk=None):
-        queryset = ShopModel.objects.filter(pk=pk).all()
-        serializer = ShopSerializer(queryset, many=True)
+    # def retrieve(self, request, pk=None):
+    #     queryset = ShopModel.objects.filter(pk=pk).all()
+    #     serializer = ShopSerializer(queryset, many=True)
+    #     return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
 
 
     def list(self, request, *args, **kwargs):
+        self.serializer_class = ShopListSerializer
+        queryset = self.get_queryset()
+
         if (request.user.is_authenticated == True) and (request.user.role == 'OWNER'):
-            queryset = ShopModel.objects.filter(user_id=request.user.pk).all()
+            #queryset = ShopModel.objects.filter(user_id=request.user.pk).all()
+            queryset = self.queryset.filter(user_id=request.user.pk).all()
         else:
-            queryset = ShopModel.objects.all()
+            #queryset = ShopModel.objects.all()
+            queryset = self.queryset
 
         queryset = self.filter_queryset(queryset)
 
@@ -50,15 +60,17 @@ class ShopViewSet(viewsets.ModelViewSet):
         #     serializer = self.get_serializer(page, many=True)
         #     return self.get_paginated_response(serializer.data)
         #serializer = self.get_serializer(queryset, many=True)
-        serializer = ShopListSerializer(queryset, many=True)
+
+        #serializer = ShopListSerializer(queryset, many=True)
+        serializer = self.get_serializer(queryset, many=True)
         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
 
 
     def create(self, request, *args, **kwargs):
-        request.data['user_id'] = request.user.pk
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
+        serializer.save(user_id=request.user.pk)
         headers = self.get_success_headers(serializer.data)
         return Response(custom_api_response(serializer=serializer), status=status.HTTP_201_CREATED, headers=headers)
 
@@ -66,7 +78,6 @@ class ShopViewSet(viewsets.ModelViewSet):
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
-        request.data['user_id'] = request.user.pk
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
@@ -76,4 +87,5 @@ class ShopViewSet(viewsets.ModelViewSet):
             # forcibly invalidate the prefetch cache on the instance.
             instance._prefetched_objects_cache = {}
 
+        serializer.save(user_id=request.user.pk)
         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)

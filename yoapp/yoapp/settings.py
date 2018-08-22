@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'django_filters',
     'corsheaders',
     'oauth2_provider',
+    'push_notifications',
 
     # 'social_django',
     # 'rest_social_auth',
@@ -65,7 +66,8 @@ INSTALLED_APPS = [
     'common.apps.CommonConfig',
     'api.apps.ApiConfig',
     'account.apps.AccountConfig',
-    'yomarket.apps.YomarketConfig'
+    'yomarket.apps.YomarketConfig',
+    'notification.apps.NotificationConfig',
 ]
 
 MIDDLEWARE = [

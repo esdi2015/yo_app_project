@@ -13,7 +13,7 @@ DISCOUNT_TYPES = (
 
 class Shop(models.Model):
     user = models.ForeignKey('common.User', related_name='shops_user',
-                             on_delete = models.DO_NOTHING)
+                             on_delete = models.DO_NOTHING, null=True)
     title = models.CharField(max_length=200)
     address = models.CharField(max_length=200, blank=True)
     created = models.DateTimeField(auto_now_add=True)
