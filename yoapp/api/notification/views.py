@@ -11,7 +11,7 @@ from rest_framework.response import Response
 
 from notification.models import Notification,Subscription
 from ..views import custom_api_response
-from api.notification.serializers import NotificationSerializator
+from api.notification.serializers import NotificationSerializator,SubscriptionSerializator
 
 from common.models import Category
 from yomarket.models import Shop
@@ -92,4 +92,15 @@ def unsubscribe(request):
         return Response('ok', status=status.HTTP_200_OK)
     return Response({'error':'wrong data'}, status=status.HTTP_400_BAD_REQUEST)
 
+
+@api_view(['GET'])
+@permission_classes(())
+def get_subscription(request):
+    if request.user.is_authenticated == False:
+        error = {"detail": "You must have to log in first"}
+        return Response(custom_api_response(errors=error), status=status.HTTP_400_BAD_REQUEST)
+
+    subs=Subscription.objects.filter(user=request.user)
+    serializer=SubscriptionSerializator(subs,many=True)
+    return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
 
