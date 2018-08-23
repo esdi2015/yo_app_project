@@ -1,5 +1,5 @@
 from django.conf.urls import  url
-from .views import test_func,get_notifications,subscribe, unsubscribe,get_subscription,read_notification
+from .views import get_notifications,subscribe, unsubscribe,get_subscription,read_notification
 from push_notifications.api.rest_framework import GCMDeviceAuthorizedViewSet
 
 urlpatterns = [

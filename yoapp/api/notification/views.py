@@ -39,6 +39,7 @@ def get_notifications(request):
     return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
 
 
+
 @api_view(['POST'])
 @permission_classes(())
 def subscribe(request):
@@ -46,17 +47,12 @@ def subscribe(request):
         error = {"detail": "You must have to log in first"}
         return Response(custom_api_response(errors=error), status=status.HTTP_400_BAD_REQUEST)
 
-    user=request.user
-    type = request.data.get('type')
-    shop = Shop.objects.filter(id=request.data.get('shop_id')).first()
-    category = Category.objects.filter(category_name=request.data.get('category_name')).first()
-    discount_filter = request.data.get('discount_filter')
-    discount_value = request.data.get('discount_value')
-
-    sub = Subscription(user=request.user,type=type,shop=shop,category=category,discount_filter=discount_filter,discount_value=discount_value)
-    sub.save()
-
-    return Response('ok', status=status.HTTP_200_OK)
+    serializer = SubscriptionSerializator(data=request.data)
+    if serializer.is_valid():
+        serializer.save(user_id=request.user.pk)
+        return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
+    else:
+        return Response(custom_api_response(serializer), status=status.HTTP_400_BAD_REQUEST)
 
 
 

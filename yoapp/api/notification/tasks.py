@@ -46,12 +46,8 @@ def  subscription_task(self):
 
         subs = Subscription.objects.filter(shop=offer.shop, type='shop')
         for sub in subs:
-            if sub.dicount_filter == False:
-                notif=Notification.objects.create(user=sub.user,offer=offer)
-                send_notification.delay(notif.id)
-            elif sub.discount_value <= offer.discount:
-                notif=Notification.objects.create(user=sub.user,offer=offer)
-                send_notification.delay(notif.id)
+            notif=Notification.objects.create(user=sub.user,offer=offer)
+            send_notification.delay(notif.id)
 
 
     # print(timezone.now())

@@ -12,8 +12,9 @@ class NotificationSerializator(serializers.ModelSerializer):
         fields = ('title', 'body','is_data')
 
 class SubscriptionSerializator(serializers.ModelSerializer):
-
+    category = serializers.StringRelatedField()
+    category_id = serializers.IntegerField(allow_null=False)
 
     class Meta:
         model = Subscription
-        fields=('type','category','shop','discount_filter','discount_value')
+        fields=('type', 'category', 'category_id', 'shop', 'discount_filter', 'discount_value')

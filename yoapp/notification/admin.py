@@ -7,7 +7,7 @@ from notification.models import Notification,Subscription
 
 
 class NotificationAdmin(admin.ModelAdmin):
-    list_display = ('title',  'body',  'is_data','user','offer')
+    list_display = ('user','offer','is_sent','is_read')
 
 class SubscriptionAdmin(admin.ModelAdmin):
     list_display = ('user','type','shop','category','discount_filter','discount_value')
