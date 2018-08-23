@@ -86,3 +86,22 @@ def get_subscription(request):
     return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
 
 
+@api_view(['POST'])
+@permission_classes(())
+def read_notification(request):
+    if request.user.is_authenticated == False:
+        error = {"detail": "You must have to log in first"}
+        return Response(custom_api_response(errors=error), status=status.HTTP_400_BAD_REQUEST)
+
+    notification_id=request.data.get('notification_id')
+
+    try:
+        notification=Notification.objects.get(id=notification_id)
+    except Notification.DoesNotExist:
+        return Response(custom_api_response(metadata={'error':'wrong id or no notification'}),status.HTTP_400_BAD_REQUEST)
+    notification.is_read=True
+    notification.save()
+
+    return Response(custom_api_response(metadata={'status':'ok'}), status=status.HTTP_200_OK)
+
+

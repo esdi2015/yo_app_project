@@ -5,6 +5,8 @@ from .yomarket.shop.urls import urlpatterns as shop_urls
 from .yomarket.qrcode.urls import urlpatterns as qr_urls
 from .yomarket.transaction.urls import urlpatterns as transaction_urls
 from .notification.urls import urlpatterns as notification_urls
+from .account.urls import urlpatterns as account_urls
+
 
 
 urlpatterns = []
@@ -15,7 +17,8 @@ urlpatterns = urlpatterns + \
               shop_urls + \
               qr_urls + \
               transaction_urls + \
-              notification_urls
+              notification_urls + \
+              account_urls
 
 
 

@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'oauth2_provider',
     'push_notifications',
+    'django_celery_beat',
 
     # 'social_django',
     # 'rest_social_auth',
@@ -217,3 +218,12 @@ PUSH_NOTIFICATIONS_SETTINGS = {
     'USER_MODEL': 'common.User',
     'UPDATE_ON_DUPLICATE_REG_ID':True
 }
+
+
+CELERY_BROKER_URL = 'redis://localhost:6379'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TASK_SERIALIZER = 'json'
+#CELERY_TIMEZONE = 'Asia/Makassar'
+CELERY_BEAT_SCHEDULE = {}

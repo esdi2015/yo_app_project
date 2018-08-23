@@ -8,7 +8,7 @@ from notification.models import Notification, Subscription
 class NotificationSerializator(serializers.ModelSerializer):
     class Meta:
         model = Notification
-        fields = ('title', 'body', 'is_data')
+        fields = ('title', 'body', 'is_data', 'is_sent', 'is_read')
 
 
 

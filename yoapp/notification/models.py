@@ -1,10 +1,19 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 
 from common.models import Category
-from yomarket.models import Shop
+from yomarket.models import Shop,Offer
 
 UserModel = get_user_model()
+
+
+class Notification_settings(models.Model):
+    task = models.CharField(max_length=150,blank=True,null=True)
+    last_run_time = models.DateTimeField(blank=True,null=True, default=timezone.now())
+
+    class Meta:
+        verbose_name = "notif_settings"
 
 
 class Notification(models.Model):
@@ -12,6 +21,9 @@ class Notification(models.Model):
     body = models.CharField(max_length=200)
     is_data = models.BooleanField(default=True)
     user = models.ForeignKey(UserModel, related_name='user', on_delete=models.CASCADE, null=True)
+    offer = models.ForeignKey(Offer,on_delete=models.CASCADE,null=True,blank=True)
+    is_sent = models.BooleanField(default=False)
+    is_read = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = "notification"
@@ -31,6 +43,9 @@ class Subscription(models.Model):
 
     discount_filter = models.BooleanField(default=False, blank=True)
     discount_value = models.IntegerField(default=0, blank=True)
+
+    def __str__(self):
+        return (self.type + " " + self.user.email)
 
     class Meta:
         verbose_name = "subscription"
