@@ -26,7 +26,7 @@ class Subscription(models.Model):
     type = models.CharField(max_length=8, choices=TYPE)
     user = models.ForeignKey(UserModel, related_name='subscription_user', on_delete=models.CASCADE)
 
-    category = models.ForeignKey(Category, related_name='category', on_delete=models.CASCADE, null=True, blank=True)
+    category = models.ForeignKey(Category, related_name='subscription_category', on_delete=models.CASCADE, null=True, blank=True)
     shop = models.ForeignKey(Shop, related_name='subscription_shop', on_delete=models.CASCADE, null=True, blank=True)
 
     discount_filter = models.BooleanField(default=False, blank=True)

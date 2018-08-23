@@ -212,12 +212,8 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 # 000 - pass for postgres user on the 192.168.2.175
 
 
-# SOCIAL_AUTH_FACEBOOK_KEY = '1923453891044213'
-# SOCIAL_AUTH_FACEBOOK_SECRET = 'e09891a80fcf40df729c15c5b6d97c34'
-# SOCIAL_AUTH_FACEBOOK_SCOPE = ['email', ]  # optional
-# SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {'locale': 'ru_RU'}  # optional
-#
-# SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '635837561500-etpcka3a7khibfvqiuek965d24sa61oj.apps.googleusercontent.com'
-# SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = 'UUvE6SJA-Vg5pZ8Hi14hfqRc'
-
-# ALLOWED_HOSTS=['seaw688.com',]
+PUSH_NOTIFICATIONS_SETTINGS = {
+    "FCM_API_KEY": "AIzaSyDQ421g_j_CI77eIYk_nyQ64CjEMO2XnYE",
+    'USER_MODEL': 'common.User',
+    'UPDATE_ON_DUPLICATE_REG_ID':True
+}
