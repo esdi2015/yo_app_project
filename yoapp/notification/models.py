@@ -10,7 +10,7 @@ UserModel = get_user_model()
 
 class Notification_settings(models.Model):
     task = models.CharField(max_length=150,blank=True,null=True)
-    last_run_time = models.DateTimeField(blank=True,null=True, default=timezone.now())
+    last_run_time = models.DateTimeField(blank=True,null=True) #, default=timezone.now()
 
     class Meta:
         verbose_name = "notif_settings"

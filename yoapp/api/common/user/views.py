@@ -24,7 +24,7 @@ from google.auth.transport import requests
 from ...views import custom_api_response
 from .serializers import CustomUserSerializer, LoginSerializer, UserIsExistsSerializer
 
-from .serializers import ProfileSerializer
+#from .serializers import ProfileSerializer
 from account.models import Profile
 from common.utils import ROLES
 
@@ -164,15 +164,15 @@ def login_view(request):
         return Response(custom_api_response(serializer), status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def profile_update_view(request):
-    serializer=ProfileSerializer(data=request.data)
-    if serializer.is_valid():
-        user_profile=Profile.objects.get(user=request.user)
-        serializer.update(instance=user_profile,validated_data=serializer.validated_data)
-        return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
-    return Response(custom_api_response(serializer), status=status.HTTP_400_BAD_REQUEST)
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+# def profile_update_view(request):
+#     serializer=ProfileSerializer(data=request.data)
+#     if serializer.is_valid():
+#         user_profile=Profile.objects.get(user=request.user)
+#         serializer.update(instance=user_profile,validated_data=serializer.validated_data)
+#         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
+#     return Response(custom_api_response(serializer), status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['POST'])

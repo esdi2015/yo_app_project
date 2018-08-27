@@ -5,6 +5,8 @@ from django.contrib.auth import get_user_model
 from django.dispatch import receiver
 from django.db.models.signals import post_save
 
+from . utils import GENDER_CHOICES, DEFAULT_USER_GENDER
+
 
 User=get_user_model()
 
@@ -14,6 +16,7 @@ class Profile(models.Model):
                                 on_delete=models.CASCADE)
     date_birth = models.DateField(blank=True, null=True)
     photo = models.ImageField(upload_to='users/%Y/%m/%d', blank=True)
+    gender = models.CharField(max_length=50, choices=GENDER_CHOICES, default=DEFAULT_USER_GENDER)
     #about = models.TextField(blank=True)
 
     def __str__(self):

@@ -214,7 +214,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 
 PUSH_NOTIFICATIONS_SETTINGS = {
-    "FCM_API_KEY": "AIzaSyDQ421g_j_CI77eIYk_nyQ64CjEMO2XnYE",
+    "FCM_API_KEY": "AAAAZpeTTNo:APA91bF1IITIT9tZt2BDbjfm44sQ-JqMNsYZAWfq94nSO_7bu3QYTwWE_uwe_gTRQitCKGeGXRRt75dwj-GT0sjKaCVdhAdf31d34gIvZN1T0w2igZonRVawpeDI16TEJ-z87KbahniPvJoGUR1qfJ5FSnwLzGV6aQ",
     'USER_MODEL': 'common.User',
     'UPDATE_ON_DUPLICATE_REG_ID':True
 }
