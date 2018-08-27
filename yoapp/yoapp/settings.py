@@ -201,13 +201,12 @@ ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = 'none'
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # 1234567890qaz - pass for registered test users
 # 000 - pass for postgres user on the 192.168.2.175
 
 PUSH_NOTIFICATIONS_SETTINGS = {
-    "FCM_API_KEY": "AIzaSyDQ421g_j_CI77eIYk_nyQ64CjEMO2XnYE",
+    "FCM_API_KEY": "AAAASwElybY:APA91bFaTT_zKLcLYqB0soW8PJmFFG7x1F3wiR0MGta9lLsU22uAVa0VD_3zzz-OremJKDEWEf52OD554byamcwAmZldgrQKfwAjjbhZz_5DYT-z1gcflUBFSWVQQ9lSE9KwDBNHULvfVKmQwxa7xNwuPHz-VfdTbw",
     'USER_MODEL': 'common.User',
     'UPDATE_ON_DUPLICATE_REG_ID':True
 }
@@ -221,4 +220,16 @@ CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TASK_SERIALIZER = 'json'
 #CELERY_TIMEZONE = 'Asia/Makassar'
 CELERY_BEAT_SCHEDULE = {}
+CELERY_WORKER_CONCURRENCY = 1
+CELERY_MAX_TASKS_PER_CHILD = 10
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'ownerowner346@gmail.com'
+DEFAULT_FROM_EMAIL = 'ownerowner346@gmail.com'
+EMAIL_HOST_PASSWORD = 'Ownerowner123'
+EMAIL_USE_TLS = True
+
 
