@@ -17,6 +17,12 @@ class Notification_settings(models.Model):
 
 
 class Notification(models.Model):
+    TYPE = (
+        ('email', 'Email-msg'),
+        ('push', 'Push-msg')
+    )
+
+    type = models.CharField(max_length=5, choices=TYPE, default='email')
     title = models.CharField(max_length=100)
     body = models.CharField(max_length=200)
     is_data = models.BooleanField(default=True)
@@ -24,6 +30,7 @@ class Notification(models.Model):
     offer = models.ForeignKey(Offer,on_delete=models.CASCADE,null=True,blank=True)
     is_sent = models.BooleanField(default=False)
     is_read = models.BooleanField(default=False)
+    error = models.CharField(max_length=100, blank=True)
 
     class Meta:
         verbose_name = "notification"
@@ -35,6 +42,11 @@ class Subscription(models.Model):
         ('shop', 'Shop')
     )
 
+    NOTIFICATION_TYPE = (
+        ('email', 'Email-msg'),
+        ('push', 'Push-msg')
+    )
+
     type = models.CharField(max_length=8, choices=TYPE)
     user = models.ForeignKey(UserModel, related_name='subscription_user', on_delete=models.CASCADE)
 
@@ -43,6 +55,8 @@ class Subscription(models.Model):
 
     discount_filter = models.BooleanField(default=False, blank=True)
     discount_value = models.IntegerField(default=0, blank=True)
+
+    notification_type = models.CharField(max_length=5, choices=NOTIFICATION_TYPE, default='email')
 
     def __str__(self):
         return (self.type + " " + self.user.email)

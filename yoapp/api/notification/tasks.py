@@ -39,7 +39,7 @@ def send_notification(self,notif_id):
 
 
 @shared_task(bind=True,ignore_result=True)
-def  subscription_task(self):
+def subscription_task(self):
     task='api.notification.tasks.subscription_task'
     settings,created=Notification_settings.objects.get_or_create(task=task)
     lrt= settings.last_run_time
