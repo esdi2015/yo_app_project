@@ -207,7 +207,7 @@ ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = 'none'
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
 
 # 1234567890qaz - pass for registered test users
 # 000 - pass for postgres user on the 192.168.2.175
@@ -227,3 +227,14 @@ CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TASK_SERIALIZER = 'json'
 #CELERY_TIMEZONE = 'Asia/Makassar'
 CELERY_BEAT_SCHEDULE = {}
+CELERY_WORKER_CONCURRENCY = 1
+CELERY_MAX_TASKS_PER_CHILD = 10
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'ownerowner346@gmail.com'
+DEFAULT_FROM_EMAIL = 'ownerowner346@gmail.com'
+EMAIL_HOST_PASSWORD = 'Ownerowner123'
+EMAIL_USE_TLS = True

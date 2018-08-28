@@ -18,4 +18,4 @@ class SubscriptionSerializator(serializers.ModelSerializer):
 
     class Meta:
         model = Subscription
-        fields=('id', 'type', 'category', 'category_id', 'shop', 'discount_filter', 'discount_value')
+        fields=('id', 'type', 'category', 'category_id', 'shop', 'discount_filter', 'discount_value', 'notification_type')

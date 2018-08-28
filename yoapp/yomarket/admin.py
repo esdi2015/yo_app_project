@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.admin import SimpleListFilter
-from .models import Shop, Offer, QRcoupon, Transaction
+from .models import Shop, Offer, QRcoupon, Transaction, WishList
 from common.models import User
 
 
@@ -35,7 +35,12 @@ class TransactionAdmin(admin.ModelAdmin):
     list_display = ('customer',  'manager',  'offer', 'points', 'created')
 
 
+class WishListAdmin(admin.ModelAdmin):
+    list_display = ('user', 'offer', 'is_liked')
+
+
 admin.site.register(Shop, ShopAdmin)
 admin.site.register(Offer, OfferAdmin)
 admin.site.register(QRcoupon, QRcouponAdmin)
 admin.site.register(Transaction, TransactionAdmin)
+admin.site.register(WishList, WishListAdmin)
