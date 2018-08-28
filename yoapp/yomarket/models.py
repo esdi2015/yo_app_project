@@ -95,3 +95,10 @@ class QRcoupon(models.Model):
 
     def __str__(self):
         return 'QRcoupon {}'.format(self.uuid_id)
+
+
+class WishList(models.Model):
+    user = models.ForeignKey('common.User', related_name='wish_user', on_delete=models.CASCADE)
+    offer = models.ForeignKey(Offer, on_delete=models.CASCADE, null=True, blank=True)
+    is_liked = models.BooleanField(default=True)
+
