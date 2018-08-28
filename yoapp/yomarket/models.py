@@ -10,6 +10,12 @@ DISCOUNT_TYPES = (
     ('PERCENT', 'PERCENT'),
 )
 
+CODE_TYPES = (
+    ('QRCODE', 'QR code'),
+    ('BARCODE', 'Barcode'),
+    ('ALPHANUMCODE', 'Alphanumeric code')
+)
+
 
 class Shop(models.Model):
     user = models.ForeignKey('common.User', related_name='shops_user',
@@ -24,6 +30,7 @@ class Shop(models.Model):
     outer_link = models.CharField(max_length=100, null=True, blank=True)
     phone = models.CharField(max_length=20, null=True, blank=True)
     image = models.ImageField(upload_to='shops/%Y/%m/%d', blank=True)
+    code_type = models.CharField(max_length=50, choices=CODE_TYPES, default=CODE_TYPES[0][0])
 
     def __str__(self):
         return self.title
@@ -49,6 +56,7 @@ class Offer(models.Model):
     code_data = models.CharField(max_length=200, blank=True)
     codes_count = models.SmallIntegerField(('codes count'), default=0, editable=True)
     expire = models.DateTimeField(('expire date'), blank=True, null=True)
+    code_type = models.CharField(max_length=50, choices=CODE_TYPES, default=CODE_TYPES[0][0])
 
     class Meta:
         ordering = ('-created',)
