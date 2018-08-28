@@ -19,7 +19,8 @@ class OfferSerializer(serializers.ModelSerializer): #serializers.HyperlinkedMode
     class Meta:
         model = OfferModel
         fields = ('id', 'category', 'category_id', 'shop', 'shop_id', 'title', 'image', 'short_description',
-                  'description', 'price', 'discount', 'discount_type', 'code_data', 'created', 'code_type')
+                  'description', 'price', 'discount', 'discount_type', 'code_data', 'created', 'code_type',
+                  'offer_type', 'expire')
         #depth = 1
 
 

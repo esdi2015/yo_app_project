@@ -16,6 +16,11 @@ CODE_TYPES = (
     ('ALPHANUMCODE', 'Alphanumeric code')
 )
 
+OFFER_TYPES = (
+    ('REGULAR', 'Regular'),
+    ('DAILY', 'Daily')
+)
+
 
 class Shop(models.Model):
     user = models.ForeignKey('common.User', related_name='shops_user',
@@ -57,6 +62,7 @@ class Offer(models.Model):
     codes_count = models.SmallIntegerField(('codes count'), default=0, editable=True)
     expire = models.DateTimeField(('expire date'), blank=True, null=True)
     code_type = models.CharField(max_length=50, choices=CODE_TYPES, default=CODE_TYPES[0][0])
+    offer_type = models.CharField(max_length=50, choices=OFFER_TYPES, default=OFFER_TYPES[0][0])
 
     class Meta:
         ordering = ('-created',)
