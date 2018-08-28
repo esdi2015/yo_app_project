@@ -34,12 +34,13 @@ class QRcouponAdmin(admin.ModelAdmin):
 class TransactionAdmin(admin.ModelAdmin):
     list_display = ('customer',  'manager',  'offer', 'points', 'created')
 
+
 class WishListAdmin(admin.ModelAdmin):
-    list_display = ('user',  'offer',  'is_liked')
+    list_display = ('user', 'offer', 'is_liked')
 
 
 admin.site.register(Shop, ShopAdmin)
 admin.site.register(Offer, OfferAdmin)
 admin.site.register(QRcoupon, QRcouponAdmin)
 admin.site.register(Transaction, TransactionAdmin)
-admin.site.register(WishList,WishListAdmin)
+admin.site.register(WishList, WishListAdmin)

@@ -1,7 +1,6 @@
 from django.db import models
 from django.conf import settings
 from django.apps import apps
-#from ..common import Category, User
 
 import uuid
 
@@ -14,14 +13,17 @@ DISCOUNT_TYPES = (
 
 class Shop(models.Model):
     user = models.ForeignKey('common.User', related_name='shops_user',
-                             on_delete = models.DO_NOTHING)
+                             on_delete = models.DO_NOTHING, null=True)
     title = models.CharField(max_length=200)
     address = models.CharField(max_length=200, blank=True)
     created = models.DateTimeField(auto_now_add=True)
     manager = models.ForeignKey('common.User', related_name='shops_manager',
                              on_delete = models.SET_NULL, null=True)
-    latitude = models.DecimalField(max_digits=10, decimal_places=6, null=True)
-    longitude = models.DecimalField(max_digits=10, decimal_places=6, null=True)
+    latitude = models.DecimalField(max_digits=10, decimal_places=6, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=10, decimal_places=6, null=True, blank=True)
+    outer_link = models.CharField(max_length=100, null=True, blank=True)
+    phone = models.CharField(max_length=20, null=True, blank=True)
+    image = models.ImageField(upload_to='shops/%Y/%m/%d', blank=True)
 
     def __str__(self):
         return self.title
@@ -71,14 +73,6 @@ class Transaction(models.Model):
         return 'Gets {}'.format(self.points)
 
 
-
-
-
-
-# class Qrcode(models.Model):
-#     pass
-
-
 class QRcoupon(models.Model):
     uuid_id = models.UUIDField(default=uuid.uuid4, editable=False,unique=True)
     is_redeemed = models.BooleanField(default=False)
@@ -86,7 +80,6 @@ class QRcoupon(models.Model):
     expiry_date = models.DateTimeField()
     transaction_start_time= models.DateTimeField(null=True)
     date_created = models.DateTimeField(('date created'), auto_now_add=True)
-
     offer = models.ForeignKey(Offer, related_name='offer', on_delete=models.CASCADE, null=True)
 
     class Meta:
@@ -101,4 +94,3 @@ class WishList(models.Model):
     user = models.ForeignKey('common.User', related_name='wish_user', on_delete=models.CASCADE)
     offer = models.ForeignKey(Offer, on_delete=models.CASCADE, null=True, blank=True)
     is_liked = models.BooleanField(default=True)
-

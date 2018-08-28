@@ -21,9 +21,6 @@ from rest_framework.authtoken.models import Token
 from django.contrib.auth import get_user_model
 from django.apps import apps
 
-#from .serializers import ShopSerializer #, \ CategorySerializer, OfferSerializer,
-    #CustomUserSerializer, LoginSerializer
-
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -84,60 +81,7 @@ def custom_api_response(serializer=None, content=None, errors=None, metadata={})
     return response
 
 
-# class OfferList(APIView):
-#     permission_classes = (AllowAny,)
-#
-#     def get(self, request, format=None, pk=None):
-#         offers = OfferModel.objects.all()
-#         if pk is not None:
-#             #offers = get_object_or_404(offers, pk=pk)
-#             offers = OfferModel.objects.filter(pk=pk).all()
-#             serializer = OfferSerializer(offers)
-#         else:
-#             serializer = OfferSerializer(offers, many=True)
-#         response = Response(custom_api_response(serializer), status=status.HTTP_200_OK)
-#         #return Response(serializer.data)
-#         return response
 
-
-# class ShopList(APIView):
-#     permission_classes = (AllowAny,)
-#
-#     def get(self, request, format=None):
-#         shops = ShopModel.objects.all()
-#         serializer = ShopSerializer(shops, many=True)
-#         #return Response(serializer.data)
-#         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
-
-
-
-# # class UserDetail(viewsets.ModelViewSet):
-#     """
-#     API endpoint that represents a single user.
-#     """
-#     #model = User
-#     #queryset = User.objects.filter(id = pk).first()
-#     queryset = User.objects.all()
-#     serializer_class = serializers.UserSerializer
-#
-#
-#
-# class UserCreateView(generics.CreateAPIView):
-#     serializer_class = serializers.UserSerializer
-
-
-
-#@method_decorator(csrf_exempt, name='dispatch')
-# class UserLoginView(LoginView):
-#
-#     @method_decorator(csrf_exempt)
-#     def dispatch(self, request, *args, **kwargs):
-#         print (request, *args, **kwargs)
-#         print ('UserLoginView')
-#         return super(UserLoginView, self).dispatch(request, *args, **kwargs)
-
-    # print('here')
-    # pass
 
 
 

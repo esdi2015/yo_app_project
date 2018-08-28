@@ -24,9 +24,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'dsadsadsadadsa31231231'
-# admin: s.dusanyuk@gmail.com/admin/adminpassword
+SECRET_KEY = 'jol*#-so3w%w9%n-nti^acl43escr7h46hw*k1pb4)vnn(h4gy'
 
+# admin: s.dusanyuk@gmail.com/admin/adminpassword
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -55,6 +55,8 @@ INSTALLED_APPS = [
     'django_filters',
     'corsheaders',
     'oauth2_provider',
+    'push_notifications',
+    'django_celery_beat',
 
     # 'social_django',
     # 'rest_social_auth',
@@ -63,8 +65,6 @@ INSTALLED_APPS = [
     'api.apps.ApiConfig',
     'account.apps.AccountConfig',
     'yomarket.apps.YomarketConfig',
-    "push_notifications",
-    'django_celery_beat',
     'notification.apps.NotificationConfig',
 
 ]
@@ -232,4 +232,4 @@ DEFAULT_FROM_EMAIL = 'ownerowner346@gmail.com'
 EMAIL_HOST_PASSWORD = 'Ownerowner123'
 EMAIL_USE_TLS = True
 
-
+# ALLOWED_HOSTS=['seaw688.com',]

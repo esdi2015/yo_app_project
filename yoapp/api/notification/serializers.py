@@ -4,12 +4,13 @@ from api.yomarket.offer.serializers import OfferSerializer
 from rest_framework import serializers
 from notification.models import Notification, Subscription
 
+
 class NotificationSerializator(serializers.ModelSerializer):
-
-
     class Meta:
         model = Notification
-        fields = ('title', 'body','is_data')
+        fields = ('title', 'body', 'is_data', 'is_sent', 'is_read')
+
+
 
 class SubscriptionSerializator(serializers.ModelSerializer):
     category = serializers.StringRelatedField()
@@ -17,4 +18,4 @@ class SubscriptionSerializator(serializers.ModelSerializer):
 
     class Meta:
         model = Subscription
-        fields=('type', 'category', 'category_id', 'shop', 'discount_filter', 'discount_value','notification_type')
+        fields=('id', 'type', 'category', 'category_id', 'shop', 'discount_filter', 'discount_value', 'notification_type')

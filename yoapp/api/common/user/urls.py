@@ -14,7 +14,6 @@ urlpatterns += [
     url(r'^registration/$', api_view.register_view, name='user_registration'),
     url(r'^login/$', api_view.login_view, name='user_login'),
     url(r'^logout/', Logout.as_view(), name='user_logout'),
-    url(r'^user/profile/', api_view.profile_update_view, name='user_profile_update'),
     url(r'^user/me/', UserMe.as_view(), name='user_me'),
     url(r'^user/exists/', UserIsExists.as_view(), name='user_exists'),
     url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
