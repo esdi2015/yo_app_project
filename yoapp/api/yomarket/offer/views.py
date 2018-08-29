@@ -26,7 +26,7 @@ class OfferListView(generics.ListCreateAPIView):
     #permission_classes = (AllowAny,)
     filter_backends = (filters.SearchFilter, DjangoFilterBackend, filters.OrderingFilter)
     search_fields = ('description',)
-    filter_fields = ('category_id', 'shop_id', 'discount_type')
+    filter_fields = ('category_id', 'shop_id', 'discount_type', 'offer_type', )
     ordering_fields = '__all__'
 
     def get_permissions(self):
@@ -45,8 +45,8 @@ class OfferListView(generics.ListCreateAPIView):
             elif request.user.role == 'MANAGER':
                 shops = ShopModel.objects.filter(manager_id=request.user.pk).all()
 
-            shops_ids = [x.id for x in shops]
             if request.user.role in ['OWNER', 'MANAGER']:
+                shops_ids = [x.id for x in shops]
                 queryset = queryset.filter(shop_id__in=shops_ids).all()
 
         page = self.paginate_queryset(queryset)

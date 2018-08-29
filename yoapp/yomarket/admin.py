@@ -5,16 +5,16 @@ from common.models import User
 
 
 class OfferAdmin(admin.ModelAdmin):
-    list_display = ('title', 'shop', 'category', 'price', 'discount', 'discount_type', 'available', 'created', 'expire')
-    list_filter = ('shop', 'category', 'discount_type', 'available')
+    list_display = ('title', 'shop', 'category', 'price', 'discount', 'discount_type', 'available', 'created', 'expire', 'offer_type')
+    list_filter = ('shop', 'category', 'discount_type', 'available', 'offer_type')
     search_fields = ('title', 'description')
     date_hierarchy = 'created'
     ordering = ['created', 'available']
 
 
 class ShopAdmin(admin.ModelAdmin):
-    list_display = ('title', 'address', 'user', 'manager', 'created')
-    list_filter = ('user',)
+    list_display = ('title', 'address', 'user', 'manager', 'created', 'code_type')
+    list_filter = ('user', 'code_type')
     search_fields = ('title', 'address')
     date_hierarchy = 'created'
     ordering = ['-id', ]
