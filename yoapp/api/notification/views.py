@@ -105,3 +105,23 @@ def read_notification(request):
     return Response(custom_api_response(metadata={'status':'ok'}), status=status.HTTP_200_OK)
 
 
+
+
+
+@api_view(['DELETE'])
+@permission_classes(())
+def delete_notification(request, pk):
+    if request.user.is_authenticated == False:
+        error = {"detail": "You must have to log in first"}
+        return Response(custom_api_response(errors=error), status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        notification=Notification.objects.get(id=pk)
+    except Notification.DoesNotExist:
+        return Response(custom_api_response(metadata={'error':'wrong id or no notification'}),status.HTTP_400_BAD_REQUEST)
+    notification.delete()
+
+    return Response(custom_api_response(content={'status': 'ok'}), status=status.HTTP_200_OK)
+
+
+
