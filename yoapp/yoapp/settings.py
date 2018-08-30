@@ -13,6 +13,9 @@ https://docs.djangoproject.com/en/2.0/ref/settings/
 import os, sys
 from django.contrib import admin
 
+admin.site.site_header = "Halap-YO Admin"
+admin.site.site_title = "Halap-YO Admin Portal"
+admin.site.index_title = "Welcome to Halap-YO Admin Portal"
 
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -66,7 +69,6 @@ INSTALLED_APPS = [
     'account.apps.AccountConfig',
     'yomarket.apps.YomarketConfig',
     'notification.apps.NotificationConfig',
-
 ]
 
 MIDDLEWARE = [
@@ -206,15 +208,16 @@ ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = 'none'
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
 
+
 # 1234567890qaz - pass for registered test users
 # 000 - pass for postgres user on the 192.168.2.175
 
+
 PUSH_NOTIFICATIONS_SETTINGS = {
-    "FCM_API_KEY": "AAAASwElybY:APA91bFaTT_zKLcLYqB0soW8PJmFFG7x1F3wiR0MGta9lLsU22uAVa0VD_3zzz-OremJKDEWEf52OD554byamcwAmZldgrQKfwAjjbhZz_5DYT-z1gcflUBFSWVQQ9lSE9KwDBNHULvfVKmQwxa7xNwuPHz-VfdTbw",
+    "FCM_API_KEY": "AAAAZpeTTNo:APA91bF1IITIT9tZt2BDbjfm44sQ-JqMNsYZAWfq94nSO_7bu3QYTwWE_uwe_gTRQitCKGeGXRRt75dwj-GT0sjKaCVdhAdf31d34gIvZN1T0w2igZonRVawpeDI16TEJ-z87KbahniPvJoGUR1qfJ5FSnwLzGV6aQ",
     'USER_MODEL': 'common.User',
     'UPDATE_ON_DUPLICATE_REG_ID':True
 }
-
 
 
 CELERY_BROKER_URL = 'redis://localhost:6379'
@@ -235,5 +238,3 @@ EMAIL_HOST_USER = 'ownerowner346@gmail.com'
 DEFAULT_FROM_EMAIL = 'ownerowner346@gmail.com'
 EMAIL_HOST_PASSWORD = 'Ownerowner123'
 EMAIL_USE_TLS = True
-
-# ALLOWED_HOSTS=['seaw688.com',]
