@@ -1,72 +1,141 @@
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from yomarket.models import QRcoupon
 from api.yomarket.qrcode.serializers import QRcouponSerializator
 from rest_framework import status
-from yomarket.models import Offer
+from rest_framework import generics
 
 from ...views import custom_api_response
 
 from django.utils import timezone
 
+from yomarket.models import Offer,QRcoupon
 
-@api_view(['GET'])
-@permission_classes([AllowAny])
-def qr_check(request, uuid):
-    code = QRcoupon.objects.filter(uuid_id=uuid).first()
-    if code!=None:
-        serializer = QRcouponSerializator(code)
-        serializer.validate_expiry_date(value=code.expiry_date)
-        code.save()
+
+
+class QRcouponRedeemView(generics.UpdateAPIView):
+    serializer_class = QRcouponSerializator
+    lookup_field = 'uuid_id'
+    permission_classes = (IsAuthenticated,)
+
+
+    def get_object(self):
+        if self.request.user.role == 'MANAGER':
+            try:
+                obj = QRcoupon.objects.get(offer__shop__manager_id=self.request.user.pk,is_redeemed=False,uuid_id=self.kwargs.get('uuid_id'))
+                return obj
+            except QRcoupon.DoesNotExist:
+                return None
+
+
+
+    def partial_update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance == None:
+            return Response(custom_api_response(content={'error':'coupon not exist or invalid'}))
+        serializer = self.get_serializer(instance, data=request.data,partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        instance.offer.redeemed_codes_increment()
         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
-    else:
-        return Response({'code':uuid,'error':'code not found'},status=status.HTTP_400_BAD_REQUEST)
 
 
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def qr_checkout(request,uuid):
-    code = QRcoupon.objects.filter(uuid_id=uuid,in_transaction=True).first()
-    if code!=None:
-        code.in_transaction=False
-        code.is_redeemed=True
-        code.save()
-        return Response({'code':code.uuid_id,'redeemed':True},status=status.HTTP_200_OK)
-    else:
-        return Response({'error':'no available code in transaction'},status.HTTP_400_BAD_REQUEST)
 
-    offer = Offer.objects.get(pk=offer_id)
-    for x in range(int(quantity)):
-        code = QRcoupon(expiry_date=offer.expire,offer=offer)
-        code.save()
-    return Response({"quantity":quantity,"created":True}, status=status.HTTP_200_OK)
+class QRcouponShortRedeemView(generics.UpdateAPIView):
+    serializer_class = QRcouponSerializator
+    lookup_field = 'id'
+    permission_classes = (IsAuthenticated,)
+
+
+    def get_object(self):
+        if self.request.user.role == 'MANAGER':
+            try:
+                obj = QRcoupon.objects.get(offer__shop__manager_id=self.request.user.pk,is_redeemed=False,id=self.kwargs.get('id'))
+                return obj
+            except QRcoupon.DoesNotExist:
+                return None
+
+
+
+    def partial_update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance == None:
+            return Response(custom_api_response(content={'error':'coupon not exist or invalid'}))
+        serializer = self.get_serializer(instance, data=request.data,partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        instance.offer.redeemed_codes_increment()
+        return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
+
+
+
+
+
+
+
+
+
+class QRcouponCheckView(generics.RetrieveAPIView):
+    serializer_class = QRcouponSerializator
+    model = serializer_class.Meta.model
+    lookup_field = 'uuid_id'
+    permission_classes = (IsAuthenticated,)
+
+    def get_queryset(self):
+        if self.request.user.role == 'MANAGER':
+            queryset = self.model.objects.filter(offer__shop__manager_id=self.request.user.pk)
+        return queryset
+
+
+class QRcouponShortCheckView(generics.RetrieveAPIView):
+    serializer_class = QRcouponSerializator
+    model = serializer_class.Meta.model
+    lookup_field = 'id'
+    permission_classes = (IsAuthenticated,)
+
+    def get_queryset(self):
+        if self.request.user.role == 'MANAGER':
+            queryset = self.model.objects.filter(offer__shop__manager_id=self.request.user.pk)
+        return queryset
+
+
+
+
+
+
+
+
+class QRcouponsListView(generics.ListAPIView):
+    serializer_class = QRcouponSerializator
+    model = serializer_class.Meta.model
+    permission_classes = (IsAuthenticated,)
+
+    def get_queryset(self):
+        user_id = self.request.user.pk
+        coupons = self.model.objects.filter(user_id=user_id,is_expired=False, is_redeemed=False)
+        for coupon in coupons:
+            if coupon.expiry_date <= timezone.now():
+                coupon.is_expired=True
+                coupon.save()
+        if self.request.query_params.get('type') =='expired':
+            queryset = self.model.objects.filter(user_id=user_id, is_expired=True)
+        elif self.request.query_params.get('type') =='redeemed':
+            queryset = self.model.objects.filter(user_id=user_id, is_redeemed=True)
+        else:
+            queryset = self.model.objects.filter(user_id=user_id, is_expired=False, is_redeemed=False)
+        return queryset
+
+
 
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def make_qrs(request):
-    quantity = request.data['quantity']
-    offer_id = request.data['offer_id']
-
-    offer = Offer.objects.get(pk=offer_id)
-    for x in range(int(quantity)):
-        code = QRcoupon(expiry_date=offer.expire,offer=offer)
-        code.save()
-    return Response({"quantity":quantity,"created":True}, status=status.HTTP_200_OK)
-
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def get_code(request):
-    offer_id = request.data['offer_id']
-    offer = Offer.objects.get(pk=offer_id)
-    code=QRcoupon.objects.filter(is_redeemed=False,in_transaction=False,offer=offer).first()
-    if code!=None:
-        code.in_transaction=True
-        code.transaction_start_time=timezone.now()
-        code.save()
-        return Response({'code':code.uuid_id},status.HTTP_200_OK)
+def make_coupon(request):
+    print(request)
+    serializer= QRcouponSerializator(data=request.data)
+    if serializer.is_valid():
+        serializer.save(user_id=request.user.pk)
+        return Response(custom_api_response(serializer),status.HTTP_200_OK)
     else:
-        return Response({'error':'no available codes'},status.HTTP_400_BAD_REQUEST)
+        return Response(custom_api_response(content={'error':'invalid request data'}),status.HTTP_400_BAD_REQUEST)
