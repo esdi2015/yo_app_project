@@ -28,7 +28,7 @@ class ShopAdmin(admin.ModelAdmin):
 
 
 class QRcouponAdmin(admin.ModelAdmin):
-    list_display = ('uuid_id',  'expiry_date',  'offer')
+    list_display = ('id','uuid_id','type','user','offer','expiry_date','is_redeemed','is_expired')
 
 
 class TransactionAdmin(admin.ModelAdmin):

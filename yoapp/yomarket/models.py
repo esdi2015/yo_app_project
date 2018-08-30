@@ -62,9 +62,24 @@ class Offer(models.Model):
     updated = models.DateTimeField(auto_now=True)
     code_data = models.CharField(max_length=200, blank=True)
     codes_count = models.SmallIntegerField(('codes count'), default=0, editable=True)
+    redeemed_codes_count = models.SmallIntegerField(('redeemed count'), default=0, editable=True)
     expire = models.DateTimeField(('expire date'), blank=True, null=True)
     code_type = models.CharField(max_length=50, choices=CODE_TYPES, default=CODE_TYPES[0][0])
     offer_type = models.CharField(max_length=50, choices=OFFER_TYPES, default=OFFER_TYPES[0][0])
+
+    def redeemed_codes_increment(self):
+        if self.redeemed_codes_count+1 == self.codes_count:
+            self.redeemed_codes_count=self.redeemed_codes_count+1
+            self.save()
+            self.available = False
+            self.save()
+            coupons = QRcoupon.objects.filter(offer=self)
+            for coupon in coupons:
+                coupon.is_expired = True
+                coupon.save()
+        elif self.redeemed_codes_count < self.codes_count:
+             self.redeemed_codes_count = self.redeemed_codes_count + 1
+             self.save()
 
     class Meta:
         ordering = ('-created',)
@@ -92,14 +107,16 @@ class Transaction(models.Model):
         return 'Gets {}'.format(self.points)
 
 
+
 class QRcoupon(models.Model):
     uuid_id = models.UUIDField(default=uuid.uuid4, editable=False,unique=True)
     is_redeemed = models.BooleanField(default=False)
-    in_transaction = models.BooleanField(default=False)
+    is_expired = models.BooleanField(default=False)
     expiry_date = models.DateTimeField()
-    transaction_start_time= models.DateTimeField(null=True)
     date_created = models.DateTimeField(('date created'), auto_now_add=True)
+    user = models.ForeignKey('common.User', related_name='coupon_user', on_delete=models.CASCADE,default=None)
     offer = models.ForeignKey(Offer, related_name='offer', on_delete=models.CASCADE, null=True)
+    type = models.CharField(max_length=50, choices=CODE_TYPES, default=CODE_TYPES[0][0])
 
     class Meta:
         verbose_name = "QRcoupon"

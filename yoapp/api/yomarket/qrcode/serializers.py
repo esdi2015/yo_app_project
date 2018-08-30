@@ -1,27 +1,25 @@
-from django.utils import timezone
-import uuid
-from yomarket.models import QRcoupon
-from api.yomarket.offer.serializers import OfferSerializer
+from yomarket.models import QRcoupon,Offer
 from rest_framework import serializers
-
+from django.utils import timezone
+from common.models import User
+from yomarket.models import QRcoupon
 
 class QRcouponSerializator(serializers.ModelSerializer):
-    offer = OfferSerializer()
+    offer = serializers.PrimaryKeyRelatedField(queryset=Offer.objects.all())
+    expiry_date = serializers.DateTimeField(required=False)
 
-    def validate_expiry_date(self, value):
-        if value < timezone.now():
-            raise serializers.ValidationError("Coupon is expiried.")
-        return value
+    def create(self,validated_data):
+          offer = validated_data['offer']
+          user_id = validated_data['user_id']
 
-    def validate_available(self, attrs):
-        pass
+          try:
+            coupon = QRcoupon.objects.get(offer=offer,user_id=user_id,type=offer.code_type)
+          except QRcoupon.DoesNotExist:
+            coupon = QRcoupon(**validated_data,expiry_date=offer.expire,type=offer.code_type)
+            coupon.save()
 
-    def create(self, user, offer):
-        qrcoupon = self.Meta.model(expiry_date=timezone.now(),offer=offer)
-        qrcoupon.save()
-        return qrcoupon
-
+          return coupon
 
     class Meta:
         model = QRcoupon
-        fields = ('uuid_id', 'offer')
+        fields = ('uuid_id','id','offer','is_redeemed','expiry_date','is_expired','type')
