@@ -119,8 +119,12 @@ WSGI_APPLICATION = 'yoapp.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'mydatabase',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'yodb',
+        'USER': 'yodbuser',
+        'PASSWORD': 'yodbpassword',
+        'HOST': '127.0.0.1',
+        'PORT': '5432',
     }
 }
 
