@@ -52,6 +52,9 @@ class Category(MPTTModel):
         verbose_name = "category"
         verbose_name_plural = "categories"
 
+    def __unicode__(self):
+        return self.category_name
+
     def __str__(self):
         return self.category_name
 

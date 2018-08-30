@@ -21,7 +21,7 @@ class OfferSerializer(serializers.ModelSerializer): #serializers.HyperlinkedMode
         fields = ('id', 'category', 'category_id', 'shop', 'shop_id', 'title', 'image', 'short_description',
                   'description', 'price', 'discount', 'discount_type', 'code_data', 'created', 'code_type',
                   'offer_type', 'expire')
-        #depth = 1
+        #depth = 2
 
 
     def validate_catedory_id(value):

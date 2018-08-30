@@ -29,6 +29,7 @@ class OfferListView(generics.ListCreateAPIView):
     filter_fields = ('category_id', 'shop_id', 'discount_type', 'offer_type', )
     ordering_fields = '__all__'
 
+
     def get_permissions(self):
         if self.request.method == 'GET':
             return [AllowAny(), ]

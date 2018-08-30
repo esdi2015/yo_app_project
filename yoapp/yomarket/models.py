@@ -37,11 +37,13 @@ class Shop(models.Model):
     image = models.ImageField(upload_to='shops/%Y/%m/%d', blank=True)
     code_type = models.CharField(max_length=50, choices=CODE_TYPES, default=CODE_TYPES[0][0])
 
+    def __unicode__(self):
+        return self.title
+
     def __str__(self):
         return self.title
 
-    # def __unicode__(self):
-    #     return self.title
+
 
 
 class Offer(models.Model):
@@ -68,6 +70,9 @@ class Offer(models.Model):
         ordering = ('-created',)
 
     def __str__(self):
+        return self.title
+
+    def __unicode__(self):
         return self.title
 
 
