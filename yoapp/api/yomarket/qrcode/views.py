@@ -105,6 +105,30 @@ class QRcouponShortCheckView(generics.RetrieveAPIView):
 
 
 
+#
+# class QRcouponsListView(generics.ListAPIView):
+#     serializer_class = QRcouponSerializator
+#     model = serializer_class.Meta.model
+#     permission_classes = (IsAuthenticated,)
+#
+#     def get_queryset(self):
+#         user_id = self.request.user.pk
+#         coupons = self.model.objects.filter(user_id=user_id,is_expired=False, is_redeemed=False)
+#         for coupon in coupons:
+#             if coupon.expiry_date <= timezone.now():
+#                 coupon.is_expired=True
+#                 coupon.save()
+#         if self.request.query_params.get('type') =='expired':
+#             queryset = self.model.objects.filter(user_id=user_id, is_expired=True)
+#         elif self.request.query_params.get('type') =='redeemed':
+#             queryset = self.model.objects.filter(user_id=user_id, is_redeemed=True)
+#         else:
+#             queryset = self.model.objects.filter(user_id=user_id, is_expired=False, is_redeemed=False)
+#         return queryset
+#
+#
+#
+
 
 class QRcouponsListView(generics.ListAPIView):
     serializer_class = QRcouponSerializator
@@ -113,20 +137,19 @@ class QRcouponsListView(generics.ListAPIView):
 
     def get_queryset(self):
         user_id = self.request.user.pk
-        coupons = self.model.objects.filter(user_id=user_id,is_expired=False, is_redeemed=False)
+        coupons = self.model.objects.filter(user_id=user_id, is_expired=False, is_redeemed=False)
         for coupon in coupons:
             if coupon.expiry_date <= timezone.now():
-                coupon.is_expired=True
+                coupon.is_expired = True
                 coupon.save()
-        if self.request.query_params.get('type') =='expired':
-            queryset = self.model.objects.filter(user_id=user_id, is_expired=True)
-        elif self.request.query_params.get('type') =='redeemed':
-            queryset = self.model.objects.filter(user_id=user_id, is_redeemed=True)
-        else:
-            queryset = self.model.objects.filter(user_id=user_id, is_expired=False, is_redeemed=False)
+        queryset = self.model.objects.filter(user_id=user_id)
         return queryset
 
-
+    def list(self,request, *args, **kwargs):
+        queryset=self.get_queryset()
+        serializer=self.get_serializer(data=queryset,many=True)
+        serializer.is_valid()
+        return Response(custom_api_response(serializer),status.HTTP_200_OK)
 
 
 @api_view(['POST'])
