@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from api.views import custom_api_response
 
 from yomarket.models import WishList
-from .serializers import WishListSerializator
+from .serializers import WishListSerializator,WishListNestedSerializator
 
 UserModel=get_user_model()
 
@@ -33,7 +33,7 @@ def list_like(request):
 
     wishes  =WishList.objects.filter(user=request.user)
 
-    serializer = WishListSerializator(wishes,many=True)
+    serializer = WishListNestedSerializator(wishes,many=True)
     return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
 
 

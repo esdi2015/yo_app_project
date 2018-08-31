@@ -4,6 +4,8 @@ from django.utils import timezone
 from common.models import User
 from yomarket.models import QRcoupon
 
+from api.yomarket.offer.serializers import OfferSerializer
+
 class QRcouponSerializator(serializers.ModelSerializer):
     offer = serializers.PrimaryKeyRelatedField(queryset=Offer.objects.all())
     expiry_date = serializers.DateTimeField(required=False)
@@ -23,3 +25,8 @@ class QRcouponSerializator(serializers.ModelSerializer):
     class Meta:
         model = QRcoupon
         fields = ('uuid_id','id','offer','is_redeemed','expiry_date','is_expired','type')
+
+
+
+class QRcouponNestedSerializator(QRcouponSerializator):
+    offer = OfferSerializer()

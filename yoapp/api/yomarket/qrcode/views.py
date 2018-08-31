@@ -1,7 +1,7 @@
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from api.yomarket.qrcode.serializers import QRcouponSerializator
+from api.yomarket.qrcode.serializers import QRcouponSerializator,QRcouponNestedSerializator
 from rest_framework import status
 from rest_framework import generics
 
@@ -77,7 +77,7 @@ class QRcouponShortRedeemView(generics.UpdateAPIView):
 
 
 class QRcouponCheckView(generics.RetrieveAPIView):
-    serializer_class = QRcouponSerializator
+    serializer_class = QRcouponNestedSerializator
     model = serializer_class.Meta.model
     lookup_field = 'uuid_id'
     permission_classes = (IsAuthenticated,)
@@ -89,7 +89,7 @@ class QRcouponCheckView(generics.RetrieveAPIView):
 
 
 class QRcouponShortCheckView(generics.RetrieveAPIView):
-    serializer_class = QRcouponSerializator
+    serializer_class = QRcouponNestedSerializator
     model = serializer_class.Meta.model
     lookup_field = 'id'
     permission_classes = (IsAuthenticated,)
@@ -131,7 +131,7 @@ class QRcouponShortCheckView(generics.RetrieveAPIView):
 
 
 class QRcouponsListView(generics.ListAPIView):
-    serializer_class = QRcouponSerializator
+    serializer_class = QRcouponNestedSerializator
     model = serializer_class.Meta.model
     permission_classes = (IsAuthenticated,)
 
