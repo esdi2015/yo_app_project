@@ -147,9 +147,11 @@ class QRcouponsListView(generics.ListAPIView):
 
     def list(self,request, *args, **kwargs):
         queryset=self.get_queryset()
-        serializer=self.get_serializer(data=queryset,many=True)
-        serializer.is_valid()
-        return Response(custom_api_response(serializer),status.HTTP_200_OK)
+        print(queryset)
+        if queryset.exists():
+            serilizer=self.get_serializer(queryset,many=True)
+            return Response(custom_api_response(serilizer),status=status.HTTP_200_OK)
+        return Response(custom_api_response(content={'error':'no coupons'}),status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['POST'])
