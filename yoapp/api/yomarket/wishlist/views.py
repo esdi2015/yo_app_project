@@ -24,17 +24,23 @@ from rest_framework.response import Response
 
 
 
-@api_view(['GET'])
-@permission_classes(())
-def list_like(request):
-    if request.user.is_authenticated == False:
-        error = {"detail": "You must have to log in first"}
-        return Response(custom_api_response(errors=error), status=status.HTTP_400_BAD_REQUEST)
+class MyCouponsListView(generics.ListAPIView):
+    serializer_class = WishListNestedSerializator
+    model = serializer_class.Meta.model
+    permission_classes = (IsAuthenticated,)
 
-    wishes  =WishList.objects.filter(user=request.user)
+    def get_queryset(self):
+        user_id = self.request.user.pk
+        queryset = self.model.objects.filter(user_id=user_id)
+        return queryset
 
-    serializer = WishListNestedSerializator(wishes,many=True)
-    return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
+    def list(self,request, *args, **kwargs):
+        queryset=self.get_queryset()
+        if queryset.exists():
+            serilizer=self.get_serializer(queryset,many=True)
+            return Response(custom_api_response(serilizer),status=status.HTTP_200_OK)
+        return Response(custom_api_response(content={'error':'no coupons'}),status.HTTP_400_BAD_REQUEST)
+
 
 
 
