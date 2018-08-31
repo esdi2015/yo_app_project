@@ -27,7 +27,10 @@ class OfferListView(generics.ListCreateAPIView):
     filter_backends = (filters.SearchFilter, DjangoFilterBackend, filters.OrderingFilter)
     search_fields = ('description',)
     filter_fields = ('category_id', 'shop_id', 'discount_type', 'offer_type', )
-    ordering_fields = '__all__'
+    #ordering_fields = '__all__'
+    #ordering_fields = ('shop')
+    ordering_fields = ('shop__title', 'category__category_name', 'title', 'image',
+                       'short_description', 'price', 'offer_type', 'expire', )
 
 
     def get_permissions(self):
