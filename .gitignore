@@ -3,3 +3,6 @@
 yoenv
 yoapp/media
 setup.py
+yoapp/yoapp/settings.py
+yoapp/*/migrations/*.py
+
