@@ -1,7 +1,7 @@
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from api.yomarket.qrcode.serializers import QRcouponSerializator
+from api.yomarket.qrcode.serializers import QRcouponSerializator,QRcouponNestedSerializator
 from rest_framework import status
 from rest_framework import generics
 
@@ -77,7 +77,7 @@ class QRcouponShortRedeemView(generics.UpdateAPIView):
 
 
 class QRcouponCheckView(generics.RetrieveAPIView):
-    serializer_class = QRcouponSerializator
+    serializer_class = QRcouponNestedSerializator
     model = serializer_class.Meta.model
     lookup_field = 'uuid_id'
     permission_classes = (IsAuthenticated,)
@@ -89,7 +89,7 @@ class QRcouponCheckView(generics.RetrieveAPIView):
 
 
 class QRcouponShortCheckView(generics.RetrieveAPIView):
-    serializer_class = QRcouponSerializator
+    serializer_class = QRcouponNestedSerializator
     model = serializer_class.Meta.model
     lookup_field = 'id'
     permission_classes = (IsAuthenticated,)
@@ -105,28 +105,53 @@ class QRcouponShortCheckView(generics.RetrieveAPIView):
 
 
 
+#
+# class QRcouponsListView(generics.ListAPIView):
+#     serializer_class = QRcouponSerializator
+#     model = serializer_class.Meta.model
+#     permission_classes = (IsAuthenticated,)
+#
+#     def get_queryset(self):
+#         user_id = self.request.user.pk
+#         coupons = self.model.objects.filter(user_id=user_id,is_expired=False, is_redeemed=False)
+#         for coupon in coupons:
+#             if coupon.expiry_date <= timezone.now():
+#                 coupon.is_expired=True
+#                 coupon.save()
+#         if self.request.query_params.get('type') =='expired':
+#             queryset = self.model.objects.filter(user_id=user_id, is_expired=True)
+#         elif self.request.query_params.get('type') =='redeemed':
+#             queryset = self.model.objects.filter(user_id=user_id, is_redeemed=True)
+#         else:
+#             queryset = self.model.objects.filter(user_id=user_id, is_expired=False, is_redeemed=False)
+#         return queryset
+#
+#
+#
+
 
 class QRcouponsListView(generics.ListAPIView):
-    serializer_class = QRcouponSerializator
+    serializer_class = QRcouponNestedSerializator
     model = serializer_class.Meta.model
     permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
         user_id = self.request.user.pk
-        coupons = self.model.objects.filter(user_id=user_id,is_expired=False, is_redeemed=False)
+        coupons = self.model.objects.filter(user_id=user_id, is_expired=False, is_redeemed=False)
         for coupon in coupons:
             if coupon.expiry_date <= timezone.now():
-                coupon.is_expired=True
+                coupon.is_expired = True
                 coupon.save()
-        if self.request.query_params.get('type') =='expired':
-            queryset = self.model.objects.filter(user_id=user_id, is_expired=True)
-        elif self.request.query_params.get('type') =='redeemed':
-            queryset = self.model.objects.filter(user_id=user_id, is_redeemed=True)
-        else:
-            queryset = self.model.objects.filter(user_id=user_id, is_expired=False, is_redeemed=False)
+        queryset = self.model.objects.filter(user_id=user_id)
         return queryset
 
-
+    def list(self,request, *args, **kwargs):
+        queryset=self.get_queryset()
+        print(queryset)
+        if queryset.exists():
+            serilizer=self.get_serializer(queryset,many=True)
+            return Response(custom_api_response(serilizer),status=status.HTTP_200_OK)
+        return Response(custom_api_response(content={'error':'no coupons'}),status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['POST'])
