@@ -55,7 +55,7 @@ class OfferListView(generics.ListCreateAPIView):
 
         page = self.paginate_queryset(queryset)
         if page is not None:
-            serializer = self.get_serializer(page, many=True)
+            serializer = self.get_serializer(page, many=True,context={'request': request})
             paginated_response = self.get_paginated_response(serializer.data)
             content = paginated_response.data['results']
             del paginated_response.data['results']
