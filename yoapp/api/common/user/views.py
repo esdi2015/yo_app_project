@@ -28,6 +28,10 @@ from .serializers import CustomUserSerializer, LoginSerializer, UserIsExistsSeri
 from account.models import Profile
 from common.utils import ROLES
 
+import re
+from django.core.files.base import ContentFile
+from urllib.parse import urlparse
+from urllib.request import urlopen
 
 UserModel = get_user_model()
 
@@ -190,11 +194,17 @@ def google_oauth(request):
     except ValueError:
         return Response({"error":"wrong issuer"},status=status.HTTP_400_BAD_REQUEST)
 
+    last_name = idinfo['family_name']
+    first_name = idinfo['given_name']
     email = idinfo['email']
     photo = idinfo['picture']
-    last_name = idinfo['family_name']
-    first_name = ['given_name']
+
     first_login = False
+
+
+    photo = re.sub(r'/s\d\d-c/',r'/s500-c/',photo)
+    name = urlparse(photo).path.split('/')[-1]
+    content = ContentFile(urlopen(photo).read())
 
     def create_login_token(user):
         serializer = LoginSerializer()
@@ -206,6 +216,8 @@ def google_oauth(request):
     except UserModel.DoesNotExist:
         user = UserModel(email=email, last_name=last_name, first_name=first_name)
         user.save()
+        user.profile.photo.save(name, content, save = True)
+        user.save()
         first_login = True
 
 
@@ -213,6 +225,28 @@ def google_oauth(request):
 
     content = {'token': token.key, 'email': user.email, 'id': user.id, 'first_login': first_login}
     return Response(custom_api_response(content=content), status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes(())
+def test(request):
+    photo = "https://i.imgur.com/gkjCJVf.jpg"
+
+    name = urlparse(photo).path.split('/')[-1]
+    # wrap your file content
+    content = ContentFile(urlopen(photo).read())
+
+
+    print(name)
+    print(content)
+
+    user = UserModel(email='dsadsa@com.com', last_name='fdsfds', first_name='fdsfdsfs')
+    user.save()
+    user.profile.photo.save(name, content, save=True)
+    user.save()
+
+    return Response('ok',status=status.HTTP_200_OK)
+
 
 
 @api_view(['POST'])
@@ -232,10 +266,9 @@ def facebook_oauth(request):
     email = request.data['email']
 
     graph = facebook.GraphAPI(access_token)
-    args = {'fields': 'id,email,birthday,gender,first_name,last_name,picture.height(300)'}
+    args = {'fields': 'id,email,birthday,gender,first_name,last_name,picture.height(500)'}
     profile = graph.get_object('me', **args)
 
-    photo = profile.get('picture',{}).get('data',{}).get('url',{})
     first_name = profile.get('first_name')
     last_name = profile.get('last_name')
     gender = profile.get('gender')
@@ -243,6 +276,13 @@ def facebook_oauth(request):
     fb_id = profile.get('id')
 
     first_login = False
+
+    photo = profile.get('picture',{}).get('data',{}).get('url',{})
+    name = urlparse(photo).path.split('/')[-1]+'fb.jpg'
+    content = ContentFile(urlopen(photo).read())
+
+
+
 
     try:
         user = UserModel.objects.get(email=email)
@@ -253,11 +293,10 @@ def facebook_oauth(request):
         except UserModel.DoesNotExist:
             user = UserModel(email=email, last_name=last_name, first_name=first_name, fb_id=fb_id)
             user.save()
+            user.profile.photo.save(name,content,save=True)
             first_login = True
 
-        # user = UserModel(email=email, last_name=last_name, first_name=first_name)
-        # user.save()
-        # first_login = True
+
 
     if user.fb_id == fb_id:
         token = create_login_token(user)
@@ -266,10 +305,6 @@ def facebook_oauth(request):
     else:
         return Response({'error': 'wrong id'}, status=status.HTTP_400_BAD_REQUEST)
 
-    # token = create_login_token(user)
-    #
-    # content = {'token': token.key, 'email': user.email, 'id': user.id, 'first_login': first_login}
-    # return Response(custom_api_response(content=content), status=status.HTTP_200_OK)
 
 
 
