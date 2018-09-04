@@ -25,7 +25,7 @@ class OfferListView(generics.ListCreateAPIView):
     serializer_class = OfferSerializer
     #permission_classes = (AllowAny,)
     filter_backends = (filters.SearchFilter, DjangoFilterBackend, filters.OrderingFilter)
-    search_fields = ('description',)
+    search_fields = ('description', 'title')
     filter_fields = ('category_id', 'shop_id', 'discount_type', 'offer_type', )
     #ordering_fields = '__all__'
     #ordering_fields = ('shop')

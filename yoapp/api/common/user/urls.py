@@ -20,5 +20,6 @@ urlpatterns += [
     url(r'^login-google/$', google_oauth, name='google_login'),
     url(r'^login-facebook/$',facebook_oauth , name='facebook_login'),
     url(r'^password-reset/', include('django_rest_passwordreset.urls', namespace='password_reset')),
+    #url(r'^password-reset/confirm/', include('django_rest_passwordreset.urls', namespace='password_reset_confirm')),
     #url(r'^forgot-password/$', api_view.login_view, name='user_forgot_password'),
 ]
