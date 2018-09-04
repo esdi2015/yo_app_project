@@ -134,3 +134,6 @@ class WishList(models.Model):
     user = models.ForeignKey('common.User', related_name='wish_user', on_delete=models.CASCADE)
     offer = models.ForeignKey(Offer, on_delete=models.CASCADE, null=True, blank=True)
     is_liked = models.BooleanField(default=True)
+
+    class Meta:
+        unique_together = (("user", "offer"),)

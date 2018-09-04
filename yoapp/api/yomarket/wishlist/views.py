@@ -21,7 +21,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework import status
 from rest_framework.response import Response
-
+from django.db import IntegrityError
 
 
 class MyCouponsListView(generics.ListAPIView):
@@ -77,6 +77,26 @@ def like(request):
         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
     else:
         return Response(custom_api_response(serializer), status=status.HTTP_400_BAD_REQUEST)
+
+
+
+class LikeView(generics.CreateAPIView):
+    serializer_class = WishListSerializator
+    model = serializer_class.Meta.model
+    permission_classes = (IsAuthenticated,)
+
+
+    def create(self,request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        try:
+            serializer.is_valid(raise_exception=True)
+            serializer.save(user=self.request.user)
+            return Response(custom_api_response(serializer), status.HTTP_200_OK)
+        except IntegrityError:
+            return Response(custom_api_response(content={'is_liked':True}),status.HTTP_200_OK)
+
+
+
 
 
 @api_view(['GET'])

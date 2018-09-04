@@ -1,8 +1,8 @@
+
 from django.apps import apps
 from rest_framework import serializers
 from ..shop.serializers import ShopSerializer
-
-
+from yomarket.models import WishList
 OfferModel = apps.get_model('yomarket', 'Offer')
 
 
@@ -16,13 +16,20 @@ class OfferSerializer(serializers.ModelSerializer): #serializers.HyperlinkedMode
     category_id = serializers.IntegerField(allow_null=True)
     #code_type = serializers.StringRelatedField()
     #code_type = serializers.HyperlinkedRelatedField()
+    is_liked = serializers.SerializerMethodField()
+    def get_is_liked(self, obj):
+        try:
+            wish= WishList.objects.get(user_id=self.context['request'].user.id,offer=obj)
+            return True
+        except WishList.DoesNotExist:
+            return False
 
 
     class Meta:
         model = OfferModel
         fields = ('id', 'category', 'category_id', 'shop', 'shop_id', 'title', 'image', 'short_description',
                   'description', 'price', 'discount', 'discount_type', 'code_data', 'created', 'code_type',
-                  'offer_type', 'expire')
+                  'offer_type', 'expire','is_liked')
         #depth = 3
         #order_by = (('shop',))
 
