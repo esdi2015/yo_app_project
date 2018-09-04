@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'oauth2_provider',
     'push_notifications',
     'django_celery_beat',
+    'django_rest_passwordreset',
 
     # 'social_django',
     # 'rest_social_auth',
