@@ -11,6 +11,9 @@ class OfferAdmin(admin.ModelAdmin):
     date_hierarchy = 'created'
     ordering = ['created', 'available']
 
+    def has_add_permission(self, request, obj=None):
+        return False
+
 
 class ShopAdmin(admin.ModelAdmin):
     list_display = ('title', 'address', 'user', 'manager', 'created', 'code_type')
@@ -25,6 +28,9 @@ class ShopAdmin(admin.ModelAdmin):
         elif db_field.name == "manager":
             kwargs["queryset"] = User.objects.filter(role="MANAGER")
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    def has_add_permission(self, request, obj=None):
+        return False
 
 
 class QRcouponAdmin(admin.ModelAdmin):

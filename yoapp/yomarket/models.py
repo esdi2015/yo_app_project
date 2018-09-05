@@ -67,7 +67,7 @@ class Offer(models.Model):
     code_data = models.CharField(max_length=200, blank=True)
     codes_count = models.SmallIntegerField(('codes count'), default=0, editable=True)
     redeemed_codes_count = models.SmallIntegerField(('redeemed count'), default=0, editable=True)
-    expire = models.DateTimeField(('expire date'), blank=True, null=True)
+    expire = models.DateTimeField(('expire date'), blank=False, null=False)
     code_type = models.CharField(max_length=50, choices=CODE_TYPES, default=CODE_TYPES[0][0])
     offer_type = models.CharField(max_length=50, choices=OFFER_TYPES, default=OFFER_TYPES[0][0])
 
