@@ -7,7 +7,7 @@ from .yomarket.transaction.urls import urlpatterns as transaction_urls
 from .notification.urls import urlpatterns as notification_urls
 from .account.urls import urlpatterns as account_urls
 from .yomarket.wishlist.urls import urlpatterns as wishlist_urls
-
+from .statistic.urls import urlpatterns as statistic_urls
 
 
 urlpatterns = []
@@ -20,7 +20,8 @@ urlpatterns = urlpatterns + \
               transaction_urls + \
               notification_urls + \
               account_urls + \
-              wishlist_urls
+              wishlist_urls + \
+              statistic_urls
 
 
 

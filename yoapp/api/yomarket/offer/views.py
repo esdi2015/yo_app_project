@@ -12,6 +12,8 @@ from ...views import custom_api_response
 from .serializers import OfferSerializer
 
 from rest_framework.pagination import LimitOffsetPagination
+from statistic.utlis import count_shown
+
 
 
 OfferModel = apps.get_model('yomarket', 'Offer')
@@ -88,6 +90,7 @@ class OfferDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
+        count_shown(instance)
         serializer = self.get_serializer(instance)
         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
 
