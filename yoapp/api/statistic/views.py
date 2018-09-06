@@ -86,11 +86,14 @@ class StatisticList(generics.ListAPIView):
 
         if range == 'month':
             if subrange is not None and isinstance(int(subrange),int):
-                queryset = queryset.filter(date__year=timezone.now().year, date__month=timezone.now().month).annotate(date_field=TruncWeek('date')).values('date_field')\
+                set = queryset.filter(date__year=timezone.now().year, date__month=timezone.now().month).annotate(date_field=TruncWeek('date')).values('date_field')\
                     .annotate(taken=Sum('value', filter=Q(type='taken')),redeemed=Sum('value', filter=Q(type='redeemed'))).order_by('date_field')
-
                 try:
-                    queryset=[queryset[int(subrange)-1],]
+                    week=set[int(subrange)-1]
+                    week=week['date_field'].isocalendar()[1]
+                    queryset = queryset.filter(date__year=timezone.now().year, date__month=timezone.now().month,date__week=week).annotate(date_field=TruncDay('date')).values('date_field')\
+                        .annotate(taken=Sum('value', filter=Q(type='taken')),redeemed=Sum('value', filter=Q(type='redeemed'))).order_by('date_field')
+
                 except IndexError:
                     queryset=None
 
@@ -102,7 +105,6 @@ class StatisticList(generics.ListAPIView):
 
     def list(self, request, *args, **kwargs):
          queryset=self.get_queryset()
-         print(queryset)
 
 
          serializer=self.get_serializer(queryset,many=True)
