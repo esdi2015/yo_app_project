@@ -9,6 +9,7 @@ from api.views import custom_api_response
 
 from yomarket.models import WishList
 from .serializers import WishListSerializator,WishListNestedSerializator
+from statistic.utlis import count_liked
 
 UserModel=get_user_model()
 
@@ -90,7 +91,8 @@ class LikeView(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         try:
             serializer.is_valid(raise_exception=True)
-            serializer.save(user=self.request.user)
+            instance=serializer.save(user=self.request.user)
+            count_liked(instance.offer)
             return Response(custom_api_response(serializer), status.HTTP_200_OK)
         except IntegrityError:
             return Response(custom_api_response(content={'is_liked':True}),status.HTTP_200_OK)

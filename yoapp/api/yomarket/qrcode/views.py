@@ -11,7 +11,7 @@ from django.utils import timezone
 
 from yomarket.models import Offer,QRcoupon
 
-
+from statistic.utlis import count_taken_coupons,count_redeemd_coupons
 
 class QRcouponRedeemView(generics.UpdateAPIView):
     serializer_class = QRcouponSerializator
@@ -37,6 +37,7 @@ class QRcouponRedeemView(generics.UpdateAPIView):
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
         instance.offer.redeemed_codes_increment()
+        count_redeemd_coupons(instance.offer)
         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
 
 
@@ -65,6 +66,7 @@ class QRcouponShortRedeemView(generics.UpdateAPIView):
         serializer = self.get_serializer(instance, data=request.data,partial=True)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
+        count_redeemd_coupons(instance.offer)
         instance.offer.redeemed_codes_increment()
         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
 
@@ -160,7 +162,8 @@ def make_coupon(request):
     print(request)
     serializer= QRcouponSerializator(data=request.data)
     if serializer.is_valid():
-        serializer.save(user_id=request.user.pk)
+        instance=serializer.save(user_id=request.user.pk)
+        count_taken_coupons(instance.offer)
         return Response(custom_api_response(serializer),status.HTTP_200_OK)
     else:
         return Response(custom_api_response(content={'error':'invalid request data'}),status.HTTP_400_BAD_REQUEST)
