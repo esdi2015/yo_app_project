@@ -77,12 +77,24 @@ def custom_api_response(serializer=None, content=None, errors=None, metadata={})
         else:
             response = {'metadata': metadata, 'content': 'unknown'}
     else:
+        #print(serializer._errors)
+        api_error_codes = []
+        for key in serializer._errors.keys():
+            try:
+                api_error_codes.append(serializer._errors[key][0].code)
+            except Exception as e:
+                pass
+        #if 'non_field_errors' in serializer._errors:
+        if api_error_codes:
+            metadata = {'api_error_codes': api_error_codes}
         response = {'metadata': metadata, 'errors': serializer._errors}
     return response
 
 
 
 
+def get_error_code():
+    return None
 
 
 

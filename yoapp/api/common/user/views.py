@@ -58,7 +58,6 @@ class UserMe(APIView):
     #queryset = UserModel.objects.all()
 
     def get(self, request, format=None):
-        #print('232323')
         serializer = CustomUserSerializer(request.user)
         return Response(custom_api_response(serializer=serializer), status=status.HTTP_200_OK)
 

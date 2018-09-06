@@ -6,6 +6,7 @@ from rest_framework.compat import authenticate
 
 from common.utils import ROLES, DEFAULT_USER_ROLE
 from account.models import Profile
+from ...utils import ERROR_API
 
 
 UserModel = get_user_model()
@@ -46,7 +47,9 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
         if user and user.username != '':
             if user.pk != pk:
-                raise serializers.ValidationError("user with this username already exists.")
+                msg = _(ERROR_API['102'][1])
+                api_error_code = ERROR_API['102'][0]
+                raise serializers.ValidationError(msg, code=api_error_code)
             else:
                 return value
         else:
@@ -88,8 +91,10 @@ class LoginSerializer(serializers.Serializer):
             # users. (Assuming the default ModelBackend authentication
             # backend.)
             if not user:
-                msg = _('Unable to log in with provided credentials.')
-                raise serializers.ValidationError(msg, code='authorization')
+                msg = _(ERROR_API['101'][1])
+                api_error_code = ERROR_API['101'][0]
+                #raise serializers.ValidationError(msg, code='authorization')
+                raise serializers.ValidationError(msg, code=api_error_code)
             else:
                 if user.role == 'ADMIN':
                     msg = _('Unable to log in with ADMIN role.')
