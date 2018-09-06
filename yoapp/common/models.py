@@ -59,16 +59,19 @@ class Category(MPTTModel):
         return self.category_name
 
 
-class Region(models.Model):
-    region_name = models.CharField(max_length=200)
+class City(models.Model):
+    city_name = models.CharField(max_length=200)
 
     class Meta:
-        ordering = ('region_name',)
-        verbose_name = "region"
-        verbose_name_plural = "regions"
+        ordering = ('city_name',)
+        verbose_name = "city"
+        verbose_name_plural = "cities"
+
+    def __unicode__(self):
+        return self.category_name
 
     def __str__(self):
-        return self.region_name
+        return self.city_name
 
 
 

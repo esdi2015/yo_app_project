@@ -14,12 +14,14 @@ class ShopSerializer(serializers.ModelSerializer):
     longitude = serializers.FloatField(allow_null=True, required=False)
     outer_link = serializers.CharField(allow_null=True, required=False)
     phone = serializers.CharField(allow_null=True, required=False)
+    city = serializers.StringRelatedField()
+    city_id = serializers.IntegerField(allow_null=True, required=False)
     #image = serializers.ImageField(upload_to='shops/%Y/%m/%d', blank=True)
 
     class Meta:
         model = ShopModel
         fields = ('id', 'title', 'address', 'user', 'user_id', 'manager', 'manager_id',
-                  'latitude', 'longitude', 'outer_link', 'phone', 'image', 'code_type')
+                  'latitude', 'longitude', 'outer_link', 'phone', 'image', 'code_type', 'city', 'city_id')
 
 
     # def save(self, **kwargs):
@@ -46,4 +48,4 @@ class ShopListSerializer(ShopSerializer):
     class Meta:
         model = ShopModel
         fields = ('id', 'title', 'address', 'user', 'user_id', 'manager', 'manager_id',
-                  'outer_link', 'phone', 'image', 'code_type')
+                  'outer_link', 'phone', 'image', 'code_type', 'city', 'city_id')

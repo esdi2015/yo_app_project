@@ -6,3 +6,26 @@ setup.py
 yoapp/yoapp/settings.py
 yoapp/*/migrations/*.py
 
+yoapp/account/__pycache__/
+yoapp/account/migrations/__pycache__/
+yoapp/api/__pycache__/
+yoapp/api/account/__pycache__/
+yoapp/api/common/__pycache__/
+yoapp/api/common/category/__pycache__/
+yoapp/api/common/user/__pycache__/
+yoapp/api/migrations/__pycache__/
+yoapp/api/notification/__pycache__/
+yoapp/api/yomarket/__pycache__/
+yoapp/api/yomarket/offer/__pycache__/
+yoapp/api/yomarket/qrcode/__pycache__/
+yoapp/api/yomarket/shop/__pycache__/
+yoapp/api/yomarket/transaction/__pycache__/
+yoapp/api/yomarket/wishlist/__pycache__/
+yoapp/common/__pycache__/
+yoapp/common/migrations/__pycache__/
+yoapp/notification/__pycache__/
+yoapp/notification/migrations/__pycache__/
+yoapp/static/
+yoapp/yoapp/__pycache__/
+yoapp/yomarket/__pycache__/
+yoapp/yomarket/migrations/__pycache__/

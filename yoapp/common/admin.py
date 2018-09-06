@@ -6,7 +6,7 @@ from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from mptt.admin import MPTTModelAdmin
 from oauth2_provider.models import Application, Grant, AccessToken, RefreshToken
 
-from .models import User, Category
+from .models import User, Category, City
 
 
 class UserCreationForm(forms.ModelForm):
@@ -81,9 +81,16 @@ class UserAdmin(BaseUserAdmin):
     ordering = ('date_joined',)
     filter_horizontal = ()
 
+
+
+class CityAdmin(admin.ModelAdmin):
+    list_display = ('city_name',  )
+    ordering = ('city_name',)
+
+
 # Now register the new UserAdmin...
 admin.site.register(User, UserAdmin)
-#admin.site.register(Category)
+admin.site.register(City, CityAdmin)
 admin.site.register(Category, MPTTModelAdmin)
 # ... and, since we're not using Django's built-in permissions,
 # unregister the Group model from admin.
