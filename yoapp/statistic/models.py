@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 
-from yomarket.models import Shop,Offer
+from yomarket.models import Shop, Offer
 
 UserModel = get_user_model()
 
@@ -24,3 +24,4 @@ class StatisticTable(models.Model):
 
     class Meta:
         verbose_name = "statistic"
+        verbose_name_plural = "statistics"
