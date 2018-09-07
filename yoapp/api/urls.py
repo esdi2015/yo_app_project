@@ -1,5 +1,6 @@
 from .common.user.urls import urlpatterns as user_urls
 from .common.category.urls import urlpatterns as category_urls
+from .common.city.urls import urlpatterns as city_urls
 from .yomarket.offer.urls import urlpatterns as offer_urls
 from .yomarket.shop.urls import urlpatterns as shop_urls
 from .yomarket.qrcode.urls import urlpatterns as qr_urls
@@ -21,7 +22,8 @@ urlpatterns = urlpatterns + \
               notification_urls + \
               account_urls + \
               wishlist_urls + \
-              statistic_urls
+              statistic_urls + \
+              city_urls
 
 
 

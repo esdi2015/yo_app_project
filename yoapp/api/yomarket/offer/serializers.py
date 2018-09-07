@@ -1,4 +1,3 @@
-
 from django.apps import apps
 from rest_framework import serializers
 from ..shop.serializers import ShopSerializer

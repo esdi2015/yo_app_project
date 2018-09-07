@@ -22,7 +22,7 @@ class ShopViewSet(viewsets.ModelViewSet):
 
     filter_backends = (filters.SearchFilter, DjangoFilterBackend, filters.OrderingFilter)
     search_fields = ('title', 'address', )
-    filter_fields = ('manager_id', 'code_type', )
+    filter_fields = ('manager_id', 'code_type', 'categories__id',)
     ordering_fields = '__all__'
 
     def get_permissions(self):

@@ -1,5 +1,6 @@
 from django.apps import apps
 from rest_framework import serializers
+from ...common.category.serializers import CategorySerializer
 
 
 ShopModel = apps.get_model('yomarket', 'Shop')
@@ -16,12 +17,13 @@ class ShopSerializer(serializers.ModelSerializer):
     phone = serializers.CharField(allow_null=True, required=False)
     city = serializers.StringRelatedField()
     city_id = serializers.IntegerField(allow_null=True, required=False)
+    categories = CategorySerializer(many=True)
     #image = serializers.ImageField(upload_to='shops/%Y/%m/%d', blank=True)
 
     class Meta:
         model = ShopModel
         fields = ('id', 'title', 'address', 'user', 'user_id', 'manager', 'manager_id',
-                  'latitude', 'longitude', 'outer_link', 'phone', 'image', 'code_type', 'city', 'city_id')
+                  'latitude', 'longitude', 'outer_link', 'phone', 'image', 'code_type', 'city', 'city_id', 'categories')
 
 
     # def save(self, **kwargs):
@@ -48,4 +50,4 @@ class ShopListSerializer(ShopSerializer):
     class Meta:
         model = ShopModel
         fields = ('id', 'title', 'address', 'user', 'user_id', 'manager', 'manager_id',
-                  'outer_link', 'phone', 'image', 'code_type', 'city', 'city_id')
+                  'outer_link', 'phone', 'image', 'code_type', 'city', 'city_id', 'categories')

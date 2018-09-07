@@ -37,7 +37,8 @@ class Shop(models.Model):
     image = models.ImageField(upload_to='shops/%Y/%m/%d', blank=True)
     code_type = models.CharField(max_length=50, choices=CODE_TYPES, default=CODE_TYPES[0][0])
     city = models.ForeignKey('common.City', related_name='city_user',
-                             on_delete = models.DO_NOTHING, null=True)
+                             on_delete = models.DO_NOTHING, null=True, blank=True)
+    categories = models.ManyToManyField('common.Category', blank=True)
 
     def __unicode__(self):
         return self.title

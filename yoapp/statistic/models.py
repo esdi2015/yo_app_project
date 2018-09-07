@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 
 from yomarket.models import Shop, Offer
 
@@ -16,7 +17,7 @@ class StatisticTable(models.Model):
     )
 
     type = models.CharField(max_length=8, choices=TYPE, default='email')
-    date = models.DateTimeField(auto_now_add=True)
+    date = models.DateTimeField(editable=True, default=timezone.now)
     value = models.IntegerField(default=1)
 
     offer = models.ForeignKey(Offer,on_delete=models.CASCADE,null=True,blank=True)
