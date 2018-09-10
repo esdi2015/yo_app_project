@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from ..views import custom_api_response
 from django.utils import timezone
 
-from api.statistic.serializers import StatisticApiSerializer,StatisticTableSerializer
+from api.statistic.serializers import StatisticApiSerializer,StatisticTableSerializer,StatisticApiViewsSerializer
 from statistic.models import StatisticTable
 
 
@@ -106,9 +106,76 @@ class StatisticList(generics.ListAPIView):
     def list(self, request, *args, **kwargs):
          queryset=self.get_queryset()
 
+         serializer=self.get_serializer(queryset,many=True)
+
+
+         return Response(custom_api_response(serializer))
+
+
+
+
+class StatisticViewsList(generics.ListAPIView):
+    serializer_class = StatisticApiViewsSerializer
+
+    def get_queryset(self):
+
+
+        queryset = StatisticTable.objects.all()
+
+        range = self.request.query_params.get('range',None)
+        subrange = self.request.query_params.get('subrange',None)
+
+        if range is None:
+            return None
+
+        if range == 'alltime':
+            if subrange is not None and isinstance(int(subrange),int):
+                queryset=queryset.filter(date__year=subrange).annotate(date_field=TruncMonth('date')).values('date_field')\
+                    .annotate(liked=Sum('value',filter=Q(type='liked')),shown=Sum('value',filter=Q(type='shown'))).order_by('date_field')
+                return queryset
+            else:
+                queryset = queryset.annotate(date_field=TruncYear('date')).values('date_field')\
+                    .annotate(liked=Sum('value',filter=Q(type='liked')),shown=Sum('value',filter=Q(type='shown'))).order_by('date_field')
+                return queryset
+
+        if range == 'year':
+            if subrange is not None and isinstance(int(subrange),int):
+                queryset = queryset.filter(date__year=timezone.now().year,date__month=subrange).annotate(date_field=TruncDay('date')).values('date_field') \
+                    .annotate(liked=Sum('value', filter=Q(type='liked')),shown=Sum('value', filter=Q(type='shown'))).order_by('date_field')
+                return queryset
+            else:
+                queryset = queryset.filter(date__year=timezone.now().year).annotate(date_field=TruncMonth('date')).values('date_field') \
+                    .annotate(liked=Sum('value', filter=Q(type='liked')),shown=Sum('value', filter=Q(type='shown'))).order_by('date_field')
+                return queryset
+
+        if range == 'month':
+            if subrange is not None and isinstance(int(subrange),int):
+                set = queryset.filter(date__year=timezone.now().year, date__month=timezone.now().month).annotate(date_field=TruncWeek('date')).values('date_field')\
+                    .annotate(liked=Sum('value', filter=Q(type='liked')),shown=Sum('value', filter=Q(type='shown'))).order_by('date_field')
+                try:
+                    week=set[int(subrange)-1]
+                    week=week['date_field'].isocalendar()[1]
+                    queryset = queryset.filter(date__year=timezone.now().year, date__month=timezone.now().month,date__week=week).annotate(date_field=TruncDay('date')).values('date_field')\
+                        .annotate(liked=Sum('value', filter=Q(type='liked')),shown=Sum('value', filter=Q(type='shown'))).order_by('date_field')
+
+                except IndexError:
+                    queryset=None
+
+                return queryset
+            else:
+                queryset = queryset.filter(date__year=timezone.now().year,date__month=timezone.now().month).annotate(date_field=TruncWeek('date')).values('date_field') \
+                    .annotate(liked=Sum('value', filter=Q(type='liked')),shown=Sum('value', filter=Q(type='shown'))).order_by('date_field')
+                return queryset
+
+    def list(self, request, *args, **kwargs):
+         queryset=self.get_queryset()
 
          serializer=self.get_serializer(queryset,many=True)
 
 
          return Response(custom_api_response(serializer))
+
+
+
+
 
