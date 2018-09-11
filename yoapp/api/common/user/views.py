@@ -4,6 +4,7 @@ from django.contrib.auth import (
     logout as django_logout
 )
 from django.contrib.auth import get_user_model
+from django.core import serializers
 
 from rest_framework import viewsets
 from rest_framework import status
@@ -24,7 +25,7 @@ from google.auth.transport import requests
 from ...views import custom_api_response
 from .serializers import CustomUserSerializer, LoginSerializer, UserIsExistsSerializer
 
-#from .serializers import ProfileSerializer
+from ...account.serializers import ProfileSerializer
 from account.models import Profile
 from common.utils import ROLES
 
@@ -67,7 +68,6 @@ class UserIsExists(APIView):
     #queryset = UserModel.objects.all()
 
     def post(self, request, format=None):
-        #print('232323')
         serializer = UserIsExistsSerializer(data=request.data)
         if serializer.is_valid():
             return Response(custom_api_response(serializer=serializer), status=status.HTTP_200_OK)
@@ -161,21 +161,20 @@ def login_view(request):
         user = serializer.validated_data['user']
         token = create_token(TokenModel, user, serializer)
         django_login(request, user)
-        content = {'token': token.key, 'email': user.email, 'id': user.id}
+        profile = get_profile_data(user.id)
+        content = {'token': token.key, 'email': user.email, 'id': user.id, 'first_login': False, 'profile': profile}
         return Response(custom_api_response(serializer, content), status=status.HTTP_200_OK)
     else:
         return Response(custom_api_response(serializer), status=status.HTTP_400_BAD_REQUEST)
 
 
-# @api_view(['POST'])
-# @permission_classes([IsAuthenticated])
-# def profile_update_view(request):
-#     serializer=ProfileSerializer(data=request.data)
-#     if serializer.is_valid():
-#         user_profile=Profile.objects.get(user=request.user)
-#         serializer.update(instance=user_profile,validated_data=serializer.validated_data)
-#         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
-#     return Response(custom_api_response(serializer), status=status.HTTP_400_BAD_REQUEST)
+
+def get_profile_data(user_id):
+    user_profile = Profile.objects.filter(user_id=user_id).all()
+    profile_serializer = ProfileSerializer(instance=user_profile, many=True)
+    profile = profile_serializer.data
+    return profile
+
 
 
 @api_view(['POST'])
@@ -191,7 +190,7 @@ def google_oauth(request):
         if idinfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
             raise ValueError('Wrong issuer.')
     except ValueError:
-        return Response({"error":"wrong issuer"},status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error":"Unable to login via google account, wrong issuer"},status=status.HTTP_400_BAD_REQUEST)
 
     last_name = idinfo['family_name']
     first_name = idinfo['given_name']
@@ -199,7 +198,6 @@ def google_oauth(request):
     photo = idinfo['picture']
 
     first_login = False
-
 
     photo = re.sub(r'/s\d\d-c/',r'/s500-c/',photo)
     name = urlparse(photo).path.split('/')[-1]
@@ -219,10 +217,9 @@ def google_oauth(request):
         user.save()
         first_login = True
 
-
     token = create_login_token(user)
-
-    content = {'token': token.key, 'email': user.email, 'id': user.id, 'first_login': first_login}
+    profile = get_profile_data(user.id)
+    content = {'token': token.key, 'email': user.email, 'id': user.id, 'first_login': first_login, 'profile': profile}
     return Response(custom_api_response(content=content), status=status.HTTP_200_OK)
 
 
@@ -280,9 +277,6 @@ def facebook_oauth(request):
     name = urlparse(photo).path.split('/')[-1]+'fb.jpg'
     content = ContentFile(urlopen(photo).read())
 
-
-
-
     try:
         user = UserModel.objects.get(email=email)
     except UserModel.DoesNotExist:
@@ -295,14 +289,13 @@ def facebook_oauth(request):
             user.profile.photo.save(name,content,save=True)
             first_login = True
 
-
-
     if user.fb_id == fb_id:
         token = create_login_token(user)
-        content = {'token': token.key, 'email': user.email, 'id': user.id, 'first_login': first_login}
+        profile = get_profile_data(user.id)
+        content = {'token': token.key, 'email': user.email, 'id': user.id, 'first_login': first_login, 'profile': profile}
         return Response(custom_api_response(content=content), status=status.HTTP_200_OK)
     else:
-        return Response({'error': 'wrong id'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': 'Unable to login via facebook account, wrong id'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 

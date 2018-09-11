@@ -17,7 +17,7 @@ class ShopSerializer(serializers.ModelSerializer):
     phone = serializers.CharField(allow_null=True, required=False)
     city = serializers.StringRelatedField()
     city_id = serializers.IntegerField(allow_null=True, required=False)
-    categories = CategorySerializer(many=True)
+    categories = CategorySerializer(many=True, read_only=True)
     #image = serializers.ImageField(upload_to='shops/%Y/%m/%d', blank=True)
 
     class Meta:

@@ -7,6 +7,8 @@ from rest_framework.compat import authenticate
 from common.utils import ROLES, DEFAULT_USER_ROLE
 from account.models import Profile
 from ...utils import ERROR_API
+#from ...account.serializers import ProfileSerializer
+from ...common.category.serializers import CategorySerializer
 
 
 UserModel = get_user_model()
