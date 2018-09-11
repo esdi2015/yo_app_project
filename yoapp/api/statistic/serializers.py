@@ -16,3 +16,8 @@ class StatisticApiSerializer(serializers.Serializer):
     date_field = serializers.DateTimeField(allow_null=True,required=False)
     taken = serializers.IntegerField(allow_null=True)
     redeemed = serializers.IntegerField(allow_null=True)
+
+class StatisticApiViewsSerializer(serializers.Serializer):
+    date_field = serializers.DateTimeField(allow_null=True,required=False)
+    liked = serializers.IntegerField(allow_null=True)
+    shown = serializers.IntegerField(allow_null=True)
