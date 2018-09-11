@@ -99,15 +99,21 @@ class LoginSerializer(serializers.Serializer):
                 raise serializers.ValidationError(msg, code=api_error_code)
             else:
                 if user.role == 'ADMIN':
-                    msg = _('Unable to log in with ADMIN role.')
-                    raise serializers.ValidationError(msg, code='authorization')
+                    # msg = _('Unable to log in with ADMIN role.')
+                    msg = _(ERROR_API['107'][1])
+                    api_error_code = ERROR_API['107'][0]
+                    raise serializers.ValidationError(msg, code=api_error_code)
                 else:
                     if user.role == 'CUSTOMER' and app == APP[0]:
-                        msg = _('Unable to log in with CUSTOMER role.')
-                        raise serializers.ValidationError(msg, code='authorization')
+                        # msg = _('Unable to log in with CUSTOMER role.')
+                        msg = _(ERROR_API['108'][1])
+                        api_error_code = ERROR_API['108'][0]
+                        raise serializers.ValidationError(msg, code=api_error_code)
         else:
-            msg = _('Must include "email" and "password".')
-            raise serializers.ValidationError(msg, code='authorization')
+            # msg = _('Must include "email" and "password".')
+            msg = _(ERROR_API['105'][1])
+            api_error_code = ERROR_API['105'][0]
+            raise serializers.ValidationError(msg, code=api_error_code)
 
         attrs['user'] = user
         return attrs
@@ -123,10 +129,14 @@ class UserIsExistsSerializer(serializers.Serializer):
             user = UserModel.objects.filter(email=email).all()
 
             if not user:
-                msg = _('User does not exists')
-                raise serializers.ValidationError(msg)
+                # msg = _('User does not exists')
+                msg = _(ERROR_API['104'][1])
+                api_error_code = ERROR_API['104'][0]
+                raise serializers.ValidationError(msg, code=api_error_code)
         else:
-            msg = _('Must include "email".')
+            # msg = _('Must include "email".')
+            msg = _(ERROR_API['106'][1])
+            api_error_code = ERROR_API['106'][0]
             raise serializers.ValidationError(msg)
 
         attrs['user'] = user

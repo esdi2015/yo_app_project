@@ -34,6 +34,8 @@ from django.core.files.base import ContentFile
 from urllib.parse import urlparse
 from urllib.request import urlopen
 
+from ...utils import ERROR_API
+
 UserModel = get_user_model()
 
 
@@ -128,8 +130,10 @@ class UserViewSet(viewsets.ModelViewSet):
 def register_view(request):
     # registration handler
     if request.user.is_authenticated == True:
-        error = {"detail": "You must have to log out first"}
-        return Response(custom_api_response(errors=error), status=status.HTTP_400_BAD_REQUEST)
+        # error = {"detail": "You must have to log out first"}
+        error = {"detail": ERROR_API['109'][1]}
+        error_codes = [ERROR_API['109'][0]]
+        return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_400_BAD_REQUEST)
 
     serializer = CustomUserSerializer(data=request.data)
     if serializer.is_valid():
@@ -153,8 +157,10 @@ def register_view(request):
 @permission_classes(())
 def login_view(request):
     if request.user.is_authenticated == True:
-        error = {"detail": "You must have to log out first"}
-        return Response(custom_api_response(errors=error), status=status.HTTP_400_BAD_REQUEST)
+        # error = {"detail": "You must have to log out first"}
+        error = {"detail": ERROR_API['109'][1]}
+        error_codes = [ERROR_API['109'][0]]
+        return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_400_BAD_REQUEST)
 
     serializer = LoginSerializer(data=request.data)
     if serializer.is_valid():
@@ -181,7 +187,10 @@ def get_profile_data(user_id):
 @permission_classes(())
 def google_oauth(request):
     if request.user.is_authenticated:
-        return Response({"detail": "You must have to log out first"})
+        error = {"detail": ERROR_API['109'][1]}
+        error_codes = [ERROR_API['109'][0]]
+        #return Response({"detail": "You must have to log out first"})
+        return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_400_BAD_REQUEST)
 
     token=request.data['id_token']
 
@@ -190,7 +199,10 @@ def google_oauth(request):
         if idinfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
             raise ValueError('Wrong issuer.')
     except ValueError:
-        return Response({"error":"Unable to login via google account, wrong issuer"},status=status.HTTP_400_BAD_REQUEST)
+        error = {"detail": ERROR_API['111'][1]}
+        error_codes = [ERROR_API['111'][0]]
+        # return Response({"error":"Unable to login via google account, wrong issuer"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_400_BAD_REQUEST)
 
     last_name = idinfo['family_name']
     first_name = idinfo['given_name']
@@ -223,25 +235,25 @@ def google_oauth(request):
     return Response(custom_api_response(content=content), status=status.HTTP_200_OK)
 
 
-@api_view(['GET'])
-@permission_classes(())
-def test(request):
-    photo = "https://i.imgur.com/gkjCJVf.jpg"
-
-    name = urlparse(photo).path.split('/')[-1]
-    # wrap your file content
-    content = ContentFile(urlopen(photo).read())
-
-
-    print(name)
-    print(content)
-
-    user = UserModel(email='dsadsa@com.com', last_name='fdsfds', first_name='fdsfdsfs')
-    user.save()
-    user.profile.photo.save(name, content, save=True)
-    user.save()
-
-    return Response('ok',status=status.HTTP_200_OK)
+# @api_view(['GET'])
+# @permission_classes(())
+# def test(request):
+#     photo = "https://i.imgur.com/gkjCJVf.jpg"
+#
+#     name = urlparse(photo).path.split('/')[-1]
+#     # wrap your file content
+#     content = ContentFile(urlopen(photo).read())
+#
+#
+#     print(name)
+#     print(content)
+#
+#     user = UserModel(email='dsadsa@com.com', last_name='fdsfds', first_name='fdsfdsfs')
+#     user.save()
+#     user.profile.photo.save(name, content, save=True)
+#     user.save()
+#
+#     return Response('ok',status=status.HTTP_200_OK)
 
 
 
@@ -255,8 +267,11 @@ def facebook_oauth(request):
         return token
 
     if request.user.is_authenticated == True:
-        error = {"detail": "You must have to log out first"}
-        return Response(custom_api_response(errors=error), status=status.HTTP_400_BAD_REQUEST)
+        # error = {"detail": "You must have to log out first"}
+        error = {"detail": ERROR_API['109'][1]}
+        error_codes = [ERROR_API['109'][0]]
+        # return Response(custom_api_response(errors=error), status=status.HTTP_400_BAD_REQUEST)
+        return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_400_BAD_REQUEST)
 
     access_token = request.data['access_token']
     email = request.data['email']
@@ -282,7 +297,10 @@ def facebook_oauth(request):
     except UserModel.DoesNotExist:
         try:
             user = UserModel.objects.get(fb_id=fb_id)
-            return Response({'error': 'already registered'}, status=status.HTTP_400_BAD_REQUEST)
+            error = {"detail": ERROR_API['110'][1]}
+            error_codes = [ERROR_API['110'][0]]
+            # return Response({'error': 'already registered'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_400_BAD_REQUEST)
         except UserModel.DoesNotExist:
             user = UserModel(email=email, last_name=last_name, first_name=first_name, fb_id=fb_id)
             user.save()
@@ -295,7 +313,10 @@ def facebook_oauth(request):
         content = {'token': token.key, 'email': user.email, 'id': user.id, 'first_login': first_login, 'profile': profile}
         return Response(custom_api_response(content=content), status=status.HTTP_200_OK)
     else:
-        return Response({'error': 'Unable to login via facebook account, wrong id'}, status=status.HTTP_400_BAD_REQUEST)
+        error = {"detail": ERROR_API['112'][1]}
+        error_codes = [ERROR_API['112'][0]]
+        # return Response({'error': 'Unable to login via facebook account, wrong id'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_400_BAD_REQUEST)
 
 
 

@@ -62,12 +62,15 @@ def custom_exception_handler(exc, context):
     return response
 
 
-def custom_api_response(serializer=None, content=None, errors=None, metadata={}):
+def custom_api_response(serializer=None, content=None, errors=None, metadata={}, error_codes=[]):
+    api_error_codes = []
     if content:
         response = {'metadata': metadata, 'content': content}
         return response
 
     if errors:
+        if len(error_codes) > 0:
+            metadata = {'api_error_codes': error_codes}
         response = {'metadata': metadata, 'errors': errors}
         return response
 
@@ -78,14 +81,13 @@ def custom_api_response(serializer=None, content=None, errors=None, metadata={})
             response = {'metadata': metadata, 'content': 'unknown'}
     else:
         #print(serializer._errors)
-        api_error_codes = []
         for key in serializer._errors.keys():
             try:
                 api_error_codes.append(serializer._errors[key][0].code)
             except Exception as e:
                 pass
         #if 'non_field_errors' in serializer._errors:
-        if api_error_codes:
+        if len(api_error_codes) > 0:
             metadata = {'api_error_codes': api_error_codes}
         response = {'metadata': metadata, 'errors': serializer._errors}
     return response
