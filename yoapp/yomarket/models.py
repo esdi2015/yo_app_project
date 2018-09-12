@@ -138,7 +138,7 @@ class QRcoupon(models.Model):
     user = models.ForeignKey('common.User', related_name='coupon_user', on_delete=models.CASCADE,default=None)
     offer = models.ForeignKey(Offer, related_name='offer', on_delete=models.CASCADE, null=True)
     type = models.CharField(max_length=50, choices=CODE_TYPES, default=CODE_TYPES[0][0])
-    alpha_num_code_type=models.CharField(max_length=50,choices=ALPHANUM_CODE_TYPES,default=CODE_TYPES[0],blank=True,null=True)
+    alpha_num_code_type=models.CharField(max_length=50,choices=ALPHANUM_CODE_TYPES,default=ALPHANUM_CODE_TYPES[0],blank=True,null=True)
     coupon_phone = models.CharField(max_length=20, null=True, blank=True)
     coupon_web = models.CharField(max_length=100, null=True, blank=True)
     description=models.CharField(max_length=300,blank=True)
