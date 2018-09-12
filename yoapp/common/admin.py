@@ -3,7 +3,7 @@ from django.contrib import admin
 from django.contrib.auth.models import Group
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
-from mptt.admin import MPTTModelAdmin
+from mptt.admin import MPTTModelAdmin, DraggableMPTTAdmin
 from oauth2_provider.models import Application, Grant, AccessToken, RefreshToken
 
 from .models import User, Category, City
@@ -88,10 +88,17 @@ class CityAdmin(admin.ModelAdmin):
     ordering = ('city_name',)
 
 
+class CategoryAdmin(MPTTModelAdmin):
+    list_display = ('category_name', 'image', )
+    # list_display = ('indented_title', 'image')
+    # list_display_links = ('indented_title',)
+    ordering = ('category_name',)
+
+
 # Now register the new UserAdmin...
 admin.site.register(User, UserAdmin)
 admin.site.register(City, CityAdmin)
-admin.site.register(Category, MPTTModelAdmin)
+admin.site.register(Category, CategoryAdmin)
 # ... and, since we're not using Django's built-in permissions,
 # unregister the Group model from admin.
 #admin.site.unregister(Group)
