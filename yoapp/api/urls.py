@@ -9,7 +9,7 @@ from .notification.urls import urlpatterns as notification_urls
 from .account.urls import urlpatterns as account_urls
 from .yomarket.wishlist.urls import urlpatterns as wishlist_urls
 from .statistic.urls import urlpatterns as statistic_urls
-
+from .common.smsreg.urls import urlpatterns as sms_reg_urls
 
 urlpatterns = []
 urlpatterns = urlpatterns + \
@@ -23,7 +23,8 @@ urlpatterns = urlpatterns + \
               account_urls + \
               wishlist_urls + \
               statistic_urls + \
-              city_urls
+              city_urls + \
+              sms_reg_urls
 
 
 

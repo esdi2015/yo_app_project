@@ -21,6 +21,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     role = models.CharField(max_length=50, choices=ROLES, default=DEFAULT_USER_ROLE)
     creator_id = models.SmallIntegerField(default=0)
     fb_id = models.CharField(max_length=100, blank=True, unique=True, null=True)
+    mobile = models.CharField(max_length=16,blank=True,null=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
@@ -77,3 +78,11 @@ class City(models.Model):
 
 post_save.connect(receivers.create_auth_token, sender=get_user_model())
 
+
+
+class PasscodeVerify(models.Model):
+    mobile = models.IntegerField()
+    passcode = models.CharField(max_length = 4,default='0000')
+    is_verified = models.BooleanField(default=False)
+    is_sent = models.BooleanField(default=False)
+    created_on = models.DateTimeField(auto_now_add=True)

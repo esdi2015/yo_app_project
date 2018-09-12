@@ -6,7 +6,7 @@ from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from mptt.admin import MPTTModelAdmin
 from oauth2_provider.models import Application, Grant, AccessToken, RefreshToken
 
-from .models import User, Category, City
+from .models import User, Category, City,PasscodeVerify
 
 
 class UserCreationForm(forms.ModelForm):
@@ -88,10 +88,17 @@ class CityAdmin(admin.ModelAdmin):
     ordering = ('city_name',)
 
 
+class PasscodeVerifyAdmin(admin.ModelAdmin):
+    list_display = ('mobile','passcode','is_verified','is_sent','created_on')
+
+
+
 # Now register the new UserAdmin...
 admin.site.register(User, UserAdmin)
 admin.site.register(City, CityAdmin)
 admin.site.register(Category, MPTTModelAdmin)
+admin.site.register(PasscodeVerify, PasscodeVerifyAdmin)
+
 # ... and, since we're not using Django's built-in permissions,
 # unregister the Group model from admin.
 #admin.site.unregister(Group)
