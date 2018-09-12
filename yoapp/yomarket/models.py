@@ -16,14 +16,11 @@ CODE_TYPES = (
     ('ALPHANUMCODE', 'Alphanumeric code')
 )
 
-
-
 ALPHANUM_CODE_TYPES = (
     ('GENERAL', 'coupon redeem general way'),
     ('WEBSITE', 'coupon redeem website'),
     ('PHONE', 'coupon redeem phone')
 )
-
 
 OFFER_TYPES = (
     ('REGULAR', 'Regular'),
@@ -80,13 +77,13 @@ class Offer(models.Model):
     codes_count = models.SmallIntegerField(('codes count'), default=0, editable=True)
     redeemed_codes_count = models.SmallIntegerField(('redeemed count'), default=0, editable=True)
     expire = models.DateTimeField(('expire date'), blank=False, null=False)
-    coupon_description=models.CharField(max_length=300,blank=True)
-    alpha_num_code_type=models.CharField(max_length=50,choices=ALPHANUM_CODE_TYPES,default=CODE_TYPES[0])
+    coupon_description = models.CharField(max_length=300, blank=True)
+    alpha_num_code_type = models.CharField(max_length=50, choices=ALPHANUM_CODE_TYPES, default=ALPHANUM_CODE_TYPES[0][0])
     coupon_phone = models.CharField(max_length=20, null=True, blank=True)
     coupon_web  = models.CharField(max_length=100, null=True, blank=True)
-
     code_type = models.CharField(max_length=50, choices=CODE_TYPES, default=CODE_TYPES[0][0])
     offer_type = models.CharField(max_length=50, choices=OFFER_TYPES, default=OFFER_TYPES[0][0])
+
 
     def redeemed_codes_increment(self):
         if self.redeemed_codes_count+1 == self.codes_count:
@@ -138,10 +135,10 @@ class QRcoupon(models.Model):
     user = models.ForeignKey('common.User', related_name='coupon_user', on_delete=models.CASCADE,default=None)
     offer = models.ForeignKey(Offer, related_name='offer', on_delete=models.CASCADE, null=True)
     type = models.CharField(max_length=50, choices=CODE_TYPES, default=CODE_TYPES[0][0])
-    alpha_num_code_type=models.CharField(max_length=50,choices=ALPHANUM_CODE_TYPES,default=ALPHANUM_CODE_TYPES[0],blank=True,null=True)
+    alpha_num_code_type = models.CharField(max_length=50, choices=ALPHANUM_CODE_TYPES, default=ALPHANUM_CODE_TYPES[0][0], blank=True, null=True)
     coupon_phone = models.CharField(max_length=20, null=True, blank=True)
     coupon_web = models.CharField(max_length=100, null=True, blank=True)
-    description=models.CharField(max_length=300,blank=True)
+    description = models.CharField(max_length=300, blank=True)
 
 
     class Meta:
