@@ -13,9 +13,11 @@ class NotificationSerializator(serializers.ModelSerializer):
 
 
 class SubscriptionSerializator(serializers.ModelSerializer):
-    category = serializers.StringRelatedField()
-    category_id = serializers.IntegerField(allow_null=False)
+    category = serializers.StringRelatedField(allow_null=True,required=False)
+    category_id = serializers.IntegerField(allow_null=True,required=False)
+    shop = serializers.StringRelatedField(allow_null=True,required=False)
+    shop_id = serializers.IntegerField(allow_null=True,required=False)
 
     class Meta:
         model = Subscription
-        fields=('id', 'type', 'category', 'category_id', 'shop', 'discount_filter', 'discount_value', 'notification_type')
+        fields=('id', 'type', 'category', 'category_id', 'shop','shop_id', 'discount_filter', 'discount_value', 'notification_type')
