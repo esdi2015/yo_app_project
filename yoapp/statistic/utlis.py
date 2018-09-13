@@ -4,7 +4,7 @@ from yomarket.models import Offer,Shop
 
 def count_shown(obj=None):
     if isinstance(obj, Offer):
-        StatisticTable(type='shown',offer=obj).save()
+        StatisticTable(type='shown',offer=obj,category=obj.category).save()
         return True
     elif isinstance(obj, Shop):
         StatisticTable(type='shown',shop=obj).save()
