@@ -15,7 +15,7 @@ from api.statistic.serializers import CategoryPieSerializer,\
 from statistic.models import StatisticTable
 
 
-from django.db.models.functions import TruncMonth,TruncDay,TruncHour
+from django.db.models.functions import TruncMonth,TruncDay,TruncHour,TruncYear
 from django.db.models import Q
 
 UserModel = get_user_model()
@@ -307,6 +307,8 @@ class StatisticOwnerOfferLikesAndViews(generics.ListAPIView):
             truncFunc=TruncMonth
         elif type=='hour':
             truncFunc=TruncHour
+        elif type == 'year':
+            truncFunc = TruncYear
         else:
             truncFunc=TruncDay
 
@@ -346,6 +348,8 @@ class StatisticOwnerOfferTakenAndRedeemed(generics.ListAPIView):
             truncFunc=TruncMonth
         elif type=='hour':
             truncFunc=TruncHour
+        elif type == 'year':
+            truncFunc = TruncYear
         else:
             truncFunc=TruncDay
 
