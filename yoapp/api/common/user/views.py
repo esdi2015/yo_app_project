@@ -134,7 +134,7 @@ user_reset_password_request_token = UserResetPasswordRequestToken.as_view()
 
 @api_view(['POST'])
 @permission_classes(())
-def reset_password_request(request):
+def reset_password_request():
     from django_rest_passwordreset.views import reset_password_request_token
     content = reset_password_request_token
     print (content)

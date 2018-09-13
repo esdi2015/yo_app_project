@@ -33,6 +33,7 @@ class Shop(models.Model):
                              on_delete = models.DO_NOTHING, null=True)
     title = models.CharField(max_length=200)
     address = models.CharField(max_length=200, blank=True)
+    description = models.TextField(blank=True)
     created = models.DateTimeField(auto_now_add=True)
     manager = models.ForeignKey('common.User', related_name='shops_manager',
                              on_delete = models.SET_NULL, null=True)

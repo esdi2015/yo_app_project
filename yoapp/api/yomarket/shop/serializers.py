@@ -22,8 +22,9 @@ class ShopSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ShopModel
-        fields = ('id', 'title', 'address', 'user', 'user_id', 'manager', 'manager_id',
-                  'latitude', 'longitude', 'outer_link', 'phone', 'image', 'code_type', 'city', 'city_id', 'categories')
+        fields = ('id', 'title', 'address', 'description', 'user', 'user_id', 'manager', 'manager_id',
+                  'latitude', 'longitude', 'outer_link', 'phone', 'image', 'code_type', 'city', 'city_id',
+                  'categories')
 
 
     # def save(self, **kwargs):
@@ -49,5 +50,5 @@ class ShopListSerializer(ShopSerializer):
 
     class Meta:
         model = ShopModel
-        fields = ('id', 'title', 'address', 'user', 'user_id', 'manager', 'manager_id',
+        fields = ('id', 'title', 'address', 'description', 'user', 'user_id', 'manager', 'manager_id',
                   'outer_link', 'phone', 'image', 'code_type', 'city', 'city_id', 'categories')
