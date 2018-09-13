@@ -411,7 +411,7 @@ class StatisticGlobalCategoryPie(generics.ListAPIView):
                  .values('category_name').annotate(total=Sum('value')).order_by('total').reverse()[:top]
 
         if type =='min':
-            queryset = StatisticTable.objects.filter(offer__in=offers,type='shown',category__isnull=False) \
+            queryset = StatisticTable.objects.filter(category__in=categories,type='shown',category__isnull=False) \
                            .annotate(category_name=F('category__category_name')) \
                            .values('category_name').annotate(total=Sum('value')).order_by('total')[:top]
 
