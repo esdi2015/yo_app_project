@@ -10,8 +10,11 @@ ERROR_API = {
     "109": (109, "You must have to log out first"),
     "110": (110, "Already registered"),
     "111": (111, "Unable to login via google account, wrong issuer"),
-    "112": (112, "Unable to login via facebook account, wrong id")
+    "112": (112, "Unable to login via facebook account, wrong id"),
+
+    "200": (200, "No coupons")
 }
 
 
 #100 - 199 - users API errors
+#200 - 299 - offers API errors

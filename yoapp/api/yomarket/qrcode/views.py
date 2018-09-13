@@ -1,17 +1,16 @@
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from api.yomarket.qrcode.serializers import QRcouponSerializator,QRcouponNestedSerializator
+from api.yomarket.qrcode.serializers import QRcouponSerializator, QRcouponNestedSerializator
 from rest_framework import status
 from rest_framework import generics
 
 from ...views import custom_api_response
 
 from django.utils import timezone
-
-from yomarket.models import Offer,QRcoupon
-
-from statistic.utlis import count_taken_coupons,count_redeemd_coupons
+from yomarket.models import Offer, QRcoupon
+from statistic.utlis import count_taken_coupons, count_redeemd_coupons
+from ...utils import ERROR_API
 
 class QRcouponRedeemView(generics.UpdateAPIView):
     serializer_class = QRcouponSerializator
@@ -69,11 +68,6 @@ class QRcouponShortRedeemView(generics.UpdateAPIView):
         count_redeemd_coupons(instance.offer)
         instance.offer.redeemed_codes_increment()
         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
-
-
-
-
-
 
 
 
@@ -149,11 +143,14 @@ class QRcouponsListView(generics.ListAPIView):
 
     def list(self,request, *args, **kwargs):
         queryset=self.get_queryset()
-        print(queryset)
+        # print(queryset)
         if queryset.exists():
             serilizer=self.get_serializer(queryset,many=True)
             return Response(custom_api_response(serilizer),status=status.HTTP_200_OK)
-        return Response(custom_api_response(content={'error':'no coupons'}),status.HTTP_400_BAD_REQUEST)
+        error = {"detail": ERROR_API['200'][1]}
+        error_codes = [ERROR_API['200'][0]]
+        #return Response(custom_api_response(content={'error':'no coupons'}),status.HTTP_400_BAD_REQUEST)
+        return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['POST'])
