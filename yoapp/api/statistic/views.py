@@ -301,11 +301,11 @@ class StatisticOwnerOfferLikesAndViews(generics.ListAPIView):
         start_date = self.request.query_params.get('startDate', None)
 
         if start_date != None:
-            start_date = start_date + "00:00:00"
+            start_date = start_date + " 00:00:00"
 
         end_date = self.request.query_params.get('endDate', None)
         if end_date != None:
-            start_date = start_date + "23:59:59"
+            end_date = end_date + " 23:59:59"
 
         type = self.request.query_params.get('type',None)
 
@@ -350,11 +350,11 @@ class StatisticOwnerOfferTakenAndRedeemed(generics.ListAPIView):
         start_date = self.request.query_params.get('startDate', None)
 
         if start_date !=None:
-            start_date=start_date+"00:00:00"
+            start_date=start_date+" 00:00:00"
 
         end_date = self.request.query_params.get('endDate',None)
         if end_date!=None:
-            start_date=start_date+"23:59:59"
+            end_date=end_date+" 23:59:59"
 
         type = self.request.query_params.get('type',None)
 
