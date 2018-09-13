@@ -129,7 +129,16 @@ from django_rest_passwordreset.views import ResetPasswordRequestToken
 class UserResetPasswordRequestToken(ResetPasswordRequestToken):
     pass
 
-user_reset_password_request_token = UserResetPasswordRequestToken.as_view()
+#user_reset_password_request_token = UserResetPasswordRequestToken.as_view()
+
+def user_reset_password_request_token_1():
+    from django.core.exceptions import ValidationError
+    try:
+        res = UserResetPasswordRequestToken #.as_view()
+        print (res)
+        return res.as_view()
+    except ValidationError as e:
+        return Response(custom_api_response(content={'detail': 'testttt 1111'}), status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
