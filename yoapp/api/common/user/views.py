@@ -125,6 +125,30 @@ class UserViewSet(viewsets.ModelViewSet):
         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
 
 
+from django_rest_passwordreset.views import ResetPasswordRequestToken
+class UserResetPasswordRequestToken(ResetPasswordRequestToken):
+    pass
+
+user_reset_password_request_token = UserResetPasswordRequestToken.as_view()
+
+
+@api_view(['POST'])
+@permission_classes(())
+def reset_password_request(request):
+    from django_rest_passwordreset.views import reset_password_request_token
+    content = reset_password_request_token
+    print (content)
+    #return Response(custom_api_response(content={'detail': 'testttt 1111'}), status=status.HTTP_200_OK)
+    return Response(content.as_view())
+
+
+@api_view(['POST'])
+@permission_classes(())
+def reset_password_confirm(request):
+    return Response(custom_api_response(content={'detail': 'testttt 2222'}), status=status.HTTP_200_OK)
+
+
+
 @api_view(['POST'])
 @permission_classes(())
 def register_view(request):
