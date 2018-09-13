@@ -297,8 +297,16 @@ class StatisticOwnerOfferLikesAndViews(generics.ListAPIView):
 
 
         queryset = StatisticTable.objects.all()
-        start_date = self.request.query_params.get('startDate',None)
-        end_date = self.request.query_params.get('endDate',None)
+
+        start_date = self.request.query_params.get('startDate', None)
+
+        if start_date != None:
+            start_date = start_date + "00:00:00"
+
+        end_date = self.request.query_params.get('endDate', None)
+        if end_date != None:
+            start_date = start_date + "23:59:59"
+
         type = self.request.query_params.get('type',None)
 
         print(start_date,end_date)
@@ -336,13 +344,20 @@ class StatisticOwnerOfferTakenAndRedeemed(generics.ListAPIView):
 
     def get_queryset(self):
 
-
         queryset = StatisticTable.objects.all()
-        start_date = self.request.query_params.get('startDate',None)
+
+
+        start_date = self.request.query_params.get('startDate', None)
+
+        if start_date !=None:
+            start_date=start_date+"00:00:00"
+
         end_date = self.request.query_params.get('endDate',None)
+        if end_date!=None:
+            start_date=start_date+"23:59:59"
+
         type = self.request.query_params.get('type',None)
 
-        print(start_date,end_date)
 
         if type=='month':
             truncFunc=TruncMonth
