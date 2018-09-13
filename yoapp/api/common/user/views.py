@@ -232,6 +232,7 @@ def google_oauth(request):
     first_name = idinfo['given_name']
     email = idinfo['email']
     photo = idinfo['picture']
+    google_id = idinfo['sub']
 
     first_login = False
 
@@ -245,9 +246,9 @@ def google_oauth(request):
         return token
 
     try:
-        user = UserModel.objects.get(email=email)
+        user = UserModel.objects.get(email=email,google_id=google_id)
     except UserModel.DoesNotExist:
-        user = UserModel(email=email, last_name=last_name, first_name=first_name)
+        user = UserModel(email=email, last_name=last_name, first_name=first_name,google_id=google_id)
         user.save()
         user.profile.photo.save(name, content, save = True)
         user.save()
@@ -257,27 +258,6 @@ def google_oauth(request):
     profile = get_profile_data(user.id)
     content = {'token': token.key, 'email': user.email, 'id': user.id, 'first_login': first_login, 'profile': profile}
     return Response(custom_api_response(content=content), status=status.HTTP_200_OK)
-
-
-# @api_view(['GET'])
-# @permission_classes(())
-# def test(request):
-#     photo = "https://i.imgur.com/gkjCJVf.jpg"
-#
-#     name = urlparse(photo).path.split('/')[-1]
-#     # wrap your file content
-#     content = ContentFile(urlopen(photo).read())
-#
-#
-#     print(name)
-#     print(content)
-#
-#     user = UserModel(email='dsadsa@com.com', last_name='fdsfds', first_name='fdsfdsfs')
-#     user.save()
-#     user.profile.photo.save(name, content, save=True)
-#     user.save()
-#
-#     return Response('ok',status=status.HTTP_200_OK)
 
 
 
