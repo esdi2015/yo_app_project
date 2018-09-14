@@ -263,6 +263,12 @@ def register_view(request):
         error_codes = [ERROR_API['109'][0]]
         return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_400_BAD_REQUEST)
 
+    is_user_exists = UserModel.objects.filter(email=request.data['email']).all()
+    if is_user_exists:
+        error = {"detail": ERROR_API['103'][1]}
+        error_codes = [ERROR_API['103'][0]]
+        return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_400_BAD_REQUEST)
+
     serializer = CustomUserSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save()
