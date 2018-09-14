@@ -1,7 +1,7 @@
 from django.apps import apps
 from rest_framework import serializers
 from ...common.category.serializers import CategorySerializer
-
+from notification.models import Subscription
 
 ShopModel = apps.get_model('yomarket', 'Shop')
 
@@ -19,12 +19,20 @@ class ShopSerializer(serializers.ModelSerializer):
     city_id = serializers.IntegerField(allow_null=True, required=False)
     categories = CategorySerializer(many=True, read_only=True)
     #image = serializers.ImageField(upload_to='shops/%Y/%m/%d', blank=True)
+    is_subscribed = serializers.SerializerMethodField()
+
+    def get_is_subscribed (self, obj):
+        try:
+            wish = Subscription.objects.get(user_id=self.context['request'].user.id, shop=obj)
+            return True
+        except Subscription.DoesNotExist:
+            return False
 
     class Meta:
         model = ShopModel
         fields = ('id', 'title', 'address', 'description', 'user', 'user_id', 'manager', 'manager_id',
                   'latitude', 'longitude', 'outer_link', 'phone', 'image', 'code_type', 'city', 'city_id',
-                  'categories')
+                  'categories','is_subscribed')
 
 
     # def save(self, **kwargs):
@@ -51,4 +59,4 @@ class ShopListSerializer(ShopSerializer):
     class Meta:
         model = ShopModel
         fields = ('id', 'title', 'address', 'description', 'user', 'user_id', 'manager', 'manager_id',
-                  'outer_link', 'phone', 'image', 'code_type', 'city', 'city_id', 'categories')
+                  'outer_link', 'phone', 'image', 'code_type', 'city', 'city_id', 'categories','is_subscribed')

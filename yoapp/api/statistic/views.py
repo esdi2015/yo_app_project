@@ -187,7 +187,6 @@ from django.db.models import Count,Sum,F
 
 
 
-
 class StatisticOwnerCategoryPie(generics.ListAPIView):
     serializer_class = CategoryPieSerializer
 
@@ -309,7 +308,6 @@ class StatisticOwnerOfferLikesAndViews(generics.ListAPIView):
 
         type = self.request.query_params.get('type',None)
 
-        print(start_date,end_date)
 
         if type=='month':
             truncFunc=TruncMonth
@@ -325,7 +323,6 @@ class StatisticOwnerOfferLikesAndViews(generics.ListAPIView):
             .annotate(liked=Sum('value', filter=Q(type='liked')),shown=Sum('value', filter=Q(type='shown')))\
             .order_by('date_field')
 
-        print(queryset)
         return queryset
 
 
@@ -373,7 +370,6 @@ class StatisticOwnerOfferTakenAndRedeemed(generics.ListAPIView):
             .annotate(taken=Sum('value', filter=Q(type='taken')),redeemed=Sum('value', filter=Q(type='redeemed')))\
             .order_by('date_field')
 
-        print(queryset)
         return queryset
 
 
