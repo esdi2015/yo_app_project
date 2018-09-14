@@ -18,6 +18,10 @@ class SubscriptionSerializator(serializers.ModelSerializer):
     shop = serializers.StringRelatedField(allow_null=True,required=False)
     shop_id = serializers.IntegerField(allow_null=True,required=False)
 
+    def create(self, validated_data):
+        sub,created=Subscription.objects.get_or_create(**validated_data)
+        return sub
+
     class Meta:
         model = Subscription
         fields=('id', 'type', 'category', 'category_id', 'shop','shop_id', 'discount_filter', 'discount_value', 'notification_type')

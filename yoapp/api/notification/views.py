@@ -53,6 +53,7 @@ def subscribe(request):
         return Response(custom_api_response(errors=error), status=status.HTTP_400_BAD_REQUEST)
 
     serializer = SubscriptionSerializator(data=request.data)
+    #print(request.data)
     if serializer.is_valid():
         serializer.save(user_id=request.user.pk)
         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
