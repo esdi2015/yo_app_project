@@ -238,7 +238,7 @@ DEFAULT_FROM_EMAIL = 'ownerowner346@gmail.com'
 EMAIL_HOST_PASSWORD = 'Ownerowner123'
 EMAIL_USE_TLS = True
 
-
+DJANGO_REST_MULTITOKENAUTH_RESET_TOKEN_EXPIRY_TIME = 1
 
 #admin.site.site_header = 'Halap-YO Admin'
 #admin.site.site_title = 'Halap-YO Admin Portal'
