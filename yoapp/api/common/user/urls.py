@@ -1,7 +1,7 @@
 from django.conf.urls import re_path, include, url
 from rest_framework import routers
 from .views import UserViewSet, Logout, UserMe, UserIsExists, google_oauth, facebook_oauth, \
-    user_reset_password_request_token_1
+    user_reset_password_request_token, user_reset_password_confirm
 from . import views as api_view
 
 
@@ -20,10 +20,9 @@ urlpatterns += [
     url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
     url(r'^login-google/$', google_oauth, name='google_login'),
     url(r'^login-facebook/$',facebook_oauth , name='facebook_login'),
-    url(r'^password-reset/', include('django_rest_passwordreset.urls', namespace='password_reset')),
-
-    url(r'^password-reset-1/$', user_reset_password_request_token_1(), name='reset_password_request'),
-    url(r'^password-reset-1/confirm/$', api_view.reset_password_confirm, name='reset_password_confirm'),
+    #url(r'^password-reset/', include('django_rest_passwordreset.urls', namespace='password_reset')),
+    url(r'^password-reset/$', user_reset_password_request_token, name='reset_password_request'),
+    url(r'^password-reset/confirm/$', user_reset_password_confirm, name='reset_password_confirm'),
     #url(r'^password-reset/confirm/', include('django_rest_passwordreset.urls', namespace='password_reset_confirm')),
     #url(r'^forgot-password/$', api_view.login_view, name='user_forgot_password'),
 ]

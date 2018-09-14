@@ -40,6 +40,7 @@ class Shop(models.Model):
     latitude = models.DecimalField(max_digits=10, decimal_places=6, null=True, blank=True)
     longitude = models.DecimalField(max_digits=10, decimal_places=6, null=True, blank=True)
     outer_link = models.CharField(max_length=100, null=True, blank=True)
+    social_link = models.CharField(max_length=100, null=True, blank=True)
     phone = models.CharField(max_length=20, null=True, blank=True)
     image = models.ImageField(upload_to='shops/%Y/%m/%d', blank=True)
     code_type = models.CharField(max_length=50, choices=CODE_TYPES, default=CODE_TYPES[0][0])
