@@ -3,7 +3,7 @@ from yomarket.models import QRcoupon
 from api.yomarket.offer.serializers import OfferSerializer
 from rest_framework import serializers
 from notification.models import Notification, Subscription
-
+from rest_framework.fields import CurrentUserDefault
 
 class NotificationSerializator(serializers.ModelSerializer):
     class Meta:
@@ -19,7 +19,7 @@ class SubscriptionSerializator(serializers.ModelSerializer):
     shop_id = serializers.IntegerField(allow_null=True,required=False)
 
     def create(self, validated_data):
-        sub,created=Subscription.objects.get_or_create(**validated_data)
+        sub,created=Subscription.objects.update_or_create(user=self.context['request'].user,shop_id=validated_data['shop_id'],type=validated_data['type'],defaults={**validated_data})
         return sub
 
     class Meta:

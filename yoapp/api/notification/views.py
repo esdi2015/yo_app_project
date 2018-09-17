@@ -52,10 +52,9 @@ def subscribe(request):
         error = {"detail": "You must have to log in first"}
         return Response(custom_api_response(errors=error), status=status.HTTP_400_BAD_REQUEST)
 
-    serializer = SubscriptionSerializator(data=request.data)
-    #print(request.data)
+    serializer = SubscriptionSerializator(data=request.data,context={'request': request})
     if serializer.is_valid():
-        serializer.save(user_id=request.user.pk)
+        serializer.save()
         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
     else:
         return Response(custom_api_response(serializer), status=status.HTTP_400_BAD_REQUEST)
@@ -64,14 +63,23 @@ def subscribe(request):
 
 @api_view(['DELETE'])
 @permission_classes(())
-def unsubscribe(request, pk):
+def unsubscribe(request):
     if request.user.is_authenticated == False:
         error = {"detail": "You must have to log in first"}
         return Response(custom_api_response(errors=error), status=status.HTTP_400_BAD_REQUEST)
 
-    subs = Subscription.objects.filter(pk=pk)
-    subs.delete()
-    return Response(custom_api_response(content={'detail': 'ok'}), status=status.HTTP_200_OK)
+    type=request.data['type']
+    id = request.data['id']
+    if type == 'shop':
+        sub = Subscription.objects.get(type=type,shop_id=id,user=request.user)
+        sub.delete()
+        return Response(custom_api_response(content={'detail': 'ok'}), status=status.HTTP_200_OK)
+    elif type == 'category':
+        sub = Subscription.objects.get(type=type,category_id=id,user=request.user)
+        sub.delete()
+        return Response(custom_api_response(content={'detail': 'ok'}), status=status.HTTP_200_OK)
+    else:
+        return Response(custom_api_response(content={'detail': 'invalid data'}), status=status.HTTP_200_OK)
 
 
 
