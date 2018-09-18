@@ -18,6 +18,7 @@ class Profile(models.Model):
     photo = models.ImageField(upload_to='users/%Y/%m/%d', blank=True)
     gender = models.CharField(max_length=50, choices=GENDER_CHOICES, default=DEFAULT_USER_GENDER)
     #about = models.TextField(blank=True)
+    points = models.IntegerField(default=0, blank=True, null=True)
 
     def __str__(self):
         return 'Profile for user {}'.format(self.user.username)

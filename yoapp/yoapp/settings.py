@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     'push_notifications',
     'django_celery_beat',
     'django_rest_passwordreset',
+    #'rest_framework_tricks',
 
     'common.apps.CommonConfig',
     'api.apps.ApiConfig',
