@@ -69,6 +69,7 @@ INSTALLED_APPS = [
     'yomarket.apps.YomarketConfig',
     'notification.apps.NotificationConfig',
     'statistic.apps.StatisticConfig',
+    'points.apps.PointsConfig',
 ]
 
 MIDDLEWARE = [
