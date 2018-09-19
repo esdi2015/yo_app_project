@@ -47,6 +47,9 @@ class Shop(models.Model):
     city = models.ForeignKey('common.City', related_name='city_user',
                              on_delete = models.DO_NOTHING, null=True, blank=True)
     categories = models.ManyToManyField('common.Category', blank=True)
+    schedule = models.ForeignKey('yomarket.Schedule', on_delete=models.DO_NOTHING, blank=True, null=True,
+                                    related_name='shop_schedule')
+
 
     def __unicode__(self):
         return self.title
@@ -57,6 +60,48 @@ class Shop(models.Model):
     class Meta:
         verbose_name = "shop"
         verbose_name_plural = "shops"
+
+
+
+
+class Schedule(models.Model):
+    title = models.CharField(max_length=200)
+    shop = models.ForeignKey('yomarket.Shop', on_delete=models.DO_NOTHING, blank=True, null=True,
+                             related_name='schedule_shop')
+
+    mon_open = models.TimeField(blank=True, null=True)
+    mon_close = models.TimeField(blank=True, null=True)
+
+    tue_open = models.TimeField(blank=True, null=True)
+    tue_close = models.TimeField(blank=True, null=True)
+
+    wed_open = models.TimeField(blank=True, null=True)
+    wed_close = models.TimeField(blank=True, null=True)
+
+    thu_open = models.TimeField(blank=True, null=True)
+    thu_close = models.TimeField(blank=True, null=True)
+
+    fri_open = models.TimeField(blank=True, null=True)
+    fri_close = models.TimeField(blank=True, null=True)
+
+    sat_open = models.TimeField(blank=True, null=True)
+    sat_close = models.TimeField(blank=True, null=True)
+
+    sun_open = models.TimeField(blank=True, null=True)
+    sun_close = models.TimeField(blank=True, null=True)
+
+    comment = models.TextField(blank=True)
+
+
+    def __unicode__(self):
+        return self.title
+
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        verbose_name = "schedule"
+        verbose_name_plural = "schedules"
 
 
 

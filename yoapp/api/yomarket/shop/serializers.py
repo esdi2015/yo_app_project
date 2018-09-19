@@ -1,6 +1,7 @@
 from django.apps import apps
 from rest_framework import serializers
 from ...common.category.serializers import CategorySerializer
+from ..schedule.serializers import ScheduleSerializer
 from notification.models import Subscription
 
 ShopModel = apps.get_model('yomarket', 'Shop')
@@ -20,6 +21,8 @@ class ShopSerializer(serializers.ModelSerializer):
     categories = CategorySerializer(many=True, read_only=True)
     #image = serializers.ImageField(upload_to='shops/%Y/%m/%d', blank=True)
     is_subscribed = serializers.SerializerMethodField()
+    schedule = ScheduleSerializer(many=False, read_only=True)
+
 
     def get_is_subscribed (self, obj):
         try:
@@ -28,11 +31,12 @@ class ShopSerializer(serializers.ModelSerializer):
         except Subscription.DoesNotExist:
             return False
 
+
     class Meta:
         model = ShopModel
         fields = ('id', 'title', 'address', 'description', 'user', 'user_id', 'manager', 'manager_id',
                   'latitude', 'longitude', 'outer_link', 'social_link', 'phone', 'image', 'code_type', 'city', 'city_id',
-                  'categories','is_subscribed')
+                  'categories','is_subscribed', 'schedule')
 
 
     # def save(self, **kwargs):
@@ -55,8 +59,13 @@ class ShopSerializer(serializers.ModelSerializer):
 
 
 class ShopListSerializer(ShopSerializer):
+    is_open = serializers.SerializerMethodField()
+
+    def get_is_open(self, obj):
+        return True
 
     class Meta:
         model = ShopModel
         fields = ('id', 'title', 'address', 'description', 'user', 'user_id', 'manager', 'manager_id',
-                  'outer_link', 'social_link', 'phone', 'image', 'code_type', 'city', 'city_id', 'categories','is_subscribed')
+                  'outer_link', 'social_link', 'phone', 'image', 'code_type', 'city', 'city_id', 'categories',
+                  'is_subscribed', 'is_open')

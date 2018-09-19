@@ -5,6 +5,9 @@ from .yomarket.offer.urls import urlpatterns as offer_urls
 from .yomarket.shop.urls import urlpatterns as shop_urls
 from .yomarket.qrcode.urls import urlpatterns as qr_urls
 from .yomarket.transaction.urls import urlpatterns as transaction_urls
+
+from .yomarket.schedule.urls import urlpatterns as schedule_urls
+
 from .notification.urls import urlpatterns as notification_urls
 from .account.urls import urlpatterns as account_urls
 from .yomarket.wishlist.urls import urlpatterns as wishlist_urls
@@ -24,7 +27,8 @@ urlpatterns = urlpatterns + \
               wishlist_urls + \
               statistic_urls + \
               city_urls + \
-              sms_reg_urls
+              sms_reg_urls + \
+              schedule_urls
 
 
 
