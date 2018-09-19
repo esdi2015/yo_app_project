@@ -11,6 +11,7 @@ from django.utils import timezone
 from yomarket.models import Offer, QRcoupon
 from statistic.utlis import count_taken_coupons, count_redeemd_coupons
 from ...utils import ERROR_API
+from yomarket.models import Transaction
 
 class QRcouponRedeemView(generics.UpdateAPIView):
     serializer_class = QRcouponSerializator
@@ -60,6 +61,8 @@ class QRcouponShortRedeemView(generics.UpdateAPIView):
 
     def partial_update(self, request, *args, **kwargs):
         instance = self.get_object()
+        trans=Transaction(customer=instance.user,manager=request.user,points=1,offer=instance.offer)
+        trans.save()
         if instance == None:
             return Response(custom_api_response(content={'error':'coupon not exist or invalid'}))
         serializer = self.get_serializer(instance, data=request.data,partial=True)
