@@ -21,7 +21,7 @@ class ShopViewSet(viewsets.ModelViewSet):
     # permission_classes = (AllowAny,)
 
     filter_backends = (filters.SearchFilter, DjangoFilterBackend, filters.OrderingFilter)
-    search_fields = ('title', 'address', )
+    search_fields = ('title', 'address', 'description', )
     filter_fields = ('manager_id', 'code_type', 'city_id', 'categories__id')
     ordering_fields = '__all__'
 
@@ -31,16 +31,10 @@ class ShopViewSet(viewsets.ModelViewSet):
         else :
             return [IsAuthenticated(), AllowAny(), ] # AllowAny(), - remove it later !!!
 
-    # def retrieve(self, request, pk=None):
-    #     queryset = ShopModel.objects.filter(pk=pk).all()
-    #     serializer = ShopSerializer(queryset, many=True)
-    #     return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
-
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
-
 
     def list(self, request, *args, **kwargs):
         self.serializer_class = ShopListSerializer
@@ -65,7 +59,6 @@ class ShopViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
 
-
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -73,7 +66,6 @@ class ShopViewSet(viewsets.ModelViewSet):
         serializer.save(user_id=request.user.pk)
         headers = self.get_success_headers(serializer.data)
         return Response(custom_api_response(serializer=serializer), status=status.HTTP_201_CREATED, headers=headers)
-
 
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)

@@ -28,12 +28,13 @@ TransactionModel = apps.get_model('yomarket', 'Transaction')
 class TransactionViewSet(viewsets.ModelViewSet):
     queryset = TransactionModel.objects.all()
     serializer_class = TransactionSerializer
-    #permission_classes = (AllowAny,)
+    # permission_classes = (AllowAny,)
 
-    #filter_backends = (filters.SearchFilter, DjangoFilterBackend, filters.OrderingFilter)
-    #search_fields = ('title', 'address', )
-    #filter_fields = ('manager_id', )
-    #ordering_fields = '__all__'
+    filter_backends = (filters.SearchFilter, DjangoFilterBackend, filters.OrderingFilter)
+    search_fields = ('offer__title', )
+    # filter_fields = ('manager_id', )
+    # ordering_fields = '__all__'
+    ordering_fields = ('points', 'created', 'offer__title', 'manager__email', 'customer__email', )
 
     def get_permissions(self):
         if self.action == 'retrieve' or self.action == 'list':
@@ -55,14 +56,17 @@ class TransactionViewSet(viewsets.ModelViewSet):
         #     queryset = ShopModel.objects.all()
 
         #queryset = self.filter_queryset(self.queryset)
-        queryset = TransactionModel.objects.all()
+        #queryset = TransactionModel.objects.all()
+        queryset = self.get_queryset()
+        queryset = self.filter_queryset(queryset)
 
         # page = self.paginate_queryset(queryset)
         # if page is not None:
         #     serializer = self.get_serializer(page, many=True)
         #     return self.get_paginated_response(serializer.data)
         #serializer = self.get_serializer(queryset, many=True)
-        serializer = TransactionSerializer(queryset, many=True)
+        #serializer = TransactionSerializer(queryset, many=True)
+        serializer = self.get_serializer(queryset, many=True)
         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
     #
     #
