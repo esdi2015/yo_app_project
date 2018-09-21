@@ -47,7 +47,7 @@ class Shop(models.Model):
     city = models.ForeignKey('common.City', related_name='city_user',
                              on_delete = models.DO_NOTHING, null=True, blank=True)
     categories = models.ManyToManyField('common.Category', blank=True)
-    schedule = models.ForeignKey('yomarket.Schedule', on_delete=models.DO_NOTHING, blank=True, null=True,
+    schedule = models.ForeignKey('yomarket.Schedule', on_delete=models.SET_NULL, blank=True, null=True,
                                     related_name='shop_schedule')
 
 
