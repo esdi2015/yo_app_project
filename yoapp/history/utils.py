@@ -39,7 +39,6 @@ def history_make_coupon_event(obj=None,user=None):
 
 
 # redeem coupon event: accpet offer instance
-
 def history_redeem_coupon_event(obj=None,user=None):
     if isinstance(obj, Offer):
         History(event='redeem_coupon',offer=obj,user=user).save()
@@ -51,13 +50,18 @@ def history_redeem_coupon_event(obj=None,user=None):
 
 
 # shop/category subscription event: accpet shop/category instance
+def history_subscription_event(obj=None,user=None):
+    if isinstance(obj, Shop):
+        History(event='shop_subscription',shop=obj,user=user).save()
+        return True
+    elif isinstance(obj, Category):
+        History(event='category_subscription',category=obj,user=user).save()
+        return True
+    else:
+        return False
 
-# def history_subscription_event(obj=None,user=None):
-#     if isinstance(obj, Shop):
-#         History(event='shop_subscription',shop=obj,user=user).save()
-#         return True
-#     elif int(obj):
-#         History(event='shop_subscription', category_id=obj, user=user).save()
-#         return True
-#     else:
-#         return False
+
+# profile update event
+def history_profile_update_event(user=None):
+        History(event='profile_update',user=user).save()
+        return True

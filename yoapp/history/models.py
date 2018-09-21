@@ -5,12 +5,12 @@ from yomarket.models import Offer,Shop
 
 EVENT_TYPES = (
     ('else','Else actions'),
-    ('offer_view', 'View offer'),  #done
-    ('shop_view', 'View shop'),    #done
-    ('category_view', 'View category'),  #done
-    ('like', 'Liked offer'),   #done
-    ('make_coupon', 'Maked coupon'),   #done
-    ('redeem_coupon', 'Redeemed coupon'),  #done
+    ('offer_view', 'View offer'),
+    ('shop_view', 'View shop'),
+    ('category_view', 'View category'),
+    ('like', 'Liked offer'),
+    ('make_coupon', 'Maked coupon'),
+    ('redeem_coupon', 'Redeemed coupon'),
     ('shop_subscription','Subscribed to shop'),
     ('category_subscription', 'Subscribed to category'),
     ('profile_update', 'Profile updated')
