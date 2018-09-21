@@ -11,6 +11,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from ...views import custom_api_response
 from .serializers import ShopSerializer, ShopListSerializer
 
+from history.utils import history_view_event
 
 ShopModel = apps.get_model('yomarket', 'Shop')
 
@@ -33,6 +34,7 @@ class ShopViewSet(viewsets.ModelViewSet):
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
+        history_view_event(obj=instance,user=request.user)
         serializer = self.get_serializer(instance)
         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
 

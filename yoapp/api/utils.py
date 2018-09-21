@@ -14,7 +14,9 @@ ERROR_API = {
     "113": (113, "Confirmation token not found"),
     "114": (114, "Confirmation token expired"),
 
-    "200": (200, "No coupons")
+    "200": (200, "No coupons"),
+    "201": (201, "No history data")
+
 }
 
 
