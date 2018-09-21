@@ -61,6 +61,7 @@ class ShopSerializer(serializers.ModelSerializer):
 
 class ShopListSerializer(ShopSerializer):
     is_open = serializers.SerializerMethodField()
+    schedule_title = serializers.StringRelatedField(source='schedule.title')
 
     def get_is_open(self, obj):
         return True
@@ -69,4 +70,4 @@ class ShopListSerializer(ShopSerializer):
         model = ShopModel
         fields = ('id', 'title', 'address', 'description', 'user', 'user_id', 'manager', 'manager_id',
                   'outer_link', 'social_link', 'phone', 'image', 'code_type', 'city', 'city_id', 'categories',
-                  'is_subscribed', 'is_open')
+                  'is_subscribed', 'is_open', 'schedule_id', 'schedule_title')

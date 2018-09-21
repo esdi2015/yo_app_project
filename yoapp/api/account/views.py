@@ -6,6 +6,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework import status
 from rest_framework.response import Response
+from rest_auth.models import TokenModel
 
 from ..views import custom_api_response
 from .serializers import ProfileSerializer
@@ -28,8 +29,13 @@ class ProfileDetailView(generics.RetrieveUpdateDestroyAPIView):
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
-        # print(serializer.data)
-        return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
+        profile_data = serializer.data
+        token = TokenModel.objects.filter(user_id=request.user.pk).first()
+        profile_data['token'] = str(token)
+        profile_data['region'] = None
+        profile_data['interests'] = None
+        #return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
+        return Response(custom_api_response(content=profile_data), status=status.HTTP_200_OK)
 
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
