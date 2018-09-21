@@ -11,6 +11,7 @@ from django.utils import timezone
 from yomarket.models import Offer, QRcoupon
 from statistic.utlis import count_taken_coupons, count_redeemd_coupons
 from ...utils import ERROR_API
+from history.utils import history_make_coupon_event,history_redeem_coupon_event
 from yomarket.models import Transaction
 
 class QRcouponRedeemView(generics.UpdateAPIView):
@@ -31,6 +32,8 @@ class QRcouponRedeemView(generics.UpdateAPIView):
 
     def partial_update(self, request, *args, **kwargs):
         instance = self.get_object()
+        trans = Transaction(customer=instance.user, manager=request.user, points=1, offer=instance.offer)
+        trans.save()
         if instance == None:
             return Response(custom_api_response(content={'error':'coupon not exist or invalid'}))
         serializer = self.get_serializer(instance, data=request.data,partial=True)
@@ -38,6 +41,7 @@ class QRcouponRedeemView(generics.UpdateAPIView):
         self.perform_update(serializer)
         instance.offer.redeemed_codes_increment()
         count_redeemd_coupons(instance.offer)
+        history_redeem_coupon_event(obj=instance.offer,user=request.user)
         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
 
 
@@ -70,6 +74,7 @@ class QRcouponShortRedeemView(generics.UpdateAPIView):
         self.perform_update(serializer)
         count_redeemd_coupons(instance.offer)
         instance.offer.redeemed_codes_increment()
+        history_redeem_coupon_event(obj=instance.offer,user=request.user)
         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
 
 
@@ -164,6 +169,8 @@ def make_coupon(request):
     if serializer.is_valid():
         instance=serializer.save(user_id=request.user.pk)
         count_taken_coupons(instance.offer)
+        history_make_coupon_event(obj=instance.offer,user=request.user)
+        serializer=QRcouponNestedSerializator(instance,context={'request': request})
         return Response(custom_api_response(serializer),status.HTTP_200_OK)
     else:
         return Response(custom_api_response(content={'error':'invalid request data'}),status.HTTP_400_BAD_REQUEST)

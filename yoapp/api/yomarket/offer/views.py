@@ -13,7 +13,7 @@ from .serializers import OfferSerializer
 
 from rest_framework.pagination import LimitOffsetPagination
 from statistic.utlis import count_shown
-
+from history.utils import history_view_event
 
 
 OfferModel = apps.get_model('yomarket', 'Offer')
@@ -55,6 +55,10 @@ class OfferListView(generics.ListCreateAPIView):
                 shops_ids = [x.id for x in shops]
                 queryset = queryset.filter(shop_id__in=shops_ids).all()
 
+        category_id=request.query_params.get('category_id')
+        if category_id!=None:
+            history_view_event(obj=category_id,user=request.user)
+
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True,context={'request': request})
@@ -90,6 +94,7 @@ class OfferDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
+        history_view_event(instance,user=request.user)
         count_shown(instance)
         serializer = self.get_serializer(instance)
         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)

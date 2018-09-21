@@ -10,7 +10,7 @@ from rest_auth.models import TokenModel
 
 from ..views import custom_api_response
 from .serializers import ProfileSerializer
-
+from history.utils import history_profile_update_event
 
 ProfileModel = apps.get_model('user_account', 'Profile')
 
@@ -40,7 +40,7 @@ class ProfileDetailView(generics.RetrieveUpdateDestroyAPIView):
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
-
+        history_profile_update_event(user=request.user)
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)

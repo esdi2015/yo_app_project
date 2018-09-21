@@ -5,6 +5,8 @@ from rest_framework import serializers
 from notification.models import Notification, Subscription
 from rest_framework.fields import CurrentUserDefault
 
+from history.utils import history_subscription_event
+
 class NotificationSerializator(serializers.ModelSerializer):
     class Meta:
         model = Notification
@@ -19,7 +21,12 @@ class SubscriptionSerializator(serializers.ModelSerializer):
     shop_id = serializers.IntegerField(allow_null=True,required=False)
 
     def create(self, validated_data):
-        sub,created=Subscription.objects.update_or_create(user=self.context['request'].user,shop_id=validated_data['shop_id'],type=validated_data['type'],defaults={**validated_data})
+        try:
+            sub,created=Subscription.objects.update_or_create(user=self.context['request'].user,shop_id=validated_data['shop_id'],type=validated_data['type'],defaults={**validated_data})
+            history_subscription_event(obj=sub.shop,user=self.context['request'].user)
+        except KeyError:
+            sub,created=Subscription.objects.update_or_create(user=self.context['request'].user,category_id=validated_data['category_id'],type=validated_data['type'],defaults={**validated_data})
+            history_subscription_event(obj=sub.category,user=self.context['request'].user)
         return sub
 
     class Meta:

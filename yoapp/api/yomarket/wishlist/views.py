@@ -24,7 +24,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from django.db import IntegrityError
 from ...utils import ERROR_API
-
+from history.utils import history_like_event
 
 class MyCouponsListView(generics.ListAPIView):
     serializer_class = WishListNestedSerializator
@@ -78,7 +78,8 @@ def like(request):
     serializer = WishListSerializator(data=request.data)
 
     if serializer.is_valid():
-        serializer.save(user=request.user)
+        instance=serializer.save(user=request.user)
+        history_like_event(obj=instance.offer,user=request.user)
         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
     else:
         return Response(custom_api_response(serializer), status=status.HTTP_400_BAD_REQUEST)
@@ -97,6 +98,7 @@ class LikeView(generics.CreateAPIView):
             serializer.is_valid(raise_exception=True)
             instance=serializer.save(user=self.request.user)
             count_liked(instance.offer)
+            history_like_event(obj=instance.offer,user=request.user)
             return Response(custom_api_response(serializer), status.HTTP_200_OK)
         except IntegrityError:
             return Response(custom_api_response(content={'is_liked':True}),status.HTTP_200_OK)
