@@ -22,6 +22,7 @@ class ShopSerializer(serializers.ModelSerializer):
     #image = serializers.ImageField(upload_to='shops/%Y/%m/%d', blank=True)
     is_subscribed = serializers.SerializerMethodField()
     schedule = ScheduleSerializer(many=False, read_only=True)
+    schedule_id = serializers.IntegerField(allow_null=True, required=False)
 
 
     def get_is_subscribed (self, obj):
@@ -36,7 +37,7 @@ class ShopSerializer(serializers.ModelSerializer):
         model = ShopModel
         fields = ('id', 'title', 'address', 'description', 'user', 'user_id', 'manager', 'manager_id',
                   'latitude', 'longitude', 'outer_link', 'social_link', 'phone', 'image', 'code_type', 'city', 'city_id',
-                  'categories','is_subscribed', 'schedule')
+                  'categories','is_subscribed', 'schedule', 'schedule_id')
 
 
     # def save(self, **kwargs):
