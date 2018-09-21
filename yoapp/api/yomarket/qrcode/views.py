@@ -170,6 +170,7 @@ def make_coupon(request):
         instance=serializer.save(user_id=request.user.pk)
         count_taken_coupons(instance.offer)
         history_make_coupon_event(obj=instance.offer,user=request.user)
+        serializer=QRcouponNestedSerializator(instance,context={'request': request})
         return Response(custom_api_response(serializer),status.HTTP_200_OK)
     else:
         return Response(custom_api_response(content={'error':'invalid request data'}),status.HTTP_400_BAD_REQUEST)
