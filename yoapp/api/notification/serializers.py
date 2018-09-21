@@ -19,7 +19,11 @@ class SubscriptionSerializator(serializers.ModelSerializer):
     shop_id = serializers.IntegerField(allow_null=True,required=False)
 
     def create(self, validated_data):
-        sub,created=Subscription.objects.update_or_create(user=self.context['request'].user,shop_id=validated_data['shop_id'],type=validated_data['type'],defaults={**validated_data})
+        try:
+            sub,created=Subscription.objects.update_or_create(user=self.context['request'].user,shop_id=validated_data['shop_id'],type=validated_data['type'],defaults={**validated_data})
+        except KeyError:
+            sub,created=Subscription.objects.update_or_create(user=self.context['request'].user,category_id=validated_data['category_id'],type=validated_data['type'],defaults={**validated_data})
+
         return sub
 
     class Meta:
