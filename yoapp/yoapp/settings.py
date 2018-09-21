@@ -70,6 +70,7 @@ INSTALLED_APPS = [
     'notification.apps.NotificationConfig',
     'statistic.apps.StatisticConfig',
     'points.apps.PointsConfig',
+    'history.apps.HistoryConfig',
 ]
 
 MIDDLEWARE = [
