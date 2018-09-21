@@ -3,7 +3,7 @@ from rest_framework import serializers
 
 
 TransactionModel = apps.get_model('yomarket', 'Transaction')
-
+from api.yomarket.offer.serializers import OfferSerializer
 
 class TransactionSerializer(serializers.ModelSerializer):
     customer = serializers.StringRelatedField()
@@ -19,4 +19,10 @@ class TransactionSerializer(serializers.ModelSerializer):
         model = TransactionModel
         fields = ('id', 'customer', 'customer_id', 'manager', 'manager_id',
                   'offer', 'offer_id', 'points', 'created')
+
+
+
+class MyTransactionSerializer(TransactionSerializer):
+
+    offer = OfferSerializer( read_only=True)
 
