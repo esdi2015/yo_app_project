@@ -17,7 +17,6 @@ CODE_TYPES = (
 )
 
 ALPHANUM_CODE_TYPES = (
-    ('GENERAL', 'coupon redeem general way'),
     ('WEBSITE', 'coupon redeem website'),
     ('PHONE', 'coupon redeem phone')
 )
@@ -49,6 +48,7 @@ class Shop(models.Model):
     categories = models.ManyToManyField('common.Category', blank=True)
     schedule = models.ForeignKey('yomarket.Schedule', on_delete=models.SET_NULL, blank=True, null=True,
                                     related_name='shop_schedule')
+    banner = models.ImageField(upload_to='banners/%Y/%m/%d', blank=True)
 
 
     def __unicode__(self):
