@@ -3,6 +3,8 @@ from rest_framework import serializers
 from ...common.category.serializers import CategorySerializer
 from ..schedule.serializers import ScheduleSerializer
 from notification.models import Subscription
+import datetime
+
 
 ShopModel = apps.get_model('yomarket', 'Shop')
 
@@ -59,12 +61,34 @@ class ShopSerializer(serializers.ModelSerializer):
     #     return representation
 
 
+def get_now_day():
+    return datetime.datetime.now().strftime("%a").lower()
+
+
+
 class ShopListSerializer(ShopSerializer):
     is_open = serializers.SerializerMethodField()
     schedule_title = serializers.StringRelatedField(source='schedule.title')
 
     def get_is_open(self, obj):
-        return True
+        now_time = datetime.datetime.now().time()
+        now_day = get_now_day()
+        open = now_day + "_open"
+        close = now_day + "_close"
+
+        if obj.schedule:
+            open_time = getattr(obj.schedule, open, None)
+            close_time = getattr(obj.schedule, close, None)
+            if open_time and close_time:
+                if (open_time < now_time) and (close_time > now_time):
+                    return True
+                else:
+                    return False
+            else:
+                return False
+        else:
+            return None
+
 
     class Meta:
         model = ShopModel

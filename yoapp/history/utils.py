@@ -7,15 +7,18 @@ from common.models import Category
 
 # view event: accpet category,shop,offer instance
 def history_view_event(obj=None,user=None):
-    if isinstance(obj, Offer):
-        History(event='offer_view',offer=obj,user=user).save()
-        return True
-    elif isinstance(obj, Shop):
-        History(event='shop_view',shop=obj,user=user).save()
-        return True
-    elif  int(obj):
-        History(event='category_view',category_id=obj,user=user).save()
-        return True
+    if (user is not None) and (user.is_authenticated == True) and (user.role == 'CUSTOMER'):
+        if isinstance(obj, Offer):
+            History(event='offer_view',offer=obj,user=user).save()
+            return True
+        elif isinstance(obj, Shop):
+            History(event='shop_view',shop=obj,user=user).save()
+            return True
+        elif int(obj):
+            History(event='category_view',category_id=obj,user=user).save()
+            return True
+        else:
+            return False
     else:
         return False
 
