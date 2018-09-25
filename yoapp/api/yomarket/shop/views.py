@@ -43,10 +43,10 @@ class ShopViewSet(viewsets.ModelViewSet):
         queryset = self.get_queryset()
 
         if (request.user.is_authenticated == True) and (request.user.role == 'OWNER'):
-            #queryset = ShopModel.objects.filter(user_id=request.user.pk).all()
             queryset = self.queryset.filter(user_id=request.user.pk).all()
+        elif (request.user.is_authenticated == True) and (request.user.role == 'MANAGER'):
+            queryset = self.queryset.filter(manager_id=request.user.pk).all()
         else:
-            #queryset = ShopModel.objects.all()
             queryset = self.queryset
 
         queryset = self.filter_queryset(queryset)
@@ -55,9 +55,7 @@ class ShopViewSet(viewsets.ModelViewSet):
         # if page is not None:
         #     serializer = self.get_serializer(page, many=True)
         #     return self.get_paginated_response(serializer.data)
-        #serializer = self.get_serializer(queryset, many=True)
 
-        #serializer = ShopListSerializer(queryset, many=True)
         serializer = self.get_serializer(queryset, many=True)
         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
 

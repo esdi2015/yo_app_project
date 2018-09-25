@@ -13,6 +13,7 @@ ERROR_API = {
     "112": (112, "Unable to login via facebook account, wrong id"),
     "113": (113, "Confirmation token not found"),
     "114": (114, "Confirmation token expired"),
+    "115": (115, "Incorrect user role"),
 
     "200": (200, "No coupons"),
     "201": (201, "No history data")

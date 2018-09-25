@@ -79,11 +79,13 @@ class LoginSerializer(serializers.Serializer):
         trim_whitespace=False
     )
     app = serializers.CharField(allow_blank=True, required=False, default=APP[1])
+    role = serializers.CharField(allow_blank=True, required=False, default=DEFAULT_USER_ROLE)
 
     def validate(self, attrs):
         email = attrs.get('email')
         password = attrs.get('password')
         app = attrs.get('app')
+        role = attrs.get('role')
 
         if email and password:
             user = authenticate(request=self.context.get('request'),
@@ -108,6 +110,11 @@ class LoginSerializer(serializers.Serializer):
                         # msg = _('Unable to log in with CUSTOMER role.')
                         msg = _(ERROR_API['108'][1])
                         api_error_code = ERROR_API['108'][0]
+                        raise serializers.ValidationError(msg, code=api_error_code)
+
+                    if (role in ('CUSTOMER', 'MANAGER')) and (role != user.role):
+                        msg = _(ERROR_API['115'][1])
+                        api_error_code = ERROR_API['115'][0]
                         raise serializers.ValidationError(msg, code=api_error_code)
         else:
             # msg = _('Must include "email" and "password".')
