@@ -67,7 +67,7 @@ class Shop(models.Model):
 
 class Schedule(models.Model):
     title = models.CharField(max_length=200)
-    shop = models.ForeignKey('yomarket.Shop', on_delete=models.DO_NOTHING, blank=True, null=True,
+    shop = models.ForeignKey('yomarket.Shop', on_delete=models.SET_NULL, blank=True, null=True,
                              related_name='schedule_shop')
 
     mon_open = models.TimeField(blank=True, null=True)
