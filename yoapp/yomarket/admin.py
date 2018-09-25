@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.admin import SimpleListFilter
-from .models import Shop, Offer, QRcoupon, Transaction, WishList, Schedule
+from .models import Shop, Offer, QRcoupon, Transaction, WishList, Schedule, SecondaryInfo
 from common.models import User
 
 
@@ -58,6 +58,11 @@ class ScheduleAdmin(admin.ModelAdmin):
     list_display = ('title', 'shop', 'comment')
     list_filter = ('shop', )
 
+class SecondaryInfoAdmin(admin.ModelAdmin):
+    list_display = ('offer', 'title', 'text')
+
+
+
 
 admin.site.register(Shop, ShopAdmin)
 admin.site.register(Offer, OfferAdmin)
@@ -65,3 +70,4 @@ admin.site.register(QRcoupon, QRcouponAdmin)
 admin.site.register(Transaction, TransactionAdmin)
 admin.site.register(WishList, WishListAdmin)
 admin.site.register(Schedule, ScheduleAdmin)
+admin.site.register(SecondaryInfo,SecondaryInfoAdmin)

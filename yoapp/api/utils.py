@@ -18,7 +18,8 @@ ERROR_API = {
     "117": (117, "Incorrect user role"),
 
     "200": (200, "No coupons"),
-    "201": (201, "No history data")
+    "201": (201, "No history data"),
+    "202": (202, "No secondary info data"),
 
 }
 
