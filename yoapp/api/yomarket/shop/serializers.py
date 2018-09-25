@@ -39,7 +39,7 @@ class ShopSerializer(serializers.ModelSerializer):
         model = ShopModel
         fields = ('id', 'title', 'address', 'description', 'user', 'user_id', 'manager', 'manager_id',
                   'latitude', 'longitude', 'outer_link', 'social_link', 'phone', 'image', 'code_type', 'city', 'city_id',
-                  'categories','is_subscribed', 'schedule', 'schedule_id')
+                  'categories','is_subscribed', 'schedule', 'schedule_id', 'logo')
 
 
     # def save(self, **kwargs):
@@ -94,4 +94,4 @@ class ShopListSerializer(ShopSerializer):
         model = ShopModel
         fields = ('id', 'title', 'address', 'description', 'user', 'user_id', 'manager', 'manager_id',
                   'outer_link', 'social_link', 'phone', 'image', 'code_type', 'city', 'city_id', 'categories',
-                  'is_subscribed', 'is_open', 'schedule_id', 'schedule_title')
+                  'is_subscribed', 'is_open', 'schedule_id', 'schedule_title', 'logo')
