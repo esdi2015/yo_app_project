@@ -49,6 +49,7 @@ class Shop(models.Model):
     schedule = models.ForeignKey('yomarket.Schedule', on_delete=models.SET_NULL, blank=True, null=True,
                                     related_name='shop_schedule')
     banner = models.ImageField(upload_to='banners/%Y/%m/%d', blank=True)
+    logo = models.ImageField(upload_to='logo/%Y/%m/%d', blank=True)
 
 
     def __unicode__(self):
@@ -203,3 +204,9 @@ class WishList(models.Model):
 
     class Meta:
         unique_together = (("user", "offer"),)
+
+
+class SecondaryInfo(models.Model):
+    offer = models.ForeignKey(Offer, on_delete=models.CASCADE)
+    title = models.CharField(max_length=100)
+    text = models.CharField(max_length=500)
