@@ -45,7 +45,6 @@ from rest_framework.response import Response
 from django_rest_passwordreset.models import ResetPasswordToken
 from django_rest_passwordreset.signals import reset_password_token_created, pre_password_reset, post_password_reset
 from django_rest_passwordreset.views import get_password_reset_token_expiry_time
-from yomarket.models import Shop
 
 User = get_user_model()
 
@@ -104,20 +103,12 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def list(self, request, *args, **kwargs):
         users = UserModel.objects.filter(role='MANAGER', creator_id=request.user.pk).all()
-        users_list =list()
-
-        for user in users:
-            try:
-                shop=Shop.objects.get(manager=user)
-            except Shop.DoesNotExist:
-                users_list.append(user)
-
         # page = self.paginate_queryset(queryset)
         # if page is not None:
         #     serializer = self.get_serializer(page, many=True)
         #     return self.get_paginated_response(serializer.data)
         #serializer = self.get_serializer(queryset, many=True)
-        serializer = CustomUserSerializer(users_list, many=True)
+        serializer = CustomUserSerializer(users, many=True)
 
         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
 
