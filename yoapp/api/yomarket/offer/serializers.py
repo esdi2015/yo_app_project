@@ -1,8 +1,16 @@
 from django.apps import apps
 from rest_framework import serializers
 from ..shop.serializers import ShopSerializer
-from yomarket.models import WishList
+from yomarket.models import WishList,SecondaryInfo
 OfferModel = apps.get_model('yomarket', 'Offer')
+
+
+class SecondaryInfoSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = SecondaryInfo
+        fields = ('title','text')
+
 
 
 class OfferSerializer(serializers.ModelSerializer): #serializers.HyperlinkedModelSerializer #ModelSerializer
@@ -22,13 +30,18 @@ class OfferSerializer(serializers.ModelSerializer): #serializers.HyperlinkedMode
             return True
         except WishList.DoesNotExist:
             return False
+    secondary_info = serializers.SerializerMethodField()
+    def get_secondary_info (self, obj):
+            info = SecondaryInfo.objects.filter(offer=obj)
+            serializer=SecondaryInfoSerializer(info,many=True)
+            return serializer.data
 
 
     class Meta:
         model = OfferModel
         fields = ('id', 'category', 'category_id', 'shop', 'shop_id', 'title', 'image', 'short_description',
                   'description', 'price', 'discount', 'discount_type', 'code_data', 'created', 'code_type',
-                  'offer_type', 'expire','is_liked')
+                  'offer_type', 'expire','is_liked','secondary_info')
         #depth = 3
         #order_by = (('shop',))
 
