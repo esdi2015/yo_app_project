@@ -113,8 +113,8 @@ class LoginSerializer(serializers.Serializer):
                         raise serializers.ValidationError(msg, code=api_error_code)
 
                     if (role in ('CUSTOMER', 'MANAGER')) and (role != user.role):
-                        msg = _(ERROR_API['115'][1])
-                        api_error_code = ERROR_API['115'][0]
+                        msg = _(ERROR_API['117'][1])
+                        api_error_code = ERROR_API['117'][0]
                         raise serializers.ValidationError(msg, code=api_error_code)
         else:
             # msg = _('Must include "email" and "password".')
