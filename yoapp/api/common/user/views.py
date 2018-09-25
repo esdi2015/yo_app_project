@@ -104,20 +104,14 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def list(self, request, *args, **kwargs):
         users = UserModel.objects.filter(role='MANAGER', creator_id=request.user.pk).all()
-        users_list =list()
 
-        for user in users:
-            try:
-                shop=Shop.objects.get(manager=user)
-            except Shop.DoesNotExist:
-                users_list.append(user)
 
         # page = self.paginate_queryset(queryset)
         # if page is not None:
         #     serializer = self.get_serializer(page, many=True)
         #     return self.get_paginated_response(serializer.data)
         #serializer = self.get_serializer(queryset, many=True)
-        serializer = CustomUserSerializer(users_list, many=True)
+        serializer = CustomUserSerializer(users, many=True)
 
         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
 
@@ -444,4 +438,23 @@ def facebook_oauth(request):
 
 
 
+@api_view(['GET'])
+@permission_classes(())
+def free_managers_view(request):
+    if request.user.is_authenticated == False:
+        error = {"detail": ERROR_API['115'][0]}
+        error_codes = [ERROR_API['115'][0]]
+        return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_400_BAD_REQUEST)
 
+    users = UserModel.objects.filter(role='MANAGER', creator_id=request.user.pk).all()
+
+    users_list=list()
+
+    for user in users:
+         try:
+             shop=Shop.objects.get(manager=user)
+         except Shop.DoesNotExist:
+             users_list.append(user)
+
+    serializer = CustomUserSerializer(users_list, many=True)
+    return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
