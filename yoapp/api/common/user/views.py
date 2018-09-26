@@ -317,7 +317,10 @@ def get_profile_data(user_id):
     user_profile = Profile.objects.filter(user_id=user_id).all()
     profile_serializer = ProfileSerializer(instance=user_profile, many=True)
     profile = profile_serializer.data
-    return profile
+    if profile:
+        return profile[0]
+    else:
+        return {}
 
 
 
