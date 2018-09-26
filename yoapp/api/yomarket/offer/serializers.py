@@ -9,7 +9,7 @@ class SecondaryInfoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SecondaryInfo
-        fields = ('title','text')
+        fields = ('id','title','text')
 
 
 

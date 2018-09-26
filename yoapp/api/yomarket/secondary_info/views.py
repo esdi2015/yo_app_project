@@ -7,8 +7,7 @@ from rest_framework.response import Response
 from ...utils import ERROR_API
 from rest_framework import status
 
-
-class SecondaryInfoListCreateView(generics.ListCreateAPIView):
+class SecondaryInfoListCreateView(generics.ListCreateAPIView,generics.DestroyAPIView):
     serializer_class = SecondaryInfoSerializer
     model = serializer_class.Meta.model
     permission_classes = (IsAuthenticated,)
@@ -56,7 +55,14 @@ class SecondaryInfoListCreateView(generics.ListCreateAPIView):
             self.perform_create(serializer)
             return Response(custom_api_response(serializer=serializer), status=status.HTTP_201_CREATED)
 
-
+    def delete(self,request, *args, **kwargs):
+        if self.request.user.is_authenticated == True and self.request.user.role in ('MANAGER', 'OWNER'):
+            SecondaryInfo.objects.filter(id__in = self.request.data['delete']).delete()
+            return Response(custom_api_response(content={'deleted':True}),status = status.HTTP_200_OK)
+        else:
+            error = {"detail": ERROR_API['116'][1]}
+            error_codes = [ERROR_API['116'][0]]
+            return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_400_BAD_REQUEST)
 
 class SecondaryInfoDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = SecondaryInfo.objects.all()
