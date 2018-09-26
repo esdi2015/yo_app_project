@@ -48,7 +48,7 @@ class SecondaryInfoListCreateView(generics.ListCreateAPIView):
 
     def create(self, request, *args, **kwargs):
         if self.request.user.is_authenticated==True and self.request.user.role in ('MANAGER','OWNER') :
-            serializer = self.get_serializer(data=request.data)
+            serializer = self.get_serializer(data=request.data,many=True)
             serializer.is_valid(raise_exception=True)
             self.perform_create(serializer)
             return Response(custom_api_response(serializer=serializer), status=status.HTTP_201_CREATED)
