@@ -57,7 +57,10 @@ class SecondaryInfoListCreateView(generics.ListCreateAPIView,generics.DestroyAPI
 
     def delete(self,request, *args, **kwargs):
         if self.request.user.is_authenticated == True and self.request.user.role in ('MANAGER', 'OWNER'):
-            SecondaryInfo.objects.filter(id__in = self.request.data['delete']).delete()
+            try:
+                SecondaryInfo.objects.filter(id__in = self.request.data['delete']).delete()
+            except KeyError:
+                return Response(custom_api_response(content={'error':'bad request'}), status=status.HTTP_400_BAD_REQUEST)
             return Response(custom_api_response(content={'deleted':True}),status = status.HTTP_200_OK)
         else:
             error = {"detail": ERROR_API['116'][1]}
