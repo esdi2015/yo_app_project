@@ -19,6 +19,8 @@ class Profile(models.Model):
     gender = models.CharField(max_length=50, choices=GENDER_CHOICES, default=DEFAULT_USER_GENDER)
     #about = models.TextField(blank=True)
     points = models.IntegerField(default=0, blank=True, null=True)
+    region = models.CharField(max_length=200, blank=True)
+    interests = models.CharField(max_length=200, blank=True)
 
     def __str__(self):
         return 'Profile for user {}'.format(self.user.username)
