@@ -98,7 +98,8 @@ class UserViewSet(viewsets.ModelViewSet):
         #queryset = UserModel.objects.filter(role='CUSTOMER').all()
         #user = get_object_or_404(queryset, pk=pk)
         user = UserModel.objects.filter(pk=pk).all()
-        serializer = CustomUserSerializer(user, many=True)
+        #serializer = CustomUserSerializer(user, many=True)
+        serializer = self.get_serializer(user, many=True)
         response = Response(custom_api_response(serializer), status=status.HTTP_200_OK)
         return response
 
@@ -111,8 +112,8 @@ class UserViewSet(viewsets.ModelViewSet):
         #     serializer = self.get_serializer(page, many=True)
         #     return self.get_paginated_response(serializer.data)
         #serializer = self.get_serializer(queryset, many=True)
-        serializer = CustomUserSerializer(users, many=True)
-
+        #serializer = CustomUserSerializer(users, many=True)
+        serializer = self.get_serializer(users, many=True)
         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
 
     def create(self, request, *args, **kwargs):
@@ -279,9 +280,10 @@ def register_view(request):
         if login_serializer.is_valid():
             user = login_serializer.validated_data['user']
             token = create_token(TokenModel, user, login_serializer)
-
             django_login(request, user)
-            content = {'token': token.key, 'email': user.email, 'id': user.id}
+            profile = get_profile_data(user.id, request)
+            content = {'token': token.key, 'email': user.email, 'id': user.id, 'first_login': True,
+                   'first_name': user.first_name, 'last_name': user.last_name, 'profile': profile}
             #return Response(custom_api_response(serializer), status=status.HTTP_201_CREATED)
             return Response(custom_api_response(login_serializer, content), status=status.HTTP_200_OK)
         else:
@@ -293,6 +295,7 @@ def register_view(request):
 @api_view(['POST'])
 @permission_classes(())
 def login_view(request):
+    serializer_class = LoginSerializer
     if request.user.is_authenticated == True:
         # error = {"detail": "You must have to log out first"}
         error = {"detail": ERROR_API['109'][1]}
@@ -304,7 +307,7 @@ def login_view(request):
         user = serializer.validated_data['user']
         token = create_token(TokenModel, user, serializer)
         django_login(request, user)
-        profile = get_profile_data(user.id)
+        profile = get_profile_data(user.id, request)
         content = {'token': token.key, 'email': user.email, 'id': user.id, 'first_login': False,
                    'first_name': user.first_name, 'last_name': user.last_name, 'profile': profile}
         return Response(custom_api_response(serializer, content), status=status.HTTP_200_OK)
@@ -313,10 +316,13 @@ def login_view(request):
 
 
 
-def get_profile_data(user_id):
+def get_profile_data(user_id, request=None):
     user_profile = Profile.objects.filter(user_id=user_id).all()
     profile_serializer = ProfileSerializer(instance=user_profile, many=True)
     profile = profile_serializer.data
+    if request:
+        profile[0]['photo'] = request.build_absolute_uri(profile[0]['photo'])
+
     if profile:
         return profile[0]
     else:
@@ -372,7 +378,7 @@ def google_oauth(request):
         first_login = True
 
     token = create_login_token(user)
-    profile = get_profile_data(user.id)
+    profile = get_profile_data(user.id, request)
     content = {'token': token.key, 'email': user.email, 'id': user.id, 'first_login': first_login,
                'first_name': user.first_name, 'last_name': user.last_name, 'profile': profile}
     return Response(custom_api_response(content=content), status=status.HTTP_200_OK)
@@ -431,7 +437,7 @@ def facebook_oauth(request):
 
     if user.fb_id == fb_id:
         token = create_login_token(user)
-        profile = get_profile_data(user.id)
+        profile = get_profile_data(user.id, request)
         content = {'token': token.key, 'email': user.email, 'id': user.id, 'first_login': first_login,
                    'first_name': user.first_name, 'last_name': user.last_name, 'profile': profile}
         return Response(custom_api_response(content=content), status=status.HTTP_200_OK)
