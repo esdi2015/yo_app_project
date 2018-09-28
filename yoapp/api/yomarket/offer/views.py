@@ -7,6 +7,7 @@ from rest_framework import generics
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
 from django.contrib.auth import get_user_model
+import datetime
 
 from ...views import custom_api_response
 from .serializers import OfferSerializer
@@ -14,6 +15,7 @@ from .serializers import OfferSerializer
 from rest_framework.pagination import LimitOffsetPagination
 from statistic.utlis import count_shown
 from history.utils import history_view_event
+from ...utils import ERROR_API
 
 
 OfferModel = apps.get_model('yomarket', 'Offer')
@@ -22,7 +24,7 @@ UserModel = get_user_model()
 
 
 class OfferListView(generics.ListCreateAPIView):
-    queryset = OfferModel.objects.all()
+    #queryset = OfferModel.objects.all()
 
     serializer_class = OfferSerializer
     #permission_classes = (AllowAny,)
@@ -41,9 +43,35 @@ class OfferListView(generics.ListCreateAPIView):
         else :
             return [IsAuthenticated(), ]
 
+    def get_queryset(self):
+        #print (self.request.user.role)
+        queryset = OfferModel.objects.all()
+        #queryset = OfferModel.objects.filter(expire__gte=datetime.datetime.now()).all()
+        #queryset = OfferModel.objects.filter(price=10).all()
+        return queryset
+
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
+
+        if not queryset.exists():
+            try:
+                offer_type = self.request.GET['offer_type']
+            except Exception as e:
+                offer_type = None
+
+            if offer_type == 'DAILY':
+                error = {"detail": ERROR_API['205'][1]}
+                error_codes = [ERROR_API['205'][0]]
+            elif offer_type == 'REGULAR':
+                error = {"detail": ERROR_API['206'][1]}
+                error_codes = [ERROR_API['206'][0]]
+            else:
+                error = {"detail": ERROR_API['204'][1]}
+                error_codes = [ERROR_API['204'][0]]
+
+            return Response(custom_api_response(errors=error, error_codes=error_codes),
+                            status=status.HTTP_400_BAD_REQUEST)
 
         if request.user.is_authenticated == True:
             if request.user.role == 'OWNER':
@@ -55,13 +83,13 @@ class OfferListView(generics.ListCreateAPIView):
                 shops_ids = [x.id for x in shops]
                 queryset = queryset.filter(shop_id__in=shops_ids).all()
 
-        category_id=request.query_params.get('category_id')
-        if category_id!=None:
+        category_id = request.query_params.get('category_id')
+        if category_id != None:
             history_view_event(obj=category_id,user=request.user)
 
         page = self.paginate_queryset(queryset)
         if page is not None:
-            serializer = self.get_serializer(page, many=True,context={'request': request})
+            serializer = self.get_serializer(page, many=True, context={'request': request})
             paginated_response = self.get_paginated_response(serializer.data)
             content = paginated_response.data['results']
             del paginated_response.data['results']

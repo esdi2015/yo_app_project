@@ -32,8 +32,6 @@ class ProfileDetailView(generics.RetrieveUpdateDestroyAPIView):
         profile_data = serializer.data
         token = TokenModel.objects.filter(user_id=request.user.pk).first()
         profile_data['token'] = str(token)
-        #profile_data['region'] = None
-        #profile_data['interests'] = None
         #return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
         return Response(custom_api_response(content=profile_data), status=status.HTTP_200_OK)
 

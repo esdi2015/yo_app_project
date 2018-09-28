@@ -20,6 +20,9 @@ ERROR_API = {
     "200": (200, "No coupons"),
     "201": (201, "No history data"),
     "202": (202, "No secondary info data"),
+    "204": (204, "No offers"),
+    "205": (205, "No daily offers"),
+    "206": (206, "No regular offers"),
 
 }
 
