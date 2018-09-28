@@ -10,7 +10,7 @@ ERROR_API = {
     "109": (109, "You must have to log out first"),
     "110": (110, "Already registered"),
     "111": (111, "Unable to login via google account, wrong issuer"),
-    "112": (112, "Unable to login via facebook account, wrong id"),
+    "112": (112, "Unable to login via facebook account, wrong issuer id"),
     "113": (113, "Confirmation token not found"),
     "114": (114, "Confirmation token expired"),
     "115": (115, "You must have to login first"),
@@ -20,10 +20,10 @@ ERROR_API = {
     "200": (200, "No coupons"),
     "201": (201, "No history data"),
     "202": (202, "No secondary info data"),
+	"203": (203, "No transactions"),
     "204": (204, "No offers"),
     "205": (205, "No daily offers"),
     "206": (206, "No regular offers"),
-
 }
 
 

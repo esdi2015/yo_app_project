@@ -44,8 +44,8 @@ class MyTransactionView(generics.ListAPIView):
         if queryset.exists():
             serilizer=self.get_serializer(queryset,many=True)
             return Response(custom_api_response(serilizer),status=status.HTTP_200_OK)
-        error = {"detail": ERROR_API['200'][1]}
-        error_codes = [ERROR_API['200'][0]]
+        error = {"detail": ERROR_API['203'][1]}
+        error_codes = [ERROR_API['203'][0]]
         return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_400_BAD_REQUEST)
 
 
