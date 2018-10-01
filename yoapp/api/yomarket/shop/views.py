@@ -24,7 +24,9 @@ class ShopViewSet(viewsets.ModelViewSet):
     filter_backends = (filters.SearchFilter, DjangoFilterBackend, filters.OrderingFilter)
     search_fields = ('title', 'address', 'description', )
     filter_fields = ('manager_id', 'code_type', 'city_id', 'categories__id')
-    ordering_fields = '__all__'
+    #ordering_fields = '__all__'
+    ordering_fields = ('image', 'title', 'description', 'address', 'city__city_name', 'manager',
+                       'phone', 'outer_link', 'social_link', 'schedule__title', 'code_type')
 
     def get_permissions(self):
         if self.action == 'retrieve' or self.action == 'list':

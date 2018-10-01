@@ -1,6 +1,6 @@
 from django.db import models
-from common.models import User,Category
-from yomarket.models import Offer,Shop
+from common.models import User, Category
+from yomarket.models import Offer, Shop
 
 
 EVENT_TYPES = (
@@ -16,8 +16,6 @@ EVENT_TYPES = (
     ('profile_update', 'Profile updated')
 
 )
-
-
 
 
 class History(models.Model):

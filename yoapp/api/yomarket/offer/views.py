@@ -24,15 +24,10 @@ UserModel = get_user_model()
 
 
 class OfferListView(generics.ListCreateAPIView):
-    #queryset = OfferModel.objects.all()
-
     serializer_class = OfferSerializer
-    #permission_classes = (AllowAny,)
     filter_backends = (filters.SearchFilter, DjangoFilterBackend, filters.OrderingFilter)
     search_fields = ('description', 'title')
     filter_fields = ('category_id', 'shop_id', 'discount_type', 'offer_type', )
-    #ordering_fields = '__all__'
-    #ordering_fields = ('shop')
     ordering_fields = ('shop__title', 'category__category_name', 'title', 'image',
                        'short_description', 'price', 'offer_type', 'expire', )
 
@@ -44,9 +39,10 @@ class OfferListView(generics.ListCreateAPIView):
             return [IsAuthenticated(), ]
 
     def get_queryset(self):
-        #print (self.request.user.role)
-        queryset = OfferModel.objects.all()
-        #queryset = OfferModel.objects.filter(expire__gte=datetime.datetime.now()).all()
+        if (self.request.user.is_authenticated == True) and (self.request.user.role in ['MANAGER', 'OWNER']):
+            queryset = OfferModel.objects.all()
+        else:
+            queryset = OfferModel.objects.filter(expire__gte=datetime.datetime.now()).all()
         #queryset = OfferModel.objects.filter(price=10).all()
         return queryset
 

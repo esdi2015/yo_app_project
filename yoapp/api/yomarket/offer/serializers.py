@@ -1,7 +1,11 @@
 from django.apps import apps
 from rest_framework import serializers
 from ..shop.serializers import ShopSerializer
-from yomarket.models import WishList,SecondaryInfo
+from yomarket.models import WishList, SecondaryInfo
+import datetime
+from django.utils import timezone
+
+
 OfferModel = apps.get_model('yomarket', 'Offer')
 
 
@@ -13,37 +17,41 @@ class SecondaryInfoSerializer(serializers.ModelSerializer):
 
 
 
-class OfferSerializer(serializers.ModelSerializer): #serializers.HyperlinkedModelSerializer #ModelSerializer
+class OfferSerializer(serializers.ModelSerializer):
     shop = serializers.StringRelatedField()
-    #shop = serializers.SlugRelatedField(slug_field='title', read_only=True, many=False)
-    #shop = ShopSerializer(source='shop_offer')
-    #shop = ShopSerializer(source='title')
     shop_id = serializers.IntegerField(allow_null=False)
-    category = serializers.StringRelatedField()  #source='category.category_name'
+    category = serializers.StringRelatedField()
     category_id = serializers.IntegerField(allow_null=True)
-    #code_type = serializers.StringRelatedField()
-    #code_type = serializers.HyperlinkedRelatedField()
     is_liked = serializers.SerializerMethodField()
+    secondary_info = serializers.SerializerMethodField()
+    is_expired = serializers.SerializerMethodField()
+
     def get_is_liked(self, obj):
         try:
             wish= WishList.objects.get(user_id=self.context['request'].user.id,offer=obj)
             return True
         except WishList.DoesNotExist:
             return False
-    secondary_info = serializers.SerializerMethodField()
+
     def get_secondary_info (self, obj):
             info = SecondaryInfo.objects.filter(offer=obj)
             serializer=SecondaryInfoSerializer(info,many=True)
             return serializer.data
+
+    def get_is_expired(self, obj):
+        now_datetime = timezone.now()
+        expire_datetime = obj.expire
+        if expire_datetime >= now_datetime:
+            return False
+        else:
+            return True
 
 
     class Meta:
         model = OfferModel
         fields = ('id', 'category', 'category_id', 'shop', 'shop_id', 'title', 'image', 'short_description',
                   'description', 'price', 'discount', 'discount_type', 'code_data', 'created', 'code_type',
-                  'offer_type', 'expire','is_liked','secondary_info','redeemed_codes_count','codes_count')
-        #depth = 3
-        #order_by = (('shop',))
+                  'offer_type', 'expire','is_liked','secondary_info','redeemed_codes_count','codes_count', 'is_expired')
 
 
     def validate_catedory_id(value):
