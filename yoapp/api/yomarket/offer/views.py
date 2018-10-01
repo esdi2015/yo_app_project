@@ -5,7 +5,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework import generics
 from rest_framework import filters
-from django_filters.rest_framework import DjangoFilterBackend
+from django_filters.rest_framework import DjangoFilterBackend, FilterSet, BooleanFilter
 from django.contrib.auth import get_user_model
 import datetime
 
@@ -23,11 +23,27 @@ ShopModel = apps.get_model('yomarket', 'Shop')
 UserModel = get_user_model()
 
 
+class OfferListFilter(FilterSet):
+    is_expired = BooleanFilter(method='filter_is_expired')
+
+    class Meta:
+        model = OfferModel
+        fields = ('category_id', 'shop_id', 'discount_type', 'offer_type', 'is_expired')
+
+    def filter_is_expired(self, queryset, name, value):
+        if value == False:
+            queryset = queryset.filter(expire__gte=datetime.datetime.now())
+        elif value == True:
+            queryset = queryset.filter(expire__lt=datetime.datetime.now())
+        return queryset
+
+
 class OfferListView(generics.ListCreateAPIView):
     serializer_class = OfferSerializer
     filter_backends = (filters.SearchFilter, DjangoFilterBackend, filters.OrderingFilter)
     search_fields = ('description', 'title')
-    filter_fields = ('category_id', 'shop_id', 'discount_type', 'offer_type', )
+    #filter_fields = ('category_id', 'shop_id', 'discount_type', 'offer_type', 'is_expired', )
+    filter_class = OfferListFilter
     ordering_fields = ('shop__title', 'category__category_name', 'title', 'image',
                        'short_description', 'price', 'offer_type', 'expire', )
 
@@ -43,7 +59,6 @@ class OfferListView(generics.ListCreateAPIView):
             queryset = OfferModel.objects.all()
         else:
             queryset = OfferModel.objects.filter(expire__gte=datetime.datetime.now()).all()
-        #queryset = OfferModel.objects.filter(price=10).all()
         return queryset
 
 
