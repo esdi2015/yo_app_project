@@ -132,7 +132,14 @@ class OfferDetailView(generics.RetrieveUpdateDestroyAPIView):
             return [IsAuthenticated(), ]
 
     def retrieve(self, request, *args, **kwargs):
-        instance = self.get_object()
+        try:
+            instance = self.get_object()
+        except Exception as e:
+            error = {"detail": ERROR_API['207'][1]}
+            error_codes = [ERROR_API['207'][0]]
+            return Response(custom_api_response(errors=error, error_codes=error_codes),
+                            status=status.HTTP_404_NOT_FOUND)
+
         history_view_event(instance,user=request.user)
         count_shown(instance)
         serializer = self.get_serializer(instance)

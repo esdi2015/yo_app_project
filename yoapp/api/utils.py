@@ -24,6 +24,7 @@ ERROR_API = {
     "204": (204, "No offers"),
     "205": (205, "No daily offers"),
     "206": (206, "No regular offers"),
+    "207": (207, "Offer not found"),
 }
 
 
