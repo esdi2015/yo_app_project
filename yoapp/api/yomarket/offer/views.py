@@ -45,7 +45,8 @@ class OfferListView(generics.ListCreateAPIView):
     #filter_fields = ('category_id', 'shop_id', 'discount_type', 'offer_type', 'is_expired', )
     filter_class = OfferListFilter
     ordering_fields = ('shop__title', 'category__category_name', 'title', 'image',
-                       'short_description', 'price', 'offer_type', 'expire', )
+                       'short_description', 'price', 'offer_type', 'expire', 'codes_count',
+                       'redeemed_codes_count')
 
 
     def get_permissions(self):
