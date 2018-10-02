@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.utils import timezone
+import ast
 
 from common.models import Category
 from yomarket.models import Shop,Offer
@@ -8,9 +9,37 @@ from yomarket.models import Shop,Offer
 UserModel = get_user_model()
 
 
+class ListField(models.TextField):
+    __metaclass__ = models.TextField
+    description = "Stores a python list"
+
+    def __init__(self, *args, **kwargs):
+        super(ListField, self).__init__(*args, **kwargs)
+
+    def from_db_value(self, value, expression, connection, context):
+        if not value:
+            value = []
+
+        if isinstance(value, list):
+            return value
+
+        return ast.literal_eval(value)
+
+    def get_prep_value(self, value):
+        if value is None:
+            return value
+
+        return str(value)
+
+    def value_to_string(self, obj):
+        value = self._get_val_from_obj(obj)
+        return self.get_db_prep_value(value)
+
+
 class Notification_settings(models.Model):
     task = models.CharField(max_length=150,blank=True,null=True)
-    last_run_time = models.DateTimeField(blank=True,null=True) #, default=timezone.now()
+    last_run_time = models.DateTimeField(blank=True,null=True)
+    list = ListField(blank=True,null=True)
 
     class Meta:
         verbose_name = "notif_settings"
@@ -22,7 +51,14 @@ class Notification(models.Model):
         ('push', 'Push-msg')
     )
 
-    type = models.CharField(max_length=5, choices=TYPE, default='email')
+    MESSAGE_TYPE = (
+        ('new_offer', 'New offer for subscription'),
+        ('last_coupon_redeemed', 'Last coupon was redeemed'),
+        ('few_coupons_left', 'Few coupons left')
+    )
+
+    type = models.CharField(max_length=5, choices=TYPE, default=TYPE[0][0])
+    message_type = models.CharField(max_length=30, choices=MESSAGE_TYPE, default=MESSAGE_TYPE[0][0])
     title = models.CharField(max_length=100)
     body = models.CharField(max_length=200)
     is_data = models.BooleanField(default=True)

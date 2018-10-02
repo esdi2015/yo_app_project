@@ -395,10 +395,8 @@ def facebook_oauth(request):
         return token
 
     if request.user.is_authenticated == True:
-        # error = {"detail": "You must have to log out first"}
         error = {"detail": ERROR_API['109'][1]}
         error_codes = [ERROR_API['109'][0]]
-        # return Response(custom_api_response(errors=error), status=status.HTTP_400_BAD_REQUEST)
         return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_400_BAD_REQUEST)
 
     access_token = request.data['access_token']
@@ -427,7 +425,6 @@ def facebook_oauth(request):
             user = UserModel.objects.get(fb_id=fb_id)
             error = {"detail": ERROR_API['110'][1]}
             error_codes = [ERROR_API['110'][0]]
-            # return Response({'error': 'already registered'}, status=status.HTTP_400_BAD_REQUEST)
             return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_400_BAD_REQUEST)
         except UserModel.DoesNotExist:
             user = UserModel(email=email, last_name=last_name, first_name=first_name, fb_id=fb_id)

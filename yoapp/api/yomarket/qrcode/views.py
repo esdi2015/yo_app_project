@@ -65,15 +65,15 @@ class QRcouponShortRedeemView(generics.UpdateAPIView):
 
     def partial_update(self, request, *args, **kwargs):
         instance = self.get_object()
-        trans=Transaction(customer=instance.user,manager=request.user,points=1,offer=instance.offer)
-        trans.save()
         if instance == None:
             return Response(custom_api_response(content={'error':'coupon not exist or invalid'}))
+        trans = Transaction(customer=instance.user, manager=request.user, points=1, offer=instance.offer)
+        trans.save()
         serializer = self.get_serializer(instance, data=request.data,partial=True)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
         count_redeemd_coupons(instance.offer)
-        instance.offer.redeemed_codes_increment()
+        instance.offer.redeemed_codes_increment(user=self.request.user)
         history_redeem_coupon_event(obj=instance.offer,user=request.user)
         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
 

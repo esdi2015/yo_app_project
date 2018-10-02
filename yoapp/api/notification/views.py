@@ -1,5 +1,4 @@
 from rest_framework.response import Response
-
 from rest_framework.decorators import api_view, permission_classes
 from django.contrib.auth import get_user_model
 
@@ -12,7 +11,6 @@ from ..views import custom_api_response
 from api.notification.serializers import NotificationSerializator, SubscriptionSerializator
 
 from common.models import Category
-from yomarket.models import Shop
 
 from django.db.models import Q
 from datetime import timedelta

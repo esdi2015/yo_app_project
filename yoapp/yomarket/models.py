@@ -1,8 +1,8 @@
 from django.db import models
 from django.conf import settings
 from django.apps import apps
-
 import uuid
+from notification.utils import last_coupon_redeemed_event
 
 
 DISCOUNT_TYPES = (
@@ -133,11 +133,12 @@ class Offer(models.Model):
     offer_type = models.CharField(max_length=50, choices=OFFER_TYPES, default=OFFER_TYPES[0][0])
 
 
-    def redeemed_codes_increment(self):
+    def redeemed_codes_increment(self,user=None):
         if self.redeemed_codes_count+1 == self.codes_count:
             self.redeemed_codes_count=self.redeemed_codes_count+1
             self.save()
             self.available = False
+            last_coupon_redeemed_event(offer=self,user=user)
             self.save()
             coupons = QRcoupon.objects.filter(offer=self)
             for coupon in coupons:
