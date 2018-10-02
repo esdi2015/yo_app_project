@@ -108,7 +108,10 @@ def coupon_balance_task(self):
     offers=Offer.objects.filter(available=True).exclude(id__in =settings.list)
 
     for offer in offers:
-        percent=(offer.redeemed_codes_count/offer.codes_count)*100
+        try:
+            percent=(offer.redeemed_codes_count/offer.codes_count)*100
+        except ZeroDivisionError:
+            percent=0
 
         if percent>=80:
             coupons_users = QRcoupon.objects.filter(offer=offer,is_redeemed=False,is_expired=False).values_list('user',flat=True)
