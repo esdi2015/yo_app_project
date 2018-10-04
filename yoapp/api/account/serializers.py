@@ -12,6 +12,8 @@ UserModel = get_user_model()
 
 class ProfileSerializer(serializers.ModelSerializer):
     user = serializers.StringRelatedField()
+    first_name = serializers.StringRelatedField(source='user.first_name')
+    last_name = serializers.StringRelatedField(source='user.last_name')
     #first_name = serializers.SlugRelatedField(slug_field='user.first_name', read_only=True, required=False)
     #last_name = serializers.SlugRelatedField(slug_field='user.last_name', read_only=True, required=False)
     #user_id = serializers.IntegerField(allow_null=False)
@@ -26,4 +28,6 @@ class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = ('user', 'user_id', 'date_birth', 'photo', 'gender',
-                  'points', 'region', 'interests') #, 'first_name', 'last_name'
+                  'points', 'rank', 'region', 'interests',
+                  'first_name', 'last_name'
+                  ) #, 'first_name', 'last_name'

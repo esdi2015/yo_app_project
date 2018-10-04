@@ -18,6 +18,7 @@ class Profile(models.Model):
     photo = models.ImageField(upload_to='users/%Y/%m/%d', blank=True)
     gender = models.CharField(max_length=50, choices=GENDER_CHOICES, default=DEFAULT_USER_GENDER)
     points = models.IntegerField(default=0, blank=True, null=True)
+    rank = models.IntegerField(default=0, blank=True, null=True)
     region = models.CharField(max_length=200, blank=True)
     interests = models.CharField(max_length=200, blank=True)
 
