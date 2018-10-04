@@ -35,7 +35,7 @@ def make_push_msg(notification):
                 'message': notification.offer.title }
     if notification.message_type == 'few_coupons_left':
         return {'extra':{"offer_id":notification.offer.id},
-                'title':'Hurry, only 10% of coupons left:',
+                'title':'Hurry, only 20% of coupons left:',
                 'message': notification.offer.title
                 }
 
