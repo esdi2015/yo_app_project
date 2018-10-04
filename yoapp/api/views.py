@@ -1,42 +1,7 @@
-from django.shortcuts import render, HttpResponseRedirect
-from django.apps import apps
-from rest_framework import viewsets
-from rest_framework import generics
-from django.shortcuts import get_object_or_404
-#from rest_framework.authentication import SessionAuthentication, BaseAuthentication
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth.views import LoginView
-
-
-from django.contrib.auth import logout, login
-from django.http import HttpResponseRedirect
-from django.urls import reverse
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework import generics, mixins
-from rest_framework.authtoken.serializers import AuthTokenSerializer
-from rest_framework.authtoken.models import Token
-
 from django.contrib.auth import get_user_model
 from django.apps import apps
-
-from rest_framework import status
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework.settings import api_settings
-from rest_framework.pagination import LimitOffsetPagination
-
-from django.contrib.auth import (
-    login as django_login,
-    logout as django_logout
-)
-from django.core.exceptions import ObjectDoesNotExist
-
-from rest_auth.models import TokenModel
-from rest_auth.app_settings import create_token
 from rest_framework.views import exception_handler
-
+from .utils import ERROR_API
 
 
 UserModel = get_user_model()
@@ -80,13 +45,22 @@ def custom_api_response(serializer=None, content=None, errors=None, metadata={},
         else:
             response = {'metadata': metadata, 'content': 'unknown'}
     else:
-        #print(serializer._errors)
         for key in serializer._errors.keys():
-            try:
-                api_error_codes.append(serializer._errors[key][0].code)
-            except Exception as e:
-                pass
-        #if 'non_field_errors' in serializer._errors:
+            if key == 'password':
+                for i, pe in enumerate(serializer._errors[key]):
+                    if pe == ERROR_API['151'][1]:
+                        serializer._errors[key][i].code = ERROR_API['151'][0]
+                    elif pe == ERROR_API['152'][1]:
+                        serializer._errors[key][i].code = ERROR_API['152'][0]
+                    elif pe == ERROR_API['153'][1]:
+                        serializer._errors[key][i].code = ERROR_API['153'][0]
+                    api_error_codes.append(serializer._errors[key][i].code)
+            else:
+                try:
+                    api_error_codes.append(serializer._errors[key][0].code)
+                except Exception as e:
+                    pass
+
         if len(api_error_codes) > 0:
             metadata = {'api_error_codes': api_error_codes}
         response = {'metadata': metadata, 'errors': serializer._errors}

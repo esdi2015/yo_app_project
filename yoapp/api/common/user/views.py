@@ -321,7 +321,8 @@ def get_profile_data(user_id, request=None):
     profile_serializer = ProfileSerializer(instance=user_profile, many=True)
     profile = profile_serializer.data
     if request:
-        profile[0]['photo'] = request.build_absolute_uri(profile[0]['photo'])
+        if profile[0]['photo']:
+            profile[0]['photo'] = request.build_absolute_uri(profile[0]['photo'])
 
     if profile:
         return profile[0]

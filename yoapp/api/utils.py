@@ -17,6 +17,10 @@ ERROR_API = {
     "116": (116, "Not logged as owner or manager"),
     "117": (117, "Incorrect user role"),
 
+    "151": (151, "This password is too short. It must contain at least 8 characters."),
+    "152": (152, "This password is too common."),
+    "153": (153, "This password is entirely numeric."),
+
     "200": (200, "No coupons"),
     "201": (201, "No history data"),
     "202": (202, "No secondary info data"),
@@ -29,4 +33,6 @@ ERROR_API = {
 
 
 #100 - 199 - users API errors
+#151 - 160 - password errors
+
 #200 - 299 - offers API errors
