@@ -16,6 +16,7 @@ from .common.smsreg.urls import urlpatterns as sms_reg_urls
 from .history.urls import urlpatterns as history_urls
 from .common.overview.urls import urlpatterns as overview_urls
 from .yomarket.secondary_info.urls import urlpatterns as secondary_info_urls
+from .targeting.urls import urlpatterns as targeting_urls
 
 urlpatterns = []
 urlpatterns = urlpatterns + \
@@ -34,7 +35,8 @@ urlpatterns = urlpatterns + \
               schedule_urls + \
               history_urls + \
               overview_urls + \
-              secondary_info_urls
+              secondary_info_urls +\
+              targeting_urls
 
 
 
