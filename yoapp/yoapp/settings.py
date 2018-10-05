@@ -71,6 +71,7 @@ INSTALLED_APPS = [
     'statistic.apps.StatisticConfig',
     'points.apps.PointsConfig',
     'history.apps.HistoryConfig',
+    'targeting.apps.TargetingConfig',
 ]
 
 MIDDLEWARE = [
