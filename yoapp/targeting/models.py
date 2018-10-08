@@ -20,3 +20,10 @@ class UserPreferencesTable(models.Model):
 
 
 
+class UserDataTable(models.Model):
+    birth_date = models.DateTimeField()
+    checkbox1 = models.BooleanField(default=False)
+    checkbox2 = models.BooleanField(default=False)
+
+
+
