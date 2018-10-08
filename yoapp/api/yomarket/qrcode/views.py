@@ -13,6 +13,7 @@ from statistic.utlis import count_taken_coupons, count_redeemd_coupons
 from ...utils import ERROR_API
 from history.utils import history_make_coupon_event,history_redeem_coupon_event
 from yomarket.models import Transaction
+from django.core.exceptions import ValidationError
 
 class QRcouponRedeemView(generics.UpdateAPIView):
     serializer_class = QRcouponSerializator
@@ -32,13 +33,16 @@ class QRcouponRedeemView(generics.UpdateAPIView):
 
     def partial_update(self, request, *args, **kwargs):
         instance = self.get_object()
-        trans = Transaction(customer=instance.user, manager=request.user, points=1, offer=instance.offer)
-        trans.save()
+
         if instance == None:
-            return Response(custom_api_response(content={'error':'coupon not exist or invalid'}))
+            error = {"detail": ERROR_API['208'][1]}
+            error_codes = [ERROR_API['208'][0]]
+            return Response(custom_api_response(errors=error, error_codes=error_codes),status=status.HTTP_400_BAD_REQUEST)
         serializer = self.get_serializer(instance, data=request.data,partial=True)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
+        trans = Transaction(customer=instance.user, manager=request.user, points=1, offer=instance.offer)
+        trans.save()
         instance.offer.redeemed_codes_increment()
         count_redeemd_coupons(instance.offer)
         history_redeem_coupon_event(obj=instance.offer,user=request.user)
@@ -66,12 +70,15 @@ class QRcouponShortRedeemView(generics.UpdateAPIView):
     def partial_update(self, request, *args, **kwargs):
         instance = self.get_object()
         if instance == None:
-            return Response(custom_api_response(content={'error':'coupon not exist or invalid'}))
-        trans = Transaction(customer=instance.user, manager=request.user, points=1, offer=instance.offer)
-        trans.save()
+            error = {"detail": ERROR_API['208'][1]}
+            error_codes = [ERROR_API['208'][0]]
+            return Response(custom_api_response(errors=error, error_codes=error_codes),status=status.HTTP_400_BAD_REQUEST)
+
         serializer = self.get_serializer(instance, data=request.data,partial=True)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
+        trans = Transaction(customer=instance.user, manager=request.user, points=1, offer=instance.offer)
+        trans.save()
         count_redeemd_coupons(instance.offer)
         instance.offer.redeemed_codes_increment(user=self.request.user)
         history_redeem_coupon_event(obj=instance.offer,user=request.user)
@@ -86,10 +93,26 @@ class QRcouponCheckView(generics.RetrieveAPIView):
     lookup_field = 'uuid_id'
     permission_classes = (IsAuthenticated,)
 
-    def get_queryset(self):
+
+    def get_object(self):
         if self.request.user.role == 'MANAGER':
-            queryset = self.model.objects.filter(offer__shop__manager_id=self.request.user.pk)
-        return queryset
+            try:
+                obj = QRcoupon.objects.get(offer__shop__manager_id=self.request.user.pk,uuid_id=self.kwargs.get('uuid_id'))
+                return obj
+            except (QRcoupon.DoesNotExist, ValidationError) as err:
+                return None
+
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance == None:
+            error = {"detail": ERROR_API['208'][1]}
+            error_codes = [ERROR_API['208'][0]]
+            return Response(custom_api_response(errors=error, error_codes=error_codes),
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = self.get_serializer(instance)
+        return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
 
 
 class QRcouponShortCheckView(generics.RetrieveAPIView):
@@ -98,11 +121,26 @@ class QRcouponShortCheckView(generics.RetrieveAPIView):
     lookup_field = 'id'
     permission_classes = (IsAuthenticated,)
 
-    def get_queryset(self):
-        if self.request.user.role == 'MANAGER':
-            queryset = self.model.objects.filter(offer__shop__manager_id=self.request.user.pk)
-        return queryset
 
+
+    def get_object(self):
+        if self.request.user.role == 'MANAGER':
+            try:
+                obj = QRcoupon.objects.get(offer__shop__manager_id=self.request.user.pk,id=self.kwargs.get('id'))
+                return obj
+            except (QRcoupon.DoesNotExist, ValidationError) as err:
+                return None
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance == None:
+            error = {"detail": ERROR_API['208'][1]}
+            error_codes = [ERROR_API['208'][0]]
+            return Response(custom_api_response(errors=error, error_codes=error_codes),
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = self.get_serializer(instance)
+        return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
 
 
 

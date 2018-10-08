@@ -31,5 +31,5 @@ class ProfileSerializer(serializers.ModelSerializer):
         model = Profile
         fields = ('user', 'user_id', 'date_birth', 'photo', 'gender',
                   'points', 'rank', 'region', 'interests',
-                  'first_name', 'last_name'
+                  'first_name', 'last_name','phone'
                   ) #, 'first_name', 'last_name'
