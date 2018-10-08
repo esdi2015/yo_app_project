@@ -29,3 +29,5 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = ('user', 'user_id', 'date_birth', 'photo', 'gender',
                   'points', 'rank', 'region', 'interests',
                   'first_name', 'last_name', 'phone', 'payment_method')
+
+

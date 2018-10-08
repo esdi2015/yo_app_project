@@ -29,6 +29,8 @@ ERROR_API = {
     "205": (205, "No daily offers"),
     "206": (206, "No regular offers"),
     "207": (207, "Offer not found"),
+    "208": (208, "Invalid code or no coupon"),
+
 }
 
 
