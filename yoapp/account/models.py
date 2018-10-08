@@ -21,6 +21,7 @@ class Profile(models.Model):
     rank = models.IntegerField(default=0, blank=True, null=True)
     region = models.CharField(max_length=200, blank=True)
     interests = models.CharField(max_length=200, blank=True)
+    payment_method = models.CharField(max_length=50, blank=True)
 
     def __str__(self):
         return 'Profile for user {}'.format(self.user.username)

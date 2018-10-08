@@ -16,9 +16,6 @@ class ProfileSerializer(serializers.ModelSerializer):
     last_name = serializers.StringRelatedField(source='user.last_name')
     phone = serializers.StringRelatedField(source='user.mobile')
 
-    #first_name = serializers.SlugRelatedField(slug_field='user.first_name', read_only=True, required=False)
-    #last_name = serializers.SlugRelatedField(slug_field='user.last_name', read_only=True, required=False)
-    #user_id = serializers.IntegerField(allow_null=False)
 
     # def update(self, instance, validated_data):
     #     #instance.test = validated_data.get('test', instance.test)
@@ -31,5 +28,4 @@ class ProfileSerializer(serializers.ModelSerializer):
         model = Profile
         fields = ('user', 'user_id', 'date_birth', 'photo', 'gender',
                   'points', 'rank', 'region', 'interests',
-                  'first_name', 'last_name'
-                  ) #, 'first_name', 'last_name'
+                  'first_name', 'last_name', 'phone', 'payment_method')
