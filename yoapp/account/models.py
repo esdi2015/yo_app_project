@@ -22,6 +22,8 @@ class Profile(models.Model):
     region = models.CharField(max_length=200, blank=True)
     interests = models.CharField(max_length=200, blank=True)
     payment_method = models.CharField(max_length=50, blank=True)
+    subscribe = models.BooleanField(default=False)
+    phone = models.CharField(max_length=16,blank=True,null=True)
 
     def __str__(self):
         return 'Profile for user {}'.format(self.user.username)
