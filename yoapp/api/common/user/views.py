@@ -468,3 +468,18 @@ def free_managers_view(request):
 
     serializer = CustomUserSerializer(users_list, many=True)
     return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
+
+
+import twitter
+
+@api_view(['POST'])
+@permission_classes(())
+def twitter_login(request):
+
+
+    api = twitter.Api(consumer_key='P9xv5rNHFY4rYcOr8Fg2kH0TH',
+                      consumer_secret='bSRFJAWwgDrR2TWnX3Z9mxwtyPgtAvKmseu9vQ4XjFP66Bd2fB',
+                      access_token_key='1047810869516754944-b2cDWgToMxJc5xzSONFVp3uofMiHL6',
+                      access_token_secret='lSz8yLK6gz709tBHzoZfiDyOMTQeIGZeCMiLlCsCkZ5da')
+    print(api.UpdateProfile())
+    return Response(str(api.VerifyCredentials(include_email=True)))
