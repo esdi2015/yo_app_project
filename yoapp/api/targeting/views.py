@@ -58,7 +58,7 @@ class UserPreferencesTableCreateView(generics.ListCreateAPIView):
             return [IsAuthenticated(), ]
 
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+        serializer = self.get_serializer(data=request.data,many=True)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         return Response(custom_api_response(serializer=serializer), status=status.HTTP_201_CREATED)
