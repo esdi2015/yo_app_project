@@ -14,8 +14,8 @@ class ProfileSerializer(serializers.ModelSerializer):
     user = serializers.StringRelatedField()
     first_name = serializers.StringRelatedField(source='user.first_name')
     last_name = serializers.StringRelatedField(source='user.last_name')
-    phone = serializers.StringRelatedField(source='user.mobile')
-
+    photo = serializers.ImageField(allow_null=True, allow_empty_file=True)
+    # phone = serializers.StringRelatedField(source='user.mobile')
 
     # def update(self, instance, validated_data):
     #     #instance.test = validated_data.get('test', instance.test)
@@ -29,5 +29,14 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = ('user', 'user_id', 'date_birth', 'photo', 'gender',
                   'points', 'rank', 'region', 'interests',
                   'first_name', 'last_name', 'phone', 'payment_method')
+
+
+class ProfilePhotoSerializer(serializers.ModelSerializer):
+    photo = serializers.ImageField()
+
+    class Meta:
+        model = Profile
+        fields = ('photo', )
+
 
 

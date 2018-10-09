@@ -4,20 +4,14 @@ from django.contrib.auth import (
     logout as django_logout
 )
 from django.contrib.auth import get_user_model
-from django.core import serializers
 
 from rest_framework import viewsets
-from rest_framework import status
-from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
 from rest_auth.models import TokenModel
 from rest_auth.app_settings import create_token
 
-import httplib2
-from googleapiclient.discovery import build
-from oauth2client.client import AccessTokenCredentials
 import facebook
 from google.oauth2 import id_token
 from google.auth.transport import requests
@@ -53,8 +47,6 @@ UserModel = get_user_model()
 
 
 class Logout(APIView):
-    #queryset = UserModel.objects.all()
-
     def get(self, request, format=None):
         # simply delete the token to force a login
         try:
@@ -71,7 +63,6 @@ class Logout(APIView):
 
 class UserMe(APIView):
     permission_classes = (IsAuthenticated,)
-    #queryset = UserModel.objects.all()
 
     def get(self, request, format=None):
         serializer = CustomUserSerializer(request.user)
@@ -80,7 +71,6 @@ class UserMe(APIView):
 
 class UserIsExists(APIView):
     permission_classes = (AllowAny,)
-    #queryset = UserModel.objects.all()
 
     def post(self, request, format=None):
         serializer = UserIsExistsSerializer(data=request.data)
@@ -95,10 +85,7 @@ class UserViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
 
     def retrieve(self, request, pk=None):
-        #queryset = UserModel.objects.filter(role='CUSTOMER').all()
-        #user = get_object_or_404(queryset, pk=pk)
         user = UserModel.objects.filter(pk=pk).all()
-        #serializer = CustomUserSerializer(user, many=True)
         serializer = self.get_serializer(user, many=True)
         response = Response(custom_api_response(serializer), status=status.HTTP_200_OK)
         return response
@@ -106,13 +93,11 @@ class UserViewSet(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         users = UserModel.objects.filter(role='MANAGER', creator_id=request.user.pk).all()
 
-
         # page = self.paginate_queryset(queryset)
         # if page is not None:
         #     serializer = self.get_serializer(page, many=True)
         #     return self.get_paginated_response(serializer.data)
-        #serializer = self.get_serializer(queryset, many=True)
-        #serializer = CustomUserSerializer(users, many=True)
+
         serializer = self.get_serializer(users, many=True)
         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
 
@@ -139,8 +124,6 @@ class UserViewSet(viewsets.ModelViewSet):
             instance._prefetched_objects_cache = {}
 
         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
-
-
 
 
 
@@ -275,7 +258,19 @@ def register_view(request):
 
     serializer = CustomUserSerializer(data=request.data)
     if serializer.is_valid():
-        serializer.save()
+        # print (serializer.validated_data)
+        instance = serializer.save()
+        # instance_id = instance.id
+        # #print(serializer.data)
+        # profile_data = get_profile_data(user_id=instance_id)
+        # profile_serialiser = ProfileSerializer(data=profile_data)
+        # print(profile_data)
+        # print(profile_serialiser)
+        # if profile_serialiser.is_valid(raise_exception=True):
+        #     profile_serialiser.update(instance=profile_data, validated_data=profile_serialiser.validated_data)
+        # else:
+        #     return Response(custom_api_response(serializer), status=status.HTTP_400_BAD_REQUEST)
+
         login_serializer = LoginSerializer(data=request.data)
         if login_serializer.is_valid():
             user = login_serializer.validated_data['user']
