@@ -7,7 +7,7 @@ class TargetingAdmin(admin.ModelAdmin):
 
 
 class TargetingUserDataAdmin(admin.ModelAdmin):
-    list_display = ('birth_date','checkbox1','checkbox2')
+    list_display = ('user','age','gender','checkbox1','checkbox2')
 
 
 
