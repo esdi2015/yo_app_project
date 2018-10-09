@@ -17,7 +17,7 @@ from google.oauth2 import id_token
 from google.auth.transport import requests
 
 from ...views import custom_api_response
-from .serializers import CustomUserSerializer, LoginSerializer, UserIsExistsSerializer
+from .serializers import CustomUserSerializer, LoginSerializer, UserIsExistsSerializer, RegisterUserSerializer
 
 from ...account.serializers import ProfileSerializer
 from account.models import Profile
@@ -256,20 +256,20 @@ def register_view(request):
         error_codes = [ERROR_API['103'][0]]
         return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_400_BAD_REQUEST)
 
-    serializer = CustomUserSerializer(data=request.data)
+    serializer = RegisterUserSerializer(data=request.data)
     if serializer.is_valid():
-        # print (serializer.validated_data)
+        new_profile_data = {'date_birth': serializer.validated_data['date_birth'],
+                            'phone': serializer.validated_data['phone'],
+                            'subscribe': serializer.validated_data['subscribe']}
+        del serializer.validated_data['date_birth']
+        del serializer.validated_data['phone']
+        del serializer.validated_data['subscribe']
         instance = serializer.save()
-        # instance_id = instance.id
-        # #print(serializer.data)
-        # profile_data = get_profile_data(user_id=instance_id)
-        # profile_serialiser = ProfileSerializer(data=profile_data)
-        # print(profile_data)
-        # print(profile_serialiser)
-        # if profile_serialiser.is_valid(raise_exception=True):
-        #     profile_serialiser.update(instance=profile_data, validated_data=profile_serialiser.validated_data)
-        # else:
-        #     return Response(custom_api_response(serializer), status=status.HTTP_400_BAD_REQUEST)
+        instance_id = instance.id
+        user_profile = Profile.objects.filter(user_id=instance_id).first()
+        profile_serialiser = ProfileSerializer(instance=user_profile, data=new_profile_data)
+        if profile_serialiser.is_valid():
+            profile_serialiser.save()
 
         login_serializer = LoginSerializer(data=request.data)
         if login_serializer.is_valid():
@@ -279,7 +279,6 @@ def register_view(request):
             profile = get_profile_data(user.id, request)
             content = {'token': token.key, 'email': user.email, 'id': user.id, 'first_login': True,
                    'first_name': user.first_name, 'last_name': user.last_name, 'profile': profile}
-            #return Response(custom_api_response(serializer), status=status.HTTP_201_CREATED)
             return Response(custom_api_response(login_serializer, content), status=status.HTTP_200_OK)
         else:
             return Response(custom_api_response(login_serializer), status=status.HTTP_400_BAD_REQUEST)
@@ -292,12 +291,11 @@ def register_view(request):
 def login_view(request):
     serializer_class = LoginSerializer
     if request.user.is_authenticated == True:
-        # error = {"detail": "You must have to log out first"}
-        error = {"detail": ERROR_API['109'][1]}
+        error = {"detail": ERROR_API['109'][1]} # "You must have to log out first"
         error_codes = [ERROR_API['109'][0]]
         return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_400_BAD_REQUEST)
 
-    serializer = LoginSerializer(data=request.data)
+    serializer = serializer_class(data=request.data)
     if serializer.is_valid():
         user = serializer.validated_data['user']
         token = create_token(TokenModel, user, serializer)
@@ -318,7 +316,6 @@ def get_profile_data(user_id, request=None):
     if request:
         if profile[0]['photo']:
             profile[0]['photo'] = request.build_absolute_uri(profile[0]['photo'])
-
     if profile:
         return profile[0]
     else:
@@ -330,9 +327,8 @@ def get_profile_data(user_id, request=None):
 @permission_classes(())
 def google_oauth(request):
     if request.user.is_authenticated:
-        error = {"detail": ERROR_API['109'][1]}
+        error = {"detail": ERROR_API['109'][1]} # "You must have to log out first"
         error_codes = [ERROR_API['109'][0]]
-        #return Response({"detail": "You must have to log out first"})
         return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_400_BAD_REQUEST)
 
     token=request.data['id_token']
@@ -344,7 +340,7 @@ def google_oauth(request):
     except ValueError:
         error = {"detail": ERROR_API['111'][1]}
         error_codes = [ERROR_API['111'][0]]
-        # return Response({"error":"Unable to login via google account, wrong issuer"}, status=status.HTTP_400_BAD_REQUEST)
+        # "Unable to login via google account, wrong issuer"
         return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_400_BAD_REQUEST)
 
     last_name = idinfo['family_name']
@@ -367,7 +363,7 @@ def google_oauth(request):
     try:
         user = UserModel.objects.get(email=email,google_id=google_id)
     except UserModel.DoesNotExist:
-        user = UserModel(email=email, last_name=last_name, first_name=first_name,google_id=google_id)
+        user = UserModel(email=email, last_name=last_name, first_name=first_name, google_id=google_id)
         user.save()
         user.profile.photo.save(name, content, save = True)
         user.save()
@@ -437,7 +433,7 @@ def facebook_oauth(request):
     else:
         error = {"detail": ERROR_API['112'][1]}
         error_codes = [ERROR_API['112'][0]]
-        # return Response({'error': 'Unable to login via facebook account, wrong id'}, status=status.HTTP_400_BAD_REQUEST)
+        # 'Unable to login via facebook account, wrong id'
         return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_400_BAD_REQUEST)
 
 

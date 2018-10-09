@@ -71,6 +71,20 @@ class CustomUserSerializer(serializers.ModelSerializer):
         write_only_fields = ('password', )
 
 
+
+class RegisterUserSerializer(CustomUserSerializer):
+    date_birth = serializers.DateField(allow_null=True, required=False)
+    phone = serializers.CharField(allow_null=True, required=False)
+    subscribe = serializers.NullBooleanField(required=False)
+
+    class Meta:
+        model = UserModel
+        fields = ('id', 'password', 'username', 'first_name', 'last_name', 'email', 'role', 'creator_id',
+                  'date_birth', 'phone', 'subscribe'
+                  )
+        write_only_fields = ('password', )
+
+
 class LoginSerializer(serializers.Serializer):
     email = serializers.CharField(label=_("Email"))
     password = serializers.CharField(
