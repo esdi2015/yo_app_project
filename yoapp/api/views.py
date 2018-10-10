@@ -13,6 +13,8 @@ ShopModel = apps.get_model('yomarket', 'Shop')
 def custom_exception_handler(exc, context):
     # Call REST framework's default exception handler first,
     # to get the standard error response.
+    api_error_codes = []
+    metadata = {}
     response = exception_handler(exc, context)
     try:
         detail = response.data.get('detail')
@@ -20,7 +22,13 @@ def custom_exception_handler(exc, context):
         detail = e
     if response is not None:
         if detail:
-            response.data['metadata'] = {}
+            if detail == ERROR_API['118'][1]:
+                api_error_codes.append(ERROR_API['118'][0])
+            elif detail == ERROR_API['119'][1]:
+                api_error_codes.append(ERROR_API['119'][0])
+            #else:
+            metadata = {'api_error_codes': api_error_codes}
+            response.data['metadata'] = metadata
             response.data['errors'] = {'non_field_errors': detail}
             del response.data['detail']
 
@@ -55,6 +63,16 @@ def custom_api_response(serializer=None, content=None, errors=None, metadata={},
                     elif pe == ERROR_API['153'][1]:
                         serializer._errors[key][i].code = ERROR_API['153'][0]
                     api_error_codes.append(serializer._errors[key][i].code)
+            elif key == 'photo':
+                for i, pe in enumerate(serializer._errors[key]):
+                    if pe == ERROR_API['161'][1]:
+                        serializer._errors[key][i].code = ERROR_API['161'][0]
+                    api_error_codes.append(serializer._errors[key][i].code)
+            elif key == 'date_birth':
+                for i, pe in enumerate(serializer._errors[key]):
+                    if pe == ERROR_API['162'][1]:
+                        serializer._errors[key][i].code = ERROR_API['162'][0]
+                    api_error_codes.append(serializer._errors[key][i].code)
             else:
                 try:
                     api_error_codes.append(serializer._errors[key][0].code)
@@ -67,6 +85,16 @@ def custom_api_response(serializer=None, content=None, errors=None, metadata={},
     return response
 
 
+
+def password_error_messages(serializer, key):
+    for i, pe in enumerate(serializer._errors[key]):
+        if pe == ERROR_API['151'][1]:
+            serializer._errors[key][i].code = ERROR_API['151'][0]
+        elif pe == ERROR_API['152'][1]:
+            serializer._errors[key][i].code = ERROR_API['152'][0]
+        elif pe == ERROR_API['153'][1]:
+            serializer._errors[key][i].code = ERROR_API['153'][0]
+    return serializer
 
 
 def get_error_code():

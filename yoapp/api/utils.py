@@ -16,10 +16,15 @@ ERROR_API = {
     "115": (115, "You must have to login first"),
     "116": (116, "Not logged as owner or manager"),
     "117": (117, "Incorrect user role"),
+    "118": (118, "Authentication credentials were not provided."),
+    "119": (119, "Invalid token."),
 
     "151": (151, "This password is too short. It must contain at least 8 characters."),
     "152": (152, "This password is too common."),
     "153": (153, "This password is entirely numeric."),
+
+    "161": (161, "The submitted data was not a file. Check the encoding type on the form."),
+    "162": (162, "Date has wrong format. Use one of these formats instead: YYYY[-MM[-DD]]."),
 
     "200": (200, "No coupons"),
     "201": (201, "No history data"),
@@ -36,5 +41,6 @@ ERROR_API = {
 
 #100 - 199 - users API errors
 #151 - 160 - password errors
+#161 - 170 - profile errors
 
 #200 - 299 - offers API errors

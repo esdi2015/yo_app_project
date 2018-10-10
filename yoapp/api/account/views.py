@@ -44,16 +44,16 @@ class ProfileDetailView(generics.RetrieveUpdateDestroyAPIView):
         instance = self.get_object()
         history_profile_update_event(user=request.user)
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
-        serializer.is_valid(raise_exception=True)
-        #self.perform_update(serializer)
-
-        # if getattr(instance, '_prefetched_objects_cache', None):
-        #     # If 'prefetch_related' has been applied to a queryset, we need to
-        #     # forcibly invalidate the prefetch cache on the instance.
-        #     instance._prefetched_objects_cache = {}
-
-        serializer.save(user_id=request.user.pk)
-        return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
+        if serializer.is_valid(raise_exception=False):
+            #self.perform_update(serializer)
+            # if getattr(instance, '_prefetched_objects_cache', None):
+            #     # If 'prefetch_related' has been applied to a queryset, we need to
+            #     # forcibly invalidate the prefetch cache on the instance.
+            #     instance._prefetched_objects_cache = {}
+            serializer.save(user_id=request.user.pk)
+            return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
+        else:
+            return Response(custom_api_response(serializer), status=status.HTTP_400_BAD_REQUEST)
 
 
 class ProfilePhotoView(generics.CreateAPIView):

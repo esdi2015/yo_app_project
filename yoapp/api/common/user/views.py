@@ -245,7 +245,7 @@ user_reset_password_request_token = UserResetPasswordRequestToken.as_view()
 def register_view(request):
     # registration handler
     if request.user.is_authenticated == True:
-        # error = {"detail": "You must have to log out first"}
+        # "You must have to log out first"
         error = {"detail": ERROR_API['109'][1]}
         error_codes = [ERROR_API['109'][0]]
         return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_400_BAD_REQUEST)
