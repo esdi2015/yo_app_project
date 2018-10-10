@@ -14,6 +14,14 @@ class QRcouponSerializator(serializers.ModelSerializer):
           offer = validated_data['offer']
           user_id = validated_data['user_id']
 
+          def make_coupon():
+              coupon = QRcoupon(**validated_data, expiry_date=timezone.now()+timezone.timedelta(seconds=900), type=offer.code_type,
+                                alpha_num_code_type=offer.alpha_num_code_type,
+                                coupon_phone=offer.coupon_phone,
+                                coupon_web=offer.coupon_web,
+                                description=offer.coupon_description)
+              return coupon
+
           try:
             coupon = QRcoupon.objects.get(offer=offer,user_id=user_id,type=offer.code_type,
                                           alpha_num_code_type=offer.alpha_num_code_type,
@@ -23,17 +31,15 @@ class QRcouponSerializator(serializers.ModelSerializer):
                                           )
             if coupon.expiry_date <= timezone.now():
                coupon.is_expired = True
+               coupon.delete()
+               coupon=make_coupon()
                coupon.save()
           except QRcoupon.DoesNotExist:
-            coupon = QRcoupon(**validated_data,expiry_date=offer.expire,type=offer.code_type,
-                                              alpha_num_code_type=offer.alpha_num_code_type,
-                                              coupon_phone=offer.coupon_phone,
-                                              coupon_web=offer.coupon_web,
-                                              description=offer.coupon_description)
+            coupon=make_coupon()
             coupon.save()
             if coupon.expiry_date <= timezone.now():
                coupon.is_expired = True
-               coupon.save()
+               coupon.delete()
 
           return coupon
 
