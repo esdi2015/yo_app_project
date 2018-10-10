@@ -16,14 +16,16 @@ def coupon_ttl_task(self):
         settings.save()
     lrt= settings.last_run_time
 
-    coupons = QRcoupon.objects.filter(is_redeemed=False,is_expired=False)\
-        .annotate(created=ExpressionWrapper(F('date_created') + timezone.timedelta(seconds=900), output_field=DateTimeField()))\
-        .filter(created__lte=timezone.now())
+    # coupons = QRcoupon.objects.filter(is_redeemed=False,is_expired=False)\
+    #     .annotate(created=ExpressionWrapper(F('date_created') + timezone.timedelta(seconds=900), output_field=DateTimeField()))\
+    #     .filter(created__lte=timezone.now())
 
 
+    coupons=QRcoupon.objects.filter(is_redeemed=False,is_expired=False)
 
     for coupon in coupons:
-        coupon.delete()
+        if coupon.expiry_date <=timezone.now():
+            coupon.delete()
 
     settings.last_run_time=timezone.now()
     settings.save()
