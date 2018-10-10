@@ -49,6 +49,34 @@ class MyTransactionView(generics.ListAPIView):
         return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_400_BAD_REQUEST)
 
 
+class ManagerTransactionView(generics.ListAPIView):
+    serializer_class = MyTransactionSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def get_queryset(self):
+        if self.request.user.role == 'MANAGER':
+            queryset = Transaction.objects.filter(manager=self.request.user)
+        elif self.request.user.role == 'OWNER':
+            queryset = Transaction.objects.filter(offer__shop__user=self.request.user)
+        else:
+            queryset=None
+
+
+        return queryset
+
+    def list(self,request, *args, **kwargs):
+        queryset=self.get_queryset()
+        if queryset==None:
+            error = {"detail": ERROR_API['203'][1]}
+            error_codes = [ERROR_API['203'][0]]
+            return Response(custom_api_response(errors=error, error_codes=error_codes),
+                            status=status.HTTP_400_BAD_REQUEST)
+        if queryset.exists():
+            serilizer=self.get_serializer(queryset,many=True)
+            return Response(custom_api_response(serilizer),status=status.HTTP_200_OK)
+
+
+
 class TransactionViewSet(viewsets.ModelViewSet):
     queryset = TransactionModel.objects.all()
     serializer_class = TransactionSerializer
