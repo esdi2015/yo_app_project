@@ -163,16 +163,3 @@ class UserIsExistsSerializer(serializers.Serializer):
         attrs['user'] = user
         return attrs
 
-
-# class ProfileSerializer(serializers.ModelSerializer):
-#
-#     def update(self, instance, validated_data):
-#         #instance.test = validated_data.get('test', instance.test)
-#         instance.date_birth = validated_data.get('date_birth', instance.date_birth)
-#         instance.photo = validated_data.get('photo', instance.photo)
-#         instance.save()
-#         return instance
-#
-#     class Meta:
-#         model = Profile
-#         fields = ('date_birth', 'photo', 'gender')

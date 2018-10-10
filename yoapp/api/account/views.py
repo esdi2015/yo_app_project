@@ -11,7 +11,7 @@ from rest_framework.views import APIView
 from rest_auth.models import TokenModel
 
 from ..views import custom_api_response
-from .serializers import ProfileSerializer, ProfilePhotoSerializer
+from .serializers import ProfileSerializer, ProfilePhotoSerializer, ProfileUpdateSerializer
 from history.utils import history_profile_update_event
 
 ProfileModel = apps.get_model('user_account', 'Profile')
@@ -39,17 +39,18 @@ class ProfileDetailView(generics.RetrieveUpdateDestroyAPIView):
         return Response(custom_api_response(content=profile_data), status=status.HTTP_200_OK)
 
     def update(self, request, *args, **kwargs):
+        self.serializer_class = ProfileUpdateSerializer
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
         history_profile_update_event(user=request.user)
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
+        #self.perform_update(serializer)
 
-        if getattr(instance, '_prefetched_objects_cache', None):
-            # If 'prefetch_related' has been applied to a queryset, we need to
-            # forcibly invalidate the prefetch cache on the instance.
-            instance._prefetched_objects_cache = {}
+        # if getattr(instance, '_prefetched_objects_cache', None):
+        #     # If 'prefetch_related' has been applied to a queryset, we need to
+        #     # forcibly invalidate the prefetch cache on the instance.
+        #     instance._prefetched_objects_cache = {}
 
         serializer.save(user_id=request.user.pk)
         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)

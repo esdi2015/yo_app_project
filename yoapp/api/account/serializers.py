@@ -3,8 +3,10 @@ from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from rest_framework.compat import authenticate
+from rest_framework.utils import model_meta
 
 from account.models import Profile
+from api.common.user.serializers import CustomUserSerializer
 
 
 UserModel = get_user_model()
@@ -15,18 +17,54 @@ class ProfileSerializer(serializers.ModelSerializer):
     first_name = serializers.StringRelatedField(source='user.first_name')
     last_name = serializers.StringRelatedField(source='user.last_name')
 
-    # def update(self, instance, validated_data):
-    #     # instance.test = validated_data.get('test', instance.test)
-    #     # instance.date_birth = validated_data.get('date_birth', instance.date_birth)
-    #     # instance.photo = validated_data.get('photo', instance.photo)
-    #     # instance.save()
-    #     # return instance
-
     class Meta:
         model = Profile
         fields = ('user', 'user_id', 'date_birth', 'photo', 'gender',
                   'points', 'rank', 'region', 'interests',
                   'first_name', 'last_name', 'phone', 'payment_method', 'subscribe')
+
+
+
+
+
+class ProfileUpdateSerializer(ProfileSerializer):
+    first_name = serializers.CharField(allow_blank=True, required=False)
+    last_name = serializers.CharField(allow_blank=True, required=False)
+
+    def update(self, instance, validated_data):
+        serializers.raise_errors_on_nested_writes('update', self, validated_data)
+        info = model_meta.get_field_info(instance)
+        # Simply set each attribute on the instance, and then save it.
+        # Note that unlike `.create()` we don't need to treat many-to-many
+        # relationships as being a special case. During updates we already
+        # have an instance pk for the relationships to be associated with.
+        for attr, value in validated_data.items():
+            if attr in info.relations and info.relations[attr].to_many:
+                field = getattr(instance, attr)
+                field.set(value)
+            else:
+                setattr(instance, attr, value)
+
+        user_info = UserModel.objects.filter(pk=validated_data['user_id']).first()
+        user_data = {'first_name': validated_data['first_name'] if 'first_name' in validated_data else user_info.first_name,
+                     'last_name': validated_data['last_name'] if 'last_name' in validated_data else user_info.last_name}
+
+        for attr, value in user_data.items():
+            setattr(user_info, attr, value)
+
+        instance.save()
+        user_info.save()
+
+        return instance
+
+
+    def to_representation(self, instance):
+        representation = super(ProfileUpdateSerializer, self).to_representation(instance)
+        user_serializer = CustomUserSerializer(UserModel.objects.filter(id=representation['user_id']).first())
+        representation['first_name'] = user_serializer.data['first_name']
+        representation['last_name'] = user_serializer.data['last_name']
+        return representation
+
 
 
 class ProfilePhotoSerializer(serializers.ModelSerializer):
