@@ -249,7 +249,8 @@ def register_view(request):
         error = {"detail": ERROR_API['109'][1]}
         error_codes = [ERROR_API['109'][0]]
         return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_400_BAD_REQUEST)
-
+    #print(request.data)
+    #print(request.POST.get('email', None))
     is_user_exists = UserModel.objects.filter(email=request.data['email']).all()
     if is_user_exists:
         error = {"detail": ERROR_API['103'][1]}
@@ -258,12 +259,17 @@ def register_view(request):
 
     serializer = RegisterUserSerializer(data=request.data)
     if serializer.is_valid():
-        new_profile_data = {'date_birth': serializer.validated_data['date_birth'],
-                            'phone': serializer.validated_data['phone'],
-                            'subscribe': serializer.validated_data['subscribe']}
-        del serializer.validated_data['date_birth']
-        del serializer.validated_data['phone']
-        del serializer.validated_data['subscribe']
+        new_profile_data = {'date_birth': serializer.validated_data['date_birth'] if 'date_birth' in serializer.validated_data else None,
+                            'phone': serializer.validated_data['phone'] if 'phone' in serializer.validated_data else '',
+                            'subscribe': serializer.validated_data['subscribe'] if 'subscribe' in serializer.validated_data else False}
+
+        if 'date_birth' in serializer.validated_data:
+            del serializer.validated_data['date_birth']
+        if 'phone' in serializer.validated_data:
+            del serializer.validated_data['phone']
+        if 'subscribe' in serializer.validated_data:
+            del serializer.validated_data['subscribe']
+
         instance = serializer.save()
         instance_id = instance.id
         user_profile = Profile.objects.filter(user_id=instance_id).first()
