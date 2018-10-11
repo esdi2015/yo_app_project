@@ -1,6 +1,7 @@
 from django.utils.translation import ugettext_lazy as _
-
+from django.apps import apps
 from django.contrib.auth import get_user_model
+from django.db.utils import IntegrityError
 from rest_framework import serializers
 from rest_framework.compat import authenticate
 from rest_framework.utils import model_meta
@@ -10,6 +11,18 @@ from api.common.user.serializers import CustomUserSerializer
 
 
 UserModel = get_user_model()
+Category = apps.get_model('common', 'Category')
+
+
+
+class MultipartM2MField(serializers.Field):
+    def to_representation(self, obj):
+        return obj.values_list('id', flat=True).order_by('id')
+
+    def to_internal_value(self, data):
+        data = data.strip('[]')
+        return data.split(',') if data else None
+
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -20,7 +33,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = ('user', 'user_id', 'date_birth', 'photo', 'gender',
-                  'points', 'rank', 'region', 'interests',
+                  'points', 'rank', 'region', 'interests', 'age',
                   'first_name', 'last_name', 'phone', 'payment_method', 'subscribe')
 
 
@@ -30,6 +43,7 @@ class ProfileSerializer(serializers.ModelSerializer):
 class ProfileUpdateSerializer(ProfileSerializer):
     first_name = serializers.CharField(allow_blank=True, required=False)
     last_name = serializers.CharField(allow_blank=True, required=False)
+    interests = MultipartM2MField(allow_null=True, required=False)
 
     def update(self, instance, validated_data):
         serializers.raise_errors_on_nested_writes('update', self, validated_data)
@@ -40,8 +54,19 @@ class ProfileUpdateSerializer(ProfileSerializer):
         # have an instance pk for the relationships to be associated with.
         for attr, value in validated_data.items():
             if attr in info.relations and info.relations[attr].to_many:
-                field = getattr(instance, attr)
-                field.set(value)
+                if attr == 'interests':
+                    if value is None:
+                        instance.interests.clear()
+                    else:
+                        try:
+                            interests_data = Category.objects.filter(id__in = value).all()
+                            field = getattr(instance, attr)
+                            field.set(value)
+                        except IntegrityError as e:
+                            pass
+                else:
+                    field = getattr(instance, attr)
+                    field.set(value)
             else:
                 setattr(instance, attr, value)
 

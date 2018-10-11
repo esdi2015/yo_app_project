@@ -249,8 +249,7 @@ def register_view(request):
         error = {"detail": ERROR_API['109'][1]}
         error_codes = [ERROR_API['109'][0]]
         return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_400_BAD_REQUEST)
-    #print(request.data)
-    #print(request.POST.get('email', None))
+
     is_user_exists = UserModel.objects.filter(email=request.data['email']).all()
     if is_user_exists:
         error = {"detail": ERROR_API['103'][1]}
@@ -297,7 +296,8 @@ def register_view(request):
 def login_view(request):
     serializer_class = LoginSerializer
     if request.user.is_authenticated == True:
-        error = {"detail": ERROR_API['109'][1]} # "You must have to log out first"
+        # "You must have to log out first"
+        error = {"detail": ERROR_API['109'][1]}
         error_codes = [ERROR_API['109'][0]]
         return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_400_BAD_REQUEST)
 
@@ -333,7 +333,8 @@ def get_profile_data(user_id, request=None):
 @permission_classes(())
 def google_oauth(request):
     if request.user.is_authenticated:
-        error = {"detail": ERROR_API['109'][1]} # "You must have to log out first"
+        # "You must have to log out first"
+        error = {"detail": ERROR_API['109'][1]}
         error_codes = [ERROR_API['109'][0]]
         return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_400_BAD_REQUEST)
 
@@ -344,9 +345,9 @@ def google_oauth(request):
         if idinfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
             raise ValueError('Wrong issuer.')
     except ValueError:
+        # "Unable to login via google account, wrong issuer"
         error = {"detail": ERROR_API['111'][1]}
         error_codes = [ERROR_API['111'][0]]
-        # "Unable to login via google account, wrong issuer"
         return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_400_BAD_REQUEST)
 
     last_name = idinfo['family_name']
@@ -437,9 +438,9 @@ def facebook_oauth(request):
                    'first_name': user.first_name, 'last_name': user.last_name, 'profile': profile}
         return Response(custom_api_response(content=content), status=status.HTTP_200_OK)
     else:
+        # 'Unable to login via facebook account, wrong id'
         error = {"detail": ERROR_API['112'][1]}
         error_codes = [ERROR_API['112'][0]]
-        # 'Unable to login via facebook account, wrong id'
         return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_400_BAD_REQUEST)
 
 

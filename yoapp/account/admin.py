@@ -3,7 +3,7 @@ from .models import Profile
 
 
 class ProfileAdmin(admin.ModelAdmin):
-    list_display = ['user', 'points', 'rank', 'date_birth', 'photo', 'gender']
+    list_display = ['user', 'points', 'rank', 'date_birth', 'age', 'photo', 'gender']
     list_filter = ('gender', )
 
 
