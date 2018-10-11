@@ -59,7 +59,7 @@ class ProfileUpdateSerializer(ProfileSerializer):
                         instance.interests.clear()
                     else:
                         try:
-                            interests_data = Category.objects.filter(id__in = value).all()
+                            interests_data = Category.objects.filter(id__in=value).all()
                             field = getattr(instance, attr)
                             field.set(value)
                         except IntegrityError as e:

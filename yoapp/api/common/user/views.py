@@ -5,6 +5,9 @@ from django.contrib.auth import (
 )
 from django.contrib.auth import get_user_model
 
+from rest_framework import filters
+from django_filters.rest_framework import DjangoFilterBackend
+
 from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -84,6 +87,10 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = CustomUserSerializer
     permission_classes = (IsAuthenticated,)
 
+    filter_backends = (filters.SearchFilter, DjangoFilterBackend, filters.OrderingFilter)
+    search_fields = ('username', 'first_name', 'last_name', 'email')
+    ordering_fields = ('username', 'first_name', 'last_name', 'email')
+
     def retrieve(self, request, pk=None):
         user = UserModel.objects.filter(pk=pk).all()
         serializer = self.get_serializer(user, many=True)
@@ -98,6 +105,7 @@ class UserViewSet(viewsets.ModelViewSet):
         #     serializer = self.get_serializer(page, many=True)
         #     return self.get_paginated_response(serializer.data)
 
+        users = self.filter_queryset(users)
         serializer = self.get_serializer(users, many=True)
         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
 
