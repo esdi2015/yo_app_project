@@ -20,8 +20,11 @@ class MultipartM2MField(serializers.Field):
         return obj.values_list('id', flat=True).order_by('id')
 
     def to_internal_value(self, data):
-        data = data.strip('[]')
-        return data.split(',') if data else None
+        if isinstance(data, list):
+            return data if len(data) > 0 else None
+        else:
+            data = data.strip('[]')
+            return data.split(',') if data else None
 
 
 
