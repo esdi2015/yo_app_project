@@ -9,7 +9,7 @@ from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
 
 from ...views import custom_api_response
-from .serializers import ShopSerializer, ShopListSerializer
+from .serializers import ShopSerializer, ShopListSerializer, ShopCreateUpdateSerializer
 
 from history.utils import history_view_event
 
@@ -19,12 +19,10 @@ ShopModel = apps.get_model('yomarket', 'Shop')
 class ShopViewSet(viewsets.ModelViewSet):
     queryset = ShopModel.objects.all()
     serializer_class = ShopSerializer
-    # permission_classes = (AllowAny,)
 
     filter_backends = (filters.SearchFilter, DjangoFilterBackend, filters.OrderingFilter)
     search_fields = ('title', 'address', 'description', )
     filter_fields = ('manager_id', 'code_type', 'city_id', 'categories__id')
-    #ordering_fields = '__all__'
     ordering_fields = ('image', 'title', 'description', 'address', 'city__city_name', 'manager',
                        'phone', 'outer_link', 'social_link', 'schedule__title', 'code_type')
 
@@ -32,7 +30,7 @@ class ShopViewSet(viewsets.ModelViewSet):
         if self.action == 'retrieve' or self.action == 'list':
             return [AllowAny(), ]
         else :
-            return [IsAuthenticated(), AllowAny(), ] # AllowAny(), - remove it later !!!
+            return [IsAuthenticated(), ] # AllowAny(), - remove it later !!!
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -62,6 +60,7 @@ class ShopViewSet(viewsets.ModelViewSet):
         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
 
     def create(self, request, *args, **kwargs):
+        self.serializer_class = ShopCreateUpdateSerializer
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
@@ -70,16 +69,18 @@ class ShopViewSet(viewsets.ModelViewSet):
         return Response(custom_api_response(serializer=serializer), status=status.HTTP_201_CREATED, headers=headers)
 
     def update(self, request, *args, **kwargs):
+        self.serializer_class = ShopCreateUpdateSerializer
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
-
-        if getattr(instance, '_prefetched_objects_cache', None):
-            # If 'prefetch_related' has been applied to a queryset, we need to
-            # forcibly invalidate the prefetch cache on the instance.
-            instance._prefetched_objects_cache = {}
-
-        serializer.save(user_id=request.user.pk)
-        return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
+        #serializer.is_valid(raise_exception=True)
+        if serializer.is_valid(raise_exception=False):
+            serializer.save(user_id=request.user.pk)
+            # self.perform_update(serializer)
+            if getattr(instance, '_prefetched_objects_cache', None):
+                # If 'prefetch_related' has been applied to a queryset, we need to
+                # forcibly invalidate the prefetch cache on the instance.
+                instance._prefetched_objects_cache = {}
+            return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
+        else:
+            return Response(custom_api_response(serializer), status=status.HTTP_400_BAD_REQUEST)

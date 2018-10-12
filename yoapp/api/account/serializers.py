@@ -8,24 +8,11 @@ from rest_framework.utils import model_meta
 
 from account.models import Profile
 from api.common.user.serializers import CustomUserSerializer
+from api.serializers import MultipartM2MField
 
 
 UserModel = get_user_model()
 Category = apps.get_model('common', 'Category')
-
-
-
-class MultipartM2MField(serializers.Field):
-    def to_representation(self, obj):
-        return obj.values_list('id', flat=True).order_by('id')
-
-    def to_internal_value(self, data):
-        if isinstance(data, list):
-            return data if len(data) > 0 else None
-        else:
-            data = data.strip('[]')
-            return data.split(',') if data else None
-
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -38,9 +25,6 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = ('user', 'user_id', 'date_birth', 'photo', 'gender',
                   'points', 'rank', 'region', 'interests', 'age',
                   'first_name', 'last_name', 'phone', 'payment_method', 'subscribe')
-
-
-
 
 
 class ProfileUpdateSerializer(ProfileSerializer):
@@ -82,7 +66,6 @@ class ProfileUpdateSerializer(ProfileSerializer):
 
         instance.save()
         user_info.save()
-
         return instance
 
 

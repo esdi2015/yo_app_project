@@ -1,12 +1,17 @@
+import datetime
+import traceback
 from django.apps import apps
+from django.db.utils import IntegrityError
 from rest_framework import serializers
+from rest_framework.utils import model_meta
 from ...common.category.serializers import CategorySerializer
 from ..schedule.serializers import ScheduleSerializer
 from notification.models import Subscription
-import datetime
+from api.serializers import MultipartM2MField
 
 
 ShopModel = apps.get_model('yomarket', 'Shop')
+Category = apps.get_model('common', 'Category')
 
 
 class ShopSerializer(serializers.ModelSerializer):
@@ -21,11 +26,9 @@ class ShopSerializer(serializers.ModelSerializer):
     city = serializers.StringRelatedField()
     city_id = serializers.IntegerField(allow_null=True, required=False)
     categories = CategorySerializer(many=True, read_only=True)
-    #image = serializers.ImageField(upload_to='shops/%Y/%m/%d', blank=True)
     is_subscribed = serializers.SerializerMethodField()
     schedule = ScheduleSerializer(many=False, read_only=True)
     schedule_id = serializers.IntegerField(allow_null=True, required=False)
-
 
     def get_is_subscribed (self, obj):
         try:
@@ -34,7 +37,6 @@ class ShopSerializer(serializers.ModelSerializer):
         except Subscription.DoesNotExist:
             return False
 
-
     class Meta:
         model = ShopModel
         fields = ('id', 'title', 'address', 'description', 'user', 'user_id', 'manager', 'manager_id',
@@ -42,23 +44,47 @@ class ShopSerializer(serializers.ModelSerializer):
                   'categories','is_subscribed', 'schedule', 'schedule_id', 'logo')
 
 
-    # def save(self, **kwargs):
-    #     super().save(self, **kwargs)
 
-    # def to_representation(self, instance):
-    #     # instance is the model object. create the custom json format by accessing instance attributes normaly
-    #     # and return it
-    #     identifiers = dict()
-    #     identifiers['id'] = instance.id
-    #     identifiers['title'] = instance.title
-    #
-    #     representation = {
-    #         'identifiers': identifiers,
-    #         #'user_id': instance.user_id,
-    #         'address': instance.address
-    #     }
-    #
-    #     return representation
+class ShopCreateUpdateSerializer(ShopSerializer):
+    categories = MultipartM2MField(allow_null=True, required=False)
+
+    def update(self, instance, validated_data):
+        serializers.raise_errors_on_nested_writes('update', self, validated_data)
+        info = model_meta.get_field_info(instance)
+        # Simply set each attribute on the instance, and then save it.
+        # Note that unlike `.create()` we don't need to treat many-to-many
+        # relationships as being a special case. During updates we already
+        # have an instance pk for the relationships to be associated with.
+        for attr, value in validated_data.items():
+            if attr in info.relations and info.relations[attr].to_many:
+                if attr == 'categories':
+                    if value is None:
+                        instance.categories.clear()
+                    else:
+                        try:
+                            categories_data = Category.objects.filter(id__in=value).all()
+                            field = getattr(instance, attr)
+                            field.set(value)
+                        except IntegrityError as e:
+                            pass
+                else:
+                    field = getattr(instance, attr)
+                    field.set(value)
+            else:
+                setattr(instance, attr, value)
+
+        instance.save()
+        return instance
+
+
+    def to_representation(self, instance):
+        representation = super(ShopCreateUpdateSerializer, self).to_representation(instance)
+        categories = Category.objects.filter(id__in=representation['categories']).all()
+        categories_serializer = CategorySerializer(categories, many=True)
+        representation['categories'] = categories_serializer.data
+        return representation
+
+
 
 
 def get_now_day():
