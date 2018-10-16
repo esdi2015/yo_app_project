@@ -35,7 +35,6 @@ class ProfileDetailView(generics.RetrieveUpdateDestroyAPIView):
         profile_data = serializer.data
         token = TokenModel.objects.filter(user_id=request.user.pk).first()
         profile_data['token'] = str(token)
-        #return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
         return Response(custom_api_response(content=profile_data), status=status.HTTP_200_OK)
 
     def update(self, request, *args, **kwargs):
@@ -45,12 +44,11 @@ class ProfileDetailView(generics.RetrieveUpdateDestroyAPIView):
         history_profile_update_event(user=request.user)
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         if serializer.is_valid(raise_exception=False):
-            #self.perform_update(serializer)
+            serializer.save(user_id=request.user.pk)
             # if getattr(instance, '_prefetched_objects_cache', None):
             #     # If 'prefetch_related' has been applied to a queryset, we need to
             #     # forcibly invalidate the prefetch cache on the instance.
             #     instance._prefetched_objects_cache = {}
-            serializer.save(user_id=request.user.pk)
             return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
         else:
             return Response(custom_api_response(serializer), status=status.HTTP_400_BAD_REQUEST)

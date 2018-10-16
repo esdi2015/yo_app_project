@@ -6,7 +6,7 @@ ScheduleModel = apps.get_model('yomarket', 'Schedule')
 
 
 class ScheduleSerializer(serializers.ModelSerializer):
-    mon_open = serializers.TimeField(format='%H:%M', allow_null=True)  #input_formats='%I:%M %p'
+    mon_open = serializers.TimeField(format='%H:%M', allow_null=True)
     mon_close = serializers.TimeField(format='%H:%M', allow_null=True)
     tue_open = serializers.TimeField(format='%H:%M', allow_null=True)
     tue_close = serializers.TimeField(format='%H:%M', allow_null=True)

@@ -13,25 +13,9 @@ CityModel = apps.get_model('common', 'City')
 
 class CityList(APIView):
     permission_classes = (AllowAny,)
-    #pagination_class = api_settings.DEFAULT_PAGINATION_CLASS
-    #print (pagination_class)
-
 
     def get(self, request, format=None):
-        #paginator = LimitOffsetPagination()
         categories = CityModel.objects.all()
-        #result_page = paginator.paginate_queryset(categories, request)
-        serializer = CitySerializer(categories, many=True) # , context={'request': request}
-        #response = Response(serializer.data, status=status.HTTP_200_OK)
+        serializer = CitySerializer(categories, many=True)
         response = Response(custom_api_response(serializer), status=status.HTTP_200_OK)
         return response
-
-    # def get(self, request, pk, format=None):
-    #     # user = request.user
-    #     event = Event.objects.get(pk=pk)
-    #     news = event.get_news_items().all()
-    #     paginator = LimitOffsetPagination()
-    #     result_page = paginator.paginate_queryset(news, request)
-    #     serializer = NewsItemSerializer(result_page, many=True, context={'request': request})
-    #     response = Response(serializer.data, status=status.HTTP_200_OK)
-    #     return response
