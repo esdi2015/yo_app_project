@@ -159,9 +159,9 @@ class Offer(models.Model):
 
 
 class Transaction(models.Model):
-    customer = models.ForeignKey('common.User', related_name='transactions_customer', on_delete=models.DO_NOTHING)
-    manager = models.ForeignKey('common.User', related_name='transactions_manager', on_delete=models.DO_NOTHING)
-    offer = models.ForeignKey('yomarket.Offer', related_name='transactions_offer', on_delete=models.DO_NOTHING)
+    customer = models.ForeignKey('common.User', related_name='transactions_customer', on_delete=models.CASCADE)
+    manager = models.ForeignKey('common.User', related_name='transactions_manager', on_delete=models.CASCADE)
+    offer = models.ForeignKey('yomarket.Offer', related_name='transactions_offer', on_delete=models.CASCADE)
     points = models.IntegerField(default=0, editable=True)
     created = models.DateTimeField(auto_now_add=True)
 
