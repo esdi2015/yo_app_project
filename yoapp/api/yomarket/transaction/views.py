@@ -13,20 +13,10 @@ from ...views import custom_api_response
 from .serializers import TransactionSerializer,MyTransactionSerializer
 from rest_framework import generics
 from yomarket.models import Transaction
+from api.views import CustomPagination
 
 
 TransactionModel = apps.get_model('yomarket', 'Transaction')
-
-
-# class ShopList(APIView):
-#     permission_classes = (AllowAny,)
-#
-#     def get(self, request, format=None):
-#         shops = ShopModel.objects.all()
-#         serializer = ShopSerializer(shops, many=True)
-#         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
-
-
 
 
 class MyTransactionView(generics.ListAPIView):
@@ -80,12 +70,11 @@ class ManagerTransactionView(generics.ListAPIView):
 class TransactionViewSet(viewsets.ModelViewSet):
     queryset = TransactionModel.objects.all()
     serializer_class = TransactionSerializer
-    # permission_classes = (AllowAny,)
+    pagination_class = CustomPagination
 
     filter_backends = (filters.SearchFilter, DjangoFilterBackend, filters.OrderingFilter)
     search_fields = ('offer__title', )
     # filter_fields = ('manager_id', )
-    # ordering_fields = '__all__'
     ordering_fields = ('points', 'created', 'offer__title', 'manager__email', 'customer__email', )
 
     def get_permissions(self):
@@ -101,23 +90,20 @@ class TransactionViewSet(viewsets.ModelViewSet):
 
 
     def list(self, request, *args, **kwargs):
-
-        # if (request.user.is_authenticated == True) and (request.user.role == 'OWNER'):
-        #     queryset = ShopModel.objects.filter(user_id=request.user.pk).all()
-        # else:
-        #     queryset = ShopModel.objects.all()
-
-        #queryset = self.filter_queryset(self.queryset)
-        #queryset = TransactionModel.objects.all()
         queryset = self.get_queryset()
         queryset = self.filter_queryset(queryset)
 
-        # page = self.paginate_queryset(queryset)
-        # if page is not None:
-        #     serializer = self.get_serializer(page, many=True)
-        #     return self.get_paginated_response(serializer.data)
-        #serializer = self.get_serializer(queryset, many=True)
-        #serializer = TransactionSerializer(queryset, many=True)
+        page_num = request.GET.get('page', None)
+        if page_num:
+            page = self.paginate_queryset(queryset)
+            if page is not None:
+                serializer = self.get_serializer(page, many=True, context={'request': request})
+                paginated_response = self.get_paginated_response(serializer.data)
+                content = paginated_response.data['results']
+                del paginated_response.data['results']
+                metadata = paginated_response.data
+                return Response(custom_api_response(content=content, metadata=metadata), status=status.HTTP_200_OK)
+
         serializer = self.get_serializer(queryset, many=True)
         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
     #
