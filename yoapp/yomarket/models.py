@@ -116,7 +116,7 @@ class Schedule(models.Model):
 class Offer(models.Model):
     category = models.ForeignKey('common.Category', related_name='offers_from_category',
                                  on_delete=models.DO_NOTHING)
-    shop = models.ForeignKey(Shop, on_delete=models.SET_NULL, null=True) #, related_name='shop_offer'
+    shop = models.ForeignKey(Shop, on_delete=models.SET_NULL, null=True)
     title = models.CharField(max_length=200, db_index=True)
     image = models.ImageField(upload_to='offers/%Y/%m/%d', blank=True)
     short_description = models.TextField(blank=True)

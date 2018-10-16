@@ -3,7 +3,6 @@ from django.apps import apps
 from django.contrib.auth import get_user_model
 from django.db.utils import IntegrityError
 from rest_framework import serializers
-from rest_framework.compat import authenticate
 from rest_framework.utils import model_meta
 
 from account.models import Profile

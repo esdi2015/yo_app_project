@@ -4,7 +4,6 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework import viewsets
-# from rest_framework import generics
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -32,7 +31,7 @@ class ShopViewSet(viewsets.ModelViewSet):
         if self.action == 'retrieve' or self.action == 'list':
             return [AllowAny(), ]
         else :
-            return [IsAuthenticated(), ] # AllowAny(), - remove it later !!!
+            return [IsAuthenticated(), ]
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -81,10 +80,8 @@ class ShopViewSet(viewsets.ModelViewSet):
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
-        #serializer.is_valid(raise_exception=True)
         if serializer.is_valid(raise_exception=False):
             serializer.save(user_id=request.user.pk)
-            # self.perform_update(serializer)
             if getattr(instance, '_prefetched_objects_cache', None):
                 # If 'prefetch_related' has been applied to a queryset, we need to
                 # forcibly invalidate the prefetch cache on the instance.

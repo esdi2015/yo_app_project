@@ -130,7 +130,6 @@ class OfferListView(generics.ListCreateAPIView):
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
-        #return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
         return Response(custom_api_response(serializer=serializer), status=status.HTTP_201_CREATED, headers=headers)
 
 
@@ -170,7 +169,6 @@ class OfferDetailView(generics.RetrieveUpdateDestroyAPIView):
             # forcibly invalidate the prefetch cache on the instance.
             instance._prefetched_objects_cache = {}
 
-        #return Response(serializer.data)
         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
 
 
