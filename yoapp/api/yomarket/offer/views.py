@@ -1,6 +1,5 @@
 from django.apps import apps
 from rest_framework import status
-from rest_framework import pagination
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
@@ -10,10 +9,10 @@ from django_filters.rest_framework import DjangoFilterBackend, FilterSet, Boolea
 from django.contrib.auth import get_user_model
 import datetime
 
+from api.views import CustomPagination
 from ...views import custom_api_response
 from .serializers import OfferSerializer
 
-from rest_framework.pagination import LimitOffsetPagination
 from statistic.utlis import count_shown
 from history.utils import history_view_event
 from ...utils import ERROR_API
@@ -24,29 +23,13 @@ ShopModel = apps.get_model('yomarket', 'Shop')
 UserModel = get_user_model()
 
 
-
-class CustomPagination(pagination.PageNumberPagination):
-    page_size = 2
-    page_size_query_param = 'page_size'
-    def get_paginated_response(self, data):
-        #print(data)
-        return Response({
-            'links': {
-                'next': self.get_next_link(),
-                'previous': self.get_previous_link()
-            },
-            'count': self.page.paginator.count,
-            'results': data
-        })
-
-
 class OfferListFilter(FilterSet):
     is_expired = BooleanFilter(method='filter_is_expired')
     category_ids = CharFilter(method='filter_category_ids')
 
     class Meta:
         model = OfferModel
-        fields = ('category_id', 'shop_id', 'discount_type', 'offer_type', 'is_expired', 'category_ids')
+        fields = ('category_id', 'shop_id', 'discount_type', 'offer_type', 'is_expired', 'category_ids', 'status')
 
     def filter_category_ids(self, queryset, name, value):
         if value:
@@ -68,7 +51,7 @@ class OfferListView(generics.ListCreateAPIView):
     filter_class = OfferListFilter
     ordering_fields = ('shop__title', 'category__category_name', 'title', 'image',
                        'short_description', 'price', 'offer_type', 'expire', 'codes_count',
-                       'redeemed_codes_count')
+                       'redeemed_codes_count', 'status')
     pagination_class = CustomPagination
 
 
