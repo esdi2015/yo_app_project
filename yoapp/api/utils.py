@@ -18,6 +18,8 @@ ERROR_API = {
     "117": (117, "Incorrect user role"),
     "118": (118, "Authentication credentials were not provided."),
     "119": (119, "Invalid token."),
+    "120": (120, "Unable to login via twitter"),
+    "121": (121, "Twitter credentials error"),
 
     "151": (151, "This password is too short. It must contain at least 8 characters."),
     "152": (152, "This password is too common."),

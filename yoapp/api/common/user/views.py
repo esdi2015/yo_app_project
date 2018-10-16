@@ -377,6 +377,9 @@ def google_oauth(request):
 
     try:
         user = UserModel.objects.get(email=email,google_id=google_id)
+        error = {"detail": ERROR_API['110'][1]}
+        error_codes = [ERROR_API['110'][0]]
+        return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_400_BAD_REQUEST)
     except UserModel.DoesNotExist:
         user = UserModel(email=email, last_name=last_name, first_name=first_name, google_id=google_id)
         user.save()
@@ -477,15 +480,67 @@ def free_managers_view(request):
 
 
 import twitter
+from twitter import TwitterError
 
 @api_view(['POST'])
 @permission_classes(())
 def twitter_login(request):
 
+    def create_login_token(user):
+        serializer = LoginSerializer()
+        token = create_token(TokenModel, user, serializer)
+        return token
+
+    if request.user.is_authenticated == True:
+        error = {"detail": ERROR_API['109'][1]}
+        error_codes = [ERROR_API['109'][0]]
+        return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_400_BAD_REQUEST)
+
+    access_token = request.data['access_token']
+    access_token_secret = request.data['access_token_secret']
+
+    email = request.data['email']
+
 
     api = twitter.Api(consumer_key='P9xv5rNHFY4rYcOr8Fg2kH0TH',
                       consumer_secret='bSRFJAWwgDrR2TWnX3Z9mxwtyPgtAvKmseu9vQ4XjFP66Bd2fB',
-                      access_token_key='1047810869516754944-b2cDWgToMxJc5xzSONFVp3uofMiHL6',
-                      access_token_secret='lSz8yLK6gz709tBHzoZfiDyOMTQeIGZeCMiLlCsCkZ5da')
-    print(api.UpdateProfile())
-    return Response(str(api.VerifyCredentials(include_email=True)))
+                      access_token_key=access_token,
+                      access_token_secret=access_token_secret)
+
+    try:
+        twitter_user = api.VerifyCredentials(include_email=True)
+    except TwitterError:
+        error = {"detail": ERROR_API['121'][1]}
+        error_codes = [ERROR_API['121'][0]]
+        return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_400_BAD_REQUEST)
+
+    twitter_id = twitter_user.id_str
+
+    first_login = False
+
+
+    try:
+        user = UserModel.objects.get(email=email)
+    except UserModel.DoesNotExist:
+        try:
+            user = UserModel.objects.get(twitter_id=twitter_id)
+            error = {"detail": ERROR_API['110'][1]}
+            error_codes = [ERROR_API['110'][0]]
+            return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_400_BAD_REQUEST)
+        except UserModel.DoesNotExist:
+            user = UserModel(email=email, twitter_id=twitter_id)
+            user.save()
+            first_login = True
+
+
+    if user.twitter_id == twitter_id:
+        token = create_login_token(user)
+        profile = get_profile_data(user.id, request)
+        content = {'token': token.key, 'email': user.email, 'id': user.id, 'first_login': first_login,'profile': profile}
+        return Response(custom_api_response(content=content), status=status.HTTP_200_OK)
+    else:
+        error = {"detail": ERROR_API['120'][1]}
+        error_codes = [ERROR_API['120'][0]]
+        return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_400_BAD_REQUEST)
+
+

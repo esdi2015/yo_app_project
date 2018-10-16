@@ -26,6 +26,6 @@ urlpatterns += [
     #url(r'^password-reset/confirm/', include('django_rest_passwordreset.urls', namespace='password_reset_confirm')),
     #url(r'^forgot-password/$', api_view.login_view, name='user_forgot_password'),
     url(r'^free-managers/', free_managers_view, name='free_managers'),
-    url(r'^twitter/', twitter_login),
+    url(r'^login-twitter/', twitter_login),
 
 ]
