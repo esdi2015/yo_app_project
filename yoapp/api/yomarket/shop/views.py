@@ -8,6 +8,7 @@ from rest_framework import viewsets
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
 
+from api.views import CustomPagination
 from ...views import custom_api_response
 from .serializers import ShopSerializer, ShopListSerializer, ShopCreateUpdateSerializer
 
@@ -19,6 +20,7 @@ ShopModel = apps.get_model('yomarket', 'Shop')
 class ShopViewSet(viewsets.ModelViewSet):
     queryset = ShopModel.objects.all()
     serializer_class = ShopSerializer
+    pagination_class = CustomPagination
 
     filter_backends = (filters.SearchFilter, DjangoFilterBackend, filters.OrderingFilter)
     search_fields = ('title', 'address', 'description', )
@@ -51,10 +53,16 @@ class ShopViewSet(viewsets.ModelViewSet):
 
         queryset = self.filter_queryset(queryset)
 
-        # page = self.paginate_queryset(queryset)
-        # if page is not None:
-        #     serializer = self.get_serializer(page, many=True)
-        #     return self.get_paginated_response(serializer.data)
+        page_num = request.GET.get('page', None)
+        if page_num:
+            page = self.paginate_queryset(queryset)
+            if page is not None:
+                serializer = self.get_serializer(page, many=True, context={'request': request})
+                paginated_response = self.get_paginated_response(serializer.data)
+                content = paginated_response.data['results']
+                del paginated_response.data['results']
+                metadata = paginated_response.data
+                return Response(custom_api_response(content=content, metadata=metadata), status=status.HTTP_200_OK)
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)

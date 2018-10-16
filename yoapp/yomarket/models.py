@@ -66,6 +66,7 @@ class Shop(models.Model):
     class Meta:
         verbose_name = "shop"
         verbose_name_plural = "shops"
+        ordering = ['-id', ]
 
 
 

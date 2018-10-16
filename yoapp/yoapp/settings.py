@@ -199,7 +199,9 @@ REST_FRAMEWORK = {
     'EXCEPTION_HANDLER': 'api.views.custom_exception_handler',
     #'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     #'PAGE_SIZE': 2
+    'DATETIME_FORMAT': "%Y-%m-%dT%H:%M:%S%Z:00",
 }
+
 
 #REST_SESSION_LOGIN = False
 

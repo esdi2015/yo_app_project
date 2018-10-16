@@ -49,11 +49,10 @@ class OfferListView(generics.ListCreateAPIView):
     filter_backends = (filters.SearchFilter, DjangoFilterBackend, filters.OrderingFilter)
     search_fields = ('description', 'title')
     filter_class = OfferListFilter
+    pagination_class = CustomPagination
     ordering_fields = ('shop__title', 'category__category_name', 'title', 'image',
                        'short_description', 'price', 'offer_type', 'expire', 'codes_count',
                        'redeemed_codes_count', 'status')
-    pagination_class = CustomPagination
-
 
     def get_permissions(self):
         if self.request.method == 'GET':
@@ -130,7 +129,6 @@ class OfferListView(generics.ListCreateAPIView):
 
 class OfferDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = OfferModel.objects.all()
-
     serializer_class = OfferSerializer
 
     def get_permissions(self):
