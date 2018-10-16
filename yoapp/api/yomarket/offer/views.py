@@ -26,14 +26,21 @@ UserModel = get_user_model()
 class OfferListFilter(FilterSet):
     is_expired = BooleanFilter(method='filter_is_expired')
     category_ids = CharFilter(method='filter_category_ids')
+    shop_ids = CharFilter(method='filter_shop_ids')
 
     class Meta:
         model = OfferModel
-        fields = ('category_id', 'shop_id', 'discount_type', 'offer_type', 'is_expired', 'category_ids', 'status')
+        fields = ('category_id', 'shop_id', 'discount_type', 'offer_type', 'is_expired',
+                  'category_ids', 'status', 'shop_ids')
 
     def filter_category_ids(self, queryset, name, value):
         if value:
             queryset = queryset.filter(category_id__in=value.strip().split(',')).all()
+        return queryset
+
+    def filter_shop_ids(self, queryset, name, value):
+        if value:
+            queryset = queryset.filter(shop_id__in=value.strip().split(',')).all()
         return queryset
 
     def filter_is_expired(self, queryset, name, value):
