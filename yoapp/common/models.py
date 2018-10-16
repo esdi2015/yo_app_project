@@ -21,6 +21,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     role = models.CharField(max_length=50, choices=ROLES, default=DEFAULT_USER_ROLE)
     creator_id = models.SmallIntegerField(default=0)
     fb_id = models.CharField(max_length=100, blank=True, unique=True, null=True)
+    twitter_id = models.CharField(max_length=100, blank=True, unique=True, null=True)
     google_id = models.CharField(max_length=100, blank=True, unique=True, null=True)
 
     mobile = models.CharField(max_length=16,blank=True,null=True)
