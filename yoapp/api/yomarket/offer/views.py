@@ -1,11 +1,12 @@
 from django.apps import apps
 from rest_framework import status
+from rest_framework import pagination
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework import generics
 from rest_framework import filters
-from django_filters.rest_framework import DjangoFilterBackend, FilterSet, BooleanFilter
+from django_filters.rest_framework import DjangoFilterBackend, FilterSet, BooleanFilter, CharFilter
 from django.contrib.auth import get_user_model
 import datetime
 
@@ -23,12 +24,34 @@ ShopModel = apps.get_model('yomarket', 'Shop')
 UserModel = get_user_model()
 
 
+
+class CustomPagination(pagination.PageNumberPagination):
+    page_size = 2
+    page_size_query_param = 'page_size'
+    def get_paginated_response(self, data):
+        #print(data)
+        return Response({
+            'links': {
+                'next': self.get_next_link(),
+                'previous': self.get_previous_link()
+            },
+            'count': self.page.paginator.count,
+            'results': data
+        })
+
+
 class OfferListFilter(FilterSet):
     is_expired = BooleanFilter(method='filter_is_expired')
+    category_ids = CharFilter(method='filter_category_ids')
 
     class Meta:
         model = OfferModel
-        fields = ('category_id', 'shop_id', 'discount_type', 'offer_type', 'is_expired')
+        fields = ('category_id', 'shop_id', 'discount_type', 'offer_type', 'is_expired', 'category_ids')
+
+    def filter_category_ids(self, queryset, name, value):
+        if value:
+            queryset = queryset.filter(category_id__in=value.strip().split(',')).all()
+        return queryset
 
     def filter_is_expired(self, queryset, name, value):
         if value == False:
@@ -42,11 +65,11 @@ class OfferListView(generics.ListCreateAPIView):
     serializer_class = OfferSerializer
     filter_backends = (filters.SearchFilter, DjangoFilterBackend, filters.OrderingFilter)
     search_fields = ('description', 'title')
-    #filter_fields = ('category_id', 'shop_id', 'discount_type', 'offer_type', 'is_expired', )
     filter_class = OfferListFilter
     ordering_fields = ('shop__title', 'category__category_name', 'title', 'image',
                        'short_description', 'price', 'offer_type', 'expire', 'codes_count',
                        'redeemed_codes_count')
+    pagination_class = CustomPagination
 
 
     def get_permissions(self):
@@ -99,14 +122,16 @@ class OfferListView(generics.ListCreateAPIView):
         if category_id != None:
             history_view_event(obj=category_id,user=request.user)
 
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True, context={'request': request})
-            paginated_response = self.get_paginated_response(serializer.data)
-            content = paginated_response.data['results']
-            del paginated_response.data['results']
-            metadata = paginated_response.data
-            return Response(custom_api_response(content=content, metadata=metadata), status=status.HTTP_200_OK)
+        page_num = request.GET.get('page', None)
+        if page_num:
+            page = self.paginate_queryset(queryset)
+            if page is not None:
+                serializer = self.get_serializer(page, many=True, context={'request': request})
+                paginated_response = self.get_paginated_response(serializer.data)
+                content = paginated_response.data['results']
+                del paginated_response.data['results']
+                metadata = paginated_response.data
+                return Response(custom_api_response(content=content, metadata=metadata), status=status.HTTP_200_OK)
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
@@ -124,7 +149,6 @@ class OfferDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = OfferModel.objects.all()
 
     serializer_class = OfferSerializer
-    # permission_classes = (AllowAny,)
 
     def get_permissions(self):
         if self.request.method == 'GET':

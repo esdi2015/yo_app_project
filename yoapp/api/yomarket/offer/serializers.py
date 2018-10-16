@@ -59,16 +59,8 @@ class OfferSerializer(serializers.ModelSerializer):
         fields = ('id', 'category', 'category_id', 'shop', 'shop_id', 'title', 'image', 'short_description',
                   'description', 'price', 'discount', 'discount_type', 'code_data', 'created', 'code_type',
                   'offer_type', 'expire','is_liked','secondary_info','redeemed_codes_count','codes_count',
-                  'is_expired', 'is_visible')
-
+                  'is_expired', 'is_visible', 'status')
 
     def validate_catedory_id(value):
         if value.isnumeric() == False:
             raise serializers.ValidationError('must be numeric.')
-
-    # def get_category(self, obj):
-    #     return obj.category.category_name
-
-
-    # def get_shop(self, obj):
-    #     return obj.shop.title

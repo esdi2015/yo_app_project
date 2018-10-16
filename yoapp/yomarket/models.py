@@ -26,6 +26,11 @@ OFFER_TYPES = (
     ('DAILY', 'Daily')
 )
 
+OFFER_STATUSES = (
+    ('DRAFT', 'Draft'),
+    ('PUBLISHED', 'Published')
+)
+
 
 class Shop(models.Model):
     user = models.ForeignKey('common.User', related_name='shops_user',
@@ -131,6 +136,7 @@ class Offer(models.Model):
     coupon_web  = models.CharField(max_length=100, null=True, blank=True)
     code_type = models.CharField(max_length=50, choices=CODE_TYPES, default=CODE_TYPES[0][0])
     offer_type = models.CharField(max_length=50, choices=OFFER_TYPES, default=OFFER_TYPES[0][0])
+    status = models.CharField(max_length=50, choices=OFFER_STATUSES, default=OFFER_STATUSES[0][0])
 
 
     def redeemed_codes_increment(self,user=None):
