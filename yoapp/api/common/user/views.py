@@ -390,22 +390,31 @@ def google_oauth(request):
         return token
 
     try:
-        user = UserModel.objects.get(email=email,google_id=google_id)
-        # error = {"detail": ERROR_API['110'][1]}
-        # error_codes = [ERROR_API['110'][0]]
-        # return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_400_BAD_REQUEST)
+        user = UserModel.objects.get(email=email)
     except UserModel.DoesNotExist:
-        user = UserModel(email=email, last_name=last_name, first_name=first_name, google_id=google_id)
-        user.save()
-        user.profile.photo.save(name, content, save = True)
-        user.save()
-        first_login = True
+        try:
+             user = UserModel.objects.get(google_id=google_id)
+             error = {"detail": ERROR_API['110'][1]}
+             error_codes = [ERROR_API['110'][0]]
+             return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_400_BAD_REQUEST)
+        except UserModel.DoesNotExist:
+            user = UserModel(email=email, last_name=last_name, first_name=first_name, google_id=google_id)
+            user.save()
+            user.profile.photo.save(name, content, save = True)
+            user.save()
+            first_login = True
 
-    token = create_login_token(user)
-    profile = get_profile_data(user.id, request)
-    content = {'token': token.key, 'email': user.email, 'id': user.id, 'first_login': first_login,
+    if user.google_id == google_id:
+        token = create_login_token(user)
+        profile = get_profile_data(user.id, request)
+        content = {'token': token.key, 'email': user.email, 'id': user.id, 'first_login': first_login,
                'first_name': user.first_name, 'last_name': user.last_name, 'profile': profile}
-    return Response(custom_api_response(content=content), status=status.HTTP_200_OK)
+        return Response(custom_api_response(content=content), status=status.HTTP_200_OK)
+    else:
+        error = {"detail": ERROR_API['120'][1]}
+        error_codes = [ERROR_API['120'][0]]
+        return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_400_BAD_REQUEST)
+
 
 
 
@@ -445,28 +454,27 @@ def facebook_oauth(request):
     try:
         user = UserModel.objects.get(email=email)
     except UserModel.DoesNotExist:
-        # try:
-            # user = UserModel.objects.get(fb_id=fb_id)
-            # error = {"detail": ERROR_API['110'][1]}
-            # error_codes = [ERROR_API['110'][0]]
-            # return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_400_BAD_REQUEST)
-        # except UserModel.DoesNotExist:
-        user = UserModel(email=email, last_name=last_name, first_name=first_name, fb_id=fb_id)
-        user.save()
-        user.profile.photo.save(name,content,save=True)
-        first_login = True
-        user = UserModel.objects.get(email=email)
+        try:
+             user = UserModel.objects.get(fb_id=fb_id)
+             error = {"detail": ERROR_API['110'][1]}
+             error_codes = [ERROR_API['110'][0]]
+             return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_400_BAD_REQUEST)
+        except UserModel.DoesNotExist:
+            user = UserModel(email=email, last_name=last_name, first_name=first_name, fb_id=fb_id)
+            user.save()
+            user.profile.photo.save(name,content,save=True)
+            first_login = True
+            user = UserModel.objects.get(email=email)
 
-    if (not user.fb_id) or (user.fb_id == fb_id):
+    if user.fb_id == fb_id:
         token = create_login_token(user)
         profile = get_profile_data(user.id, request)
         content = {'token': token.key, 'email': user.email, 'id': user.id, 'first_login': first_login,
                    'first_name': user.first_name, 'last_name': user.last_name, 'profile': profile}
         return Response(custom_api_response(content=content), status=status.HTTP_200_OK)
     else:
-        # 'Unable to login via facebook account, wrong id'
-        error = {"detail": ERROR_API['112'][1]}
-        error_codes = [ERROR_API['112'][0]]
+        error = {"detail": ERROR_API['120'][1]}
+        error_codes = [ERROR_API['120'][0]]
         return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_400_BAD_REQUEST)
 
 
