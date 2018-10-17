@@ -42,6 +42,7 @@ class MyTransactionView(generics.ListAPIView):
 class ManagerTransactionView(generics.ListAPIView):
     serializer_class = MyTransactionSerializer
     permission_classes = (IsAuthenticated,)
+    pagination_class = CustomPagination
 
     def get_queryset(self):
         if self.request.user.role == 'MANAGER':
@@ -50,20 +51,29 @@ class ManagerTransactionView(generics.ListAPIView):
             queryset = Transaction.objects.filter(offer__shop__user=self.request.user)
         else:
             queryset=None
-
-
         return queryset
 
     def list(self,request, *args, **kwargs):
         queryset=self.get_queryset()
-        if queryset==None:
+        if queryset == None:
             error = {"detail": ERROR_API['203'][1]}
             error_codes = [ERROR_API['203'][0]]
             return Response(custom_api_response(errors=error, error_codes=error_codes),
                             status=status.HTTP_400_BAD_REQUEST)
         if queryset.exists():
-            serilizer=self.get_serializer(queryset,many=True)
-            return Response(custom_api_response(serilizer),status=status.HTTP_200_OK)
+            page_num = request.GET.get('page', None)
+            if page_num:
+                page = self.paginate_queryset(queryset)
+                if page is not None:
+                    serializer = self.get_serializer(page, many=True, context={'request': request})
+                    paginated_response = self.get_paginated_response(serializer.data)
+                    content = paginated_response.data['results']
+                    del paginated_response.data['results']
+                    metadata = paginated_response.data
+                    return Response(custom_api_response(content=content, metadata=metadata), status=status.HTTP_200_OK)
+
+            serilizer=self.get_serializer(queryset, many=True)
+            return Response(custom_api_response(serilizer), status=status.HTTP_200_OK)
 
 
 
@@ -106,8 +116,8 @@ class TransactionViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
-    #
-    #
+
+
     # def create(self, request, *args, **kwargs):
     #     request.data['user_id'] = request.user.pk
     #     serializer = self.get_serializer(data=request.data)

@@ -78,6 +78,16 @@ class OfferListView(generics.ListCreateAPIView):
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
 
+        if request.user.is_authenticated == True:
+            if request.user.role == 'OWNER':
+                shops = ShopModel.objects.filter(user_id=request.user.pk).all()
+            elif request.user.role == 'MANAGER':
+                shops = ShopModel.objects.filter(manager_id=request.user.pk).all()
+
+            if request.user.role in ['OWNER', 'MANAGER']:
+                shops_ids = [x.id for x in shops]
+                queryset = queryset.filter(shop_id__in=shops_ids).all()
+
         if not queryset.exists():
             try:
                 offer_type = self.request.GET['offer_type']
@@ -96,16 +106,6 @@ class OfferListView(generics.ListCreateAPIView):
 
             return Response(custom_api_response(errors=error, error_codes=error_codes),
                             status=status.HTTP_400_BAD_REQUEST)
-
-        if request.user.is_authenticated == True:
-            if request.user.role == 'OWNER':
-                shops = ShopModel.objects.filter(user_id=request.user.pk).all()
-            elif request.user.role == 'MANAGER':
-                shops = ShopModel.objects.filter(manager_id=request.user.pk).all()
-
-            if request.user.role in ['OWNER', 'MANAGER']:
-                shops_ids = [x.id for x in shops]
-                queryset = queryset.filter(shop_id__in=shops_ids).all()
 
         category_id = request.query_params.get('category_id')
         if category_id != None:
