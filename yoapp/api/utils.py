@@ -20,6 +20,7 @@ ERROR_API = {
     "119": (119, "Invalid token."),
     "120": (120, "Unable to login via social or wrong ID"),
     "121": (121, "Twitter credentials error"),
+    "122": (122, "Users not found"),
 
     "151": (151, "This password is too short. It must contain at least 8 characters."),
     "152": (152, "This password is too common."),
@@ -38,6 +39,8 @@ ERROR_API = {
     "207": (207, "Offer not found"),
     "208": (208, "Invalid code or no coupon"),
 
+    "251": (251, "Shops not found"),
+
 }
 
 
@@ -46,3 +49,4 @@ ERROR_API = {
 #161 - 170 - profile errors
 
 #200 - 299 - offers API errors
+#251 - 270 - shops errors

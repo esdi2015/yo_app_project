@@ -115,7 +115,6 @@ class ShopListSerializer(ShopSerializer):
         else:
             return None
 
-
     class Meta:
         model = ShopModel
         fields = ('id', 'title', 'address', 'description', 'user', 'user_id', 'manager', 'manager_id',

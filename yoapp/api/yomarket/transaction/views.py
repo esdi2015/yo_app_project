@@ -44,22 +44,24 @@ class ManagerTransactionView(generics.ListAPIView):
     permission_classes = (IsAuthenticated,)
     pagination_class = CustomPagination
 
+    filter_backends = (filters.SearchFilter, DjangoFilterBackend, filters.OrderingFilter)
+    search_fields = ('offer__title', )
+    filter_fields = ('manager_id', 'offer_id', )
+    ordering_fields = ('points', 'created', 'offer__title', 'manager__email', 'customer__email', )
+
     def get_queryset(self):
         if self.request.user.role == 'MANAGER':
             queryset = Transaction.objects.filter(manager=self.request.user)
         elif self.request.user.role == 'OWNER':
             queryset = Transaction.objects.filter(offer__shop__user=self.request.user)
         else:
-            queryset=None
+            queryset = None
         return queryset
 
     def list(self,request, *args, **kwargs):
         queryset=self.get_queryset()
-        if queryset == None:
-            error = {"detail": ERROR_API['203'][1]}
-            error_codes = [ERROR_API['203'][0]]
-            return Response(custom_api_response(errors=error, error_codes=error_codes),
-                            status=status.HTTP_400_BAD_REQUEST)
+        queryset = self.filter_queryset(queryset)
+
         if queryset.exists():
             page_num = request.GET.get('page', None)
             if page_num:
@@ -74,6 +76,11 @@ class ManagerTransactionView(generics.ListAPIView):
 
             serilizer=self.get_serializer(queryset, many=True)
             return Response(custom_api_response(serilizer), status=status.HTTP_200_OK)
+        else:
+            error = {"detail": ERROR_API['203'][1]}
+            error_codes = [ERROR_API['203'][0]]
+            return Response(custom_api_response(errors=error, error_codes=error_codes),
+                            status=status.HTTP_400_BAD_REQUEST)
 
 
 

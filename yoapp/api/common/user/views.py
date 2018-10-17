@@ -104,10 +104,11 @@ class UserViewSet(viewsets.ModelViewSet):
         queryset = queryset.filter(role='MANAGER', creator_id=request.user.pk).all()
         queryset = self.filter_queryset(queryset)
 
-        # page = self.paginate_queryset(queryset)
-        # if page is not None:
-        #     serializer = self.get_serializer(page, many=True)
-        #     return self.get_paginated_response(serializer.data)
+        if not queryset.exists():
+            error = {"detail": ERROR_API['122'][1]}
+            error_codes = [ERROR_API['122'][0]]
+            return Response(custom_api_response(errors=error, error_codes=error_codes),
+                            status=status.HTTP_400_BAD_REQUEST)
 
         page_num = request.GET.get('page', None)
         if page_num:

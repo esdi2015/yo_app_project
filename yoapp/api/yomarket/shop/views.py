@@ -5,25 +5,40 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework import viewsets
 from rest_framework import filters
-from django_filters.rest_framework import DjangoFilterBackend
+from django_filters.rest_framework import DjangoFilterBackend, FilterSet, CharFilter
 
 from api.views import CustomPagination
 from ...views import custom_api_response
 from .serializers import ShopSerializer, ShopListSerializer, ShopCreateUpdateSerializer
+from api.utils import ERROR_API
 
 from history.utils import history_view_event
 
 ShopModel = apps.get_model('yomarket', 'Shop')
 
 
+class ShopListFilter(FilterSet):
+    category_ids = CharFilter(method='filter_category_ids')
+
+    class Meta:
+        model = ShopModel
+        fields = ('manager_id', 'code_type', 'city_id', 'categories__id', 'category_ids')
+
+    def filter_category_ids(self, queryset, name, value):
+        if value:
+            queryset = queryset.filter(categories__id__in=value.strip().split(',')).all()
+        return queryset
+
+
 class ShopViewSet(viewsets.ModelViewSet):
     queryset = ShopModel.objects.all()
     serializer_class = ShopSerializer
     pagination_class = CustomPagination
+    filter_class = ShopListFilter
 
     filter_backends = (filters.SearchFilter, DjangoFilterBackend, filters.OrderingFilter)
     search_fields = ('title', 'address', 'description', )
-    filter_fields = ('manager_id', 'code_type', 'city_id', 'categories__id')
+    #filter_fields = ('manager_id', 'code_type', 'city_id', 'categories__id')
     ordering_fields = ('image', 'title', 'description', 'address', 'city__city_name', 'manager',
                        'phone', 'outer_link', 'social_link', 'schedule__title', 'code_type')
 
@@ -51,6 +66,11 @@ class ShopViewSet(viewsets.ModelViewSet):
             queryset = self.queryset
 
         queryset = self.filter_queryset(queryset)
+        if not queryset.exists():
+            error = {"detail": ERROR_API['251'][1]}
+            error_codes = [ERROR_API['251'][0]]
+            return Response(custom_api_response(errors=error, error_codes=error_codes),
+                            status=status.HTTP_400_BAD_REQUEST)
 
         page_num = request.GET.get('page', None)
         if page_num:
