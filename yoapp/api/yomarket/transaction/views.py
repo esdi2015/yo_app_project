@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 from rest_framework import viewsets
 # from rest_framework import generics
 from rest_framework import filters
-from django_filters.rest_framework import DjangoFilterBackend
+from django_filters.rest_framework import DjangoFilterBackend, FilterSet, CharFilter
 from ...utils import ERROR_API
 
 from ...views import custom_api_response
@@ -17,6 +17,25 @@ from api.views import CustomPagination
 
 
 TransactionModel = apps.get_model('yomarket', 'Transaction')
+
+
+class TransactionListFilter(FilterSet):
+    manager_ids = CharFilter(method='filter_manager_ids')
+    offer_ids = CharFilter(method='filter_offer_ids')
+
+    class Meta:
+        model = TransactionModel
+        fields = ('manager_id', 'offer_id', 'manager_ids', 'offer_ids')
+
+    def filter_manager_ids(self, queryset, name, value):
+        if value:
+            queryset = queryset.filter(manager_id__in=value.strip().split(',')).all()
+        return queryset
+
+    def filter_offer_ids(self, queryset, name, value):
+        if value:
+            queryset = queryset.filter(offer_id__in=value.strip().split(',')).all()
+        return queryset
 
 
 class MyTransactionView(generics.ListAPIView):
@@ -30,7 +49,7 @@ class MyTransactionView(generics.ListAPIView):
 
     def list(self,request, *args, **kwargs):
         queryset=self.get_queryset()
-        # print(queryset)
+
         if queryset.exists():
             serilizer=self.get_serializer(queryset,many=True)
             return Response(custom_api_response(serilizer),status=status.HTTP_200_OK)
@@ -43,10 +62,10 @@ class ManagerTransactionView(generics.ListAPIView):
     serializer_class = MyTransactionSerializer
     permission_classes = (IsAuthenticated,)
     pagination_class = CustomPagination
+    filter_class = TransactionListFilter
 
     filter_backends = (filters.SearchFilter, DjangoFilterBackend, filters.OrderingFilter)
     search_fields = ('offer__title', )
-    filter_fields = ('manager_id', 'offer_id', )
     ordering_fields = ('points', 'created', 'offer__title', 'manager__email', 'customer__email', )
 
     def get_queryset(self):
@@ -88,15 +107,15 @@ class TransactionViewSet(viewsets.ModelViewSet):
     queryset = TransactionModel.objects.all()
     serializer_class = TransactionSerializer
     pagination_class = CustomPagination
+    filter_class = TransactionListFilter
 
     filter_backends = (filters.SearchFilter, DjangoFilterBackend, filters.OrderingFilter)
     search_fields = ('offer__title', )
-    # filter_fields = ('manager_id', )
     ordering_fields = ('points', 'created', 'offer__title', 'manager__email', 'customer__email', )
 
     def get_permissions(self):
         if self.action == 'retrieve' or self.action == 'list':
-            return [AllowAny(), ]  # AllowAny(), - remove it later, need to add  IsAuthenticated() !!!
+            return [IsAuthenticated(), ]
         else :
             return []
 
@@ -110,41 +129,22 @@ class TransactionViewSet(viewsets.ModelViewSet):
         queryset = self.get_queryset()
         queryset = self.filter_queryset(queryset)
 
-        page_num = request.GET.get('page', None)
-        if page_num:
-            page = self.paginate_queryset(queryset)
-            if page is not None:
-                serializer = self.get_serializer(page, many=True, context={'request': request})
-                paginated_response = self.get_paginated_response(serializer.data)
-                content = paginated_response.data['results']
-                del paginated_response.data['results']
-                metadata = paginated_response.data
-                return Response(custom_api_response(content=content, metadata=metadata), status=status.HTTP_200_OK)
+        if queryset.exists():
+            page_num = request.GET.get('page', None)
+            if page_num:
+                page = self.paginate_queryset(queryset)
+                if page is not None:
+                    serializer = self.get_serializer(page, many=True, context={'request': request})
+                    paginated_response = self.get_paginated_response(serializer.data)
+                    content = paginated_response.data['results']
+                    del paginated_response.data['results']
+                    metadata = paginated_response.data
+                    return Response(custom_api_response(content=content, metadata=metadata), status=status.HTTP_200_OK)
 
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
-
-
-    # def create(self, request, *args, **kwargs):
-    #     request.data['user_id'] = request.user.pk
-    #     serializer = self.get_serializer(data=request.data)
-    #     serializer.is_valid(raise_exception=True)
-    #     self.perform_create(serializer)
-    #     headers = self.get_success_headers(serializer.data)
-    #     return Response(custom_api_response(serializer=serializer), status=status.HTTP_201_CREATED, headers=headers)
-    #
-    #
-    # def update(self, request, *args, **kwargs):
-    #     partial = kwargs.pop('partial', False)
-    #     instance = self.get_object()
-    #     request.data['user_id'] = request.user.pk
-    #     serializer = self.get_serializer(instance, data=request.data, partial=partial)
-    #     serializer.is_valid(raise_exception=True)
-    #     self.perform_update(serializer)
-    #
-    #     if getattr(instance, '_prefetched_objects_cache', None):
-    #         # If 'prefetch_related' has been applied to a queryset, we need to
-    #         # forcibly invalidate the prefetch cache on the instance.
-    #         instance._prefetched_objects_cache = {}
-    #
-    #     return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
+            serilizer=self.get_serializer(queryset, many=True)
+            return Response(custom_api_response(serilizer), status=status.HTTP_200_OK)
+        else:
+            error = {"detail": ERROR_API['203'][1]}
+            error_codes = [ERROR_API['203'][0]]
+            return Response(custom_api_response(errors=error, error_codes=error_codes),
+                            status=status.HTTP_400_BAD_REQUEST)

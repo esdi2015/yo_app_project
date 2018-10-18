@@ -19,14 +19,27 @@ ShopModel = apps.get_model('yomarket', 'Shop')
 
 class ShopListFilter(FilterSet):
     category_ids = CharFilter(method='filter_category_ids')
+    manager_ids = CharFilter(method='filter_manager_ids')
+    city_ids = CharFilter(method='filter_city_ids')
 
     class Meta:
         model = ShopModel
-        fields = ('manager_id', 'code_type', 'city_id', 'categories__id', 'category_ids')
+        fields = ('manager_id', 'code_type', 'city_id', 'categories__id',
+                  'category_ids', 'manager_ids', 'city_ids')
 
     def filter_category_ids(self, queryset, name, value):
         if value:
             queryset = queryset.filter(categories__id__in=value.strip().split(',')).all()
+        return queryset
+
+    def filter_manager_ids(self, queryset, name, value):
+        if value:
+            queryset = queryset.filter(manager_id__in=value.strip().split(',')).all()
+        return queryset
+
+    def filter_city_ids(self, queryset, name, value):
+        if value:
+            queryset = queryset.filter(city_id__in=value.strip().split(',')).all()
         return queryset
 
 
@@ -38,7 +51,6 @@ class ShopViewSet(viewsets.ModelViewSet):
 
     filter_backends = (filters.SearchFilter, DjangoFilterBackend, filters.OrderingFilter)
     search_fields = ('title', 'address', 'description', )
-    #filter_fields = ('manager_id', 'code_type', 'city_id', 'categories__id')
     ordering_fields = ('image', 'title', 'description', 'address', 'city__city_name', 'manager',
                        'phone', 'outer_link', 'social_link', 'schedule__title', 'code_type')
 
