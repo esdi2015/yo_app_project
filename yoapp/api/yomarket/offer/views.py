@@ -9,7 +9,7 @@ from django_filters.rest_framework import DjangoFilterBackend, FilterSet, Boolea
 from django.contrib.auth import get_user_model
 import datetime
 
-from api.views import CustomPagination
+from api.views import CustomPagination, prepare_paginated_response
 from ...views import custom_api_response
 from .serializers import OfferSerializer
 
@@ -53,10 +53,11 @@ class OfferListFilter(FilterSet):
 
 class OfferListView(generics.ListCreateAPIView):
     serializer_class = OfferSerializer
-    filter_backends = (filters.SearchFilter, DjangoFilterBackend, filters.OrderingFilter)
-    search_fields = ('description', 'title')
     filter_class = OfferListFilter
     pagination_class = CustomPagination
+
+    filter_backends = (filters.SearchFilter, DjangoFilterBackend, filters.OrderingFilter)
+    search_fields = ('description', 'title')
     ordering_fields = ('shop__title', 'category__category_name', 'title', 'image',
                        'short_description', 'price', 'offer_type', 'expire', 'codes_count',
                        'redeemed_codes_count', 'status')
@@ -111,16 +112,9 @@ class OfferListView(generics.ListCreateAPIView):
         if category_id != None:
             history_view_event(obj=category_id,user=request.user)
 
-        page_num = request.GET.get('page', None)
-        if page_num:
-            page = self.paginate_queryset(queryset)
-            if page is not None:
-                serializer = self.get_serializer(page, many=True, context={'request': request})
-                paginated_response = self.get_paginated_response(serializer.data)
-                content = paginated_response.data['results']
-                del paginated_response.data['results']
-                metadata = paginated_response.data
-                return Response(custom_api_response(content=content, metadata=metadata), status=status.HTTP_200_OK)
+        paginate = prepare_paginated_response(self, request, queryset)
+        if paginate:
+            return Response(custom_api_response(content=paginate.content, metadata=paginate.metadata), status=status.HTTP_200_OK)
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)

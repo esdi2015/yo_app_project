@@ -13,16 +13,9 @@ https://docs.djangoproject.com/en/2.0/ref/settings/
 import os, sys
 from django.contrib import admin
 
-#admin.site.site_header = "Halap-YO Admin"
-#admin.site.site_title = "Halap-YO Admin Portal"
-#admin.site.index_title = "Welcome to Halap-YO Admin Portal"
-
-
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-#sys.path.insert(0, os.path.join(BASE_DIR, 'api'))
-#sys.path.insert(0, os.path.join(BASE_DIR, 'common'))
-#print(BASE_DIR)
+# print(BASE_DIR)
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
 
@@ -91,9 +84,6 @@ AUTHENTICATION_BACKENDS = [
     'allauth.account.auth_backends.AuthenticationBackend',
     'rest_framework.authentication.TokenAuthentication',
     'rest_framework.authentication.SessionAuthentication',
-
-    #'social_core.backends.facebook.FacebookOAuth2',
-    #'social_core.backends.google.GoogleOAuth2',
 ]
 
 ROOT_URLCONF = 'yoapp.urls'
@@ -207,7 +197,6 @@ REST_FRAMEWORK = {
 
 # ACCOUNT_EMAIL_REQUIRED = False
 # ACCOUNT_EMAIL_VERIFICATION = 'none'
-# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_EMAIL_REQUIRED = True
@@ -246,7 +235,3 @@ EMAIL_HOST_PASSWORD = 'Ownerowner123'
 EMAIL_USE_TLS = True
 
 DJANGO_REST_MULTITOKENAUTH_RESET_TOKEN_EXPIRY_TIME = 1
-
-#admin.site.site_header = 'Halap-YO Admin'
-#admin.site.site_title = 'Halap-YO Admin Portal'
-#admin.site.index_title = 'Welcome to Halap-YO Admin Portal'

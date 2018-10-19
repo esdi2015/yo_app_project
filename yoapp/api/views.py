@@ -168,4 +168,21 @@ class CustomPagination(pagination.PageNumberPagination):
         })
 
 
+def prepare_paginated_response(obj, request, queryset):
+    page_num = request.GET.get('page', None)
+    if page_num:
+        page = obj.paginate_queryset(queryset)
+        if page is not None:
+            serializer = obj.get_serializer(page, many=True, context={'request': request})
+            paginated_response = obj.get_paginated_response(serializer.data)
+            content = paginated_response.data['results']
+            del paginated_response.data['results']
+            metadata = paginated_response.data
+
+            paginated = type('PaginatedData', (object,), {})
+            paginated.content = content
+            paginated.metadata = metadata
+            return paginated
+    return None
+
 
