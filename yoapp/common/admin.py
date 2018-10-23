@@ -6,7 +6,10 @@ from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from mptt.admin import MPTTModelAdmin, DraggableMPTTAdmin
 from oauth2_provider.models import Application, Grant, AccessToken, RefreshToken
 
-from .models import User, Category, City,PasscodeVerify
+from .models import User, Category, City, PasscodeVerify
+from account.models import Profile
+from yoapp.utils import ExportCsvMixin
+
 
 
 class UserCreationForm(forms.ModelForm):
@@ -54,7 +57,11 @@ class UserChangeForm(forms.ModelForm):
         return self.initial["password"]
 
 
-class UserAdmin(BaseUserAdmin):
+class UserProfileInline(admin.StackedInline):
+    model = Profile
+
+
+class UserAdmin(BaseUserAdmin, ExportCsvMixin):
     # The forms to add and change user instances
     form = UserChangeForm
     add_form = UserCreationForm
@@ -62,7 +69,7 @@ class UserAdmin(BaseUserAdmin):
     # The fields to be used in displaying the User model.
     # These override the definitions on the base UserAdmin
     # that reference specific fields on auth.User.
-    list_display = ('email', 'username', 'is_admin', 'role')
+    list_display = ('email', 'username', 'is_admin', 'role', )
     list_filter = ('is_admin', 'role')
     fieldsets = (
         (None, {'fields': ('email', 'password', 'username')}),
@@ -80,6 +87,8 @@ class UserAdmin(BaseUserAdmin):
     search_fields = ('email',)
     ordering = ('date_joined',)
     filter_horizontal = ()
+    inlines = [UserProfileInline]
+    actions = ['export_as_csv']
 
 
 

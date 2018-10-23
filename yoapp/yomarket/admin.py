@@ -2,25 +2,38 @@ from django.contrib import admin
 from django.contrib.admin import SimpleListFilter
 from .models import Shop, Offer, QRcoupon, Transaction, WishList, Schedule, SecondaryInfo
 from common.models import User
+from yoapp.utils import ExportCsvMixin
 
 
-class OfferAdmin(admin.ModelAdmin):
+class SecondaryInfoInline(admin.StackedInline):
+    model = SecondaryInfo
+
+
+class OfferAdmin(admin.ModelAdmin, ExportCsvMixin):
     list_display = ('title', 'shop', 'category', 'price', 'discount', 'discount_type', 'available', 'created', 'expire', 'offer_type')
     list_filter = ('shop', 'category', 'discount_type', 'available', 'offer_type')
     search_fields = ('title', 'description')
     date_hierarchy = 'created'
     ordering = ['created', 'available']
+    inlines = [SecondaryInfoInline]
+    actions = ['export_as_csv']
 
     def has_add_permission(self, request, obj=None):
         return False
 
 
-class ShopAdmin(admin.ModelAdmin):
-    list_display = ('title', 'address', 'city', 'user', 'manager', 'created', 'code_type')
+class ScheduleInline(admin.StackedInline):
+    model = Schedule
+
+
+class ShopAdmin(admin.ModelAdmin, ExportCsvMixin):
+    list_display = ('title', 'address', 'city', 'user', 'manager', 'created', 'code_type', 'categories_display')
     list_filter = ('city', 'user', 'code_type', )
     search_fields = ('title', 'address')
     date_hierarchy = 'created'
     ordering = ['-id', ]
+    inlines = [ScheduleInline]
+    actions = ['export_as_csv']
 
     shop_id_for_formfield = None
 
@@ -40,6 +53,13 @@ class ShopAdmin(admin.ModelAdmin):
 
     def has_add_permission(self, request, obj=None):
         return False
+
+    def categories_display(self, obj):
+        return ", ".join([
+            category.category_name for category in obj.categories.all()
+        ])
+
+    categories_display.short_description = "Categories"
 
 
 class QRcouponAdmin(admin.ModelAdmin):
