@@ -65,6 +65,17 @@ class CustomUserSerializer(serializers.ModelSerializer):
         #Profile.objects.create(user=user)
         return user
 
+    def update(self, instance, validated_data):
+        instance.email = validated_data.get('email', instance.email)
+        instance.role = validated_data.get('role', instance.role)
+        instance.username = validated_data.get('username', instance.username)
+        instance.first_name = validated_data.get('first_name', instance.first_name)
+        instance.last_name = validated_data.get('last_name', instance.last_name)
+        instance.set_password(validated_data.get('password'))
+        instance.save()
+
+        return instance
+
     class Meta:
         model = UserModel
         fields = ('id', 'password', 'username', 'first_name', 'last_name', 'email', 'role', 'creator_id')

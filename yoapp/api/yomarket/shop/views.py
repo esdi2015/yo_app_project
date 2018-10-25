@@ -106,7 +106,10 @@ class ShopViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         if serializer.is_valid(raise_exception=False):
-            serializer.save(user_id=request.user.pk)
+            if request.user.role == 'MANAGER':
+                serializer.save()
+            elif request.user.role=='OWNER':
+                serializer.save(user_id=request.user.pk)
             if getattr(instance, '_prefetched_objects_cache', None):
                 # If 'prefetch_related' has been applied to a queryset, we need to
                 # forcibly invalidate the prefetch cache on the instance.
