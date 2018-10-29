@@ -43,7 +43,6 @@ class MyCouponsListView(generics.ListAPIView):
             return Response(custom_api_response(serilizer),status=status.HTTP_200_OK)
         error = {"detail": ERROR_API['200'][1]}
         error_codes = [ERROR_API['200'][0]]
-        # return Response(custom_api_response(content={'error':'no coupons'}),status.HTTP_400_BAD_REQUEST)
         return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_400_BAD_REQUEST)
 
 

@@ -23,4 +23,5 @@ class WishListSerializator(serializers.ModelSerializer):
 
 
 class WishListNestedSerializator(WishListSerializator):
+    is_liked=serializers.HiddenField(default='hide',write_only=True)
     offer = OfferSerializer()
