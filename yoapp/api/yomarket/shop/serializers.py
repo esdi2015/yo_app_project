@@ -118,5 +118,5 @@ class ShopListSerializer(ShopSerializer):
     class Meta:
         model = ShopModel
         fields = ('id', 'title', 'address', 'description', 'user', 'user_id', 'manager', 'manager_id',
-                  'outer_link', 'social_link', 'phone', 'image', 'code_type', 'city', 'city_id', 'categories',
+                  'latitude', 'longitude','outer_link', 'social_link', 'phone', 'image', 'code_type', 'city', 'city_id', 'categories',
                   'is_subscribed', 'is_open', 'schedule_id', 'schedule_title', 'logo')
