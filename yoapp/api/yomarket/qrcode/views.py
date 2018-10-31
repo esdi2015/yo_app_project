@@ -183,7 +183,7 @@ class QRcouponsListView(generics.ListAPIView):
         for coupon in coupons:
             if coupon.expiry_date <= timezone.now():
                 coupon.is_expired = True
-                coupon.save()
+                coupon.delete()
         queryset = self.model.objects.filter(user_id=user_id)
         return queryset
 
