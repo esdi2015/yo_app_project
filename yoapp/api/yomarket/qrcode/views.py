@@ -4,6 +4,9 @@ from rest_framework.response import Response
 from api.yomarket.qrcode.serializers import QRcouponSerializator, QRcouponNestedSerializator
 from rest_framework import status
 from rest_framework import generics
+from api.views import CustomPagination, prepare_paginated_response
+from django_filters.rest_framework import DjangoFilterBackend, FilterSet, BooleanFilter, CharFilter
+from rest_framework import filters
 
 from ...views import custom_api_response
 
@@ -172,10 +175,54 @@ class QRcouponShortCheckView(generics.RetrieveAPIView):
 #
 
 
+
+
+class QRcouponListFilter(FilterSet):
+    category_ids = CharFilter(method='filter_category_ids')
+    category_id = CharFilter(method='filter_category_id')
+
+    shop_ids = CharFilter(method='filter_shop_ids')
+    shop_id = CharFilter(method='filter_shop_ids')
+
+
+    class Meta:
+        model = QRcoupon
+        fields = ('category_id', 'offer__shop_id',
+                  'category_ids', 'shop_ids')
+
+    def filter_category_ids(self, queryset, name, value):
+        if value:
+            queryset = queryset.filter(offer__category_id__in=value.strip().split(',')).all()
+        return queryset
+
+    def filter_category_id(self, queryset, name, value):
+        if value:
+            queryset = queryset.filter(offer__category_id=value).all()
+        return queryset
+
+
+    def filter_shop_ids(self, queryset, name, value):
+        if value:
+            queryset = queryset.filter(offer__shop_id__in=value.strip().split(',')).all()
+        return queryset
+
+    def filter_shop_id(self, queryset, name, value):
+        if value:
+            queryset = queryset.filter(offer__shop_id_=value).all()
+        return queryset
+
+
+
+
 class QRcouponsListView(generics.ListAPIView):
     serializer_class = QRcouponNestedSerializator
+    filter_class = QRcouponListFilter
+    pagination_class = CustomPagination
+
     model = serializer_class.Meta.model
     permission_classes = (IsAuthenticated,)
+    filter_backends = (filters.SearchFilter, DjangoFilterBackend, filters.OrderingFilter)
+
 
     def get_queryset(self):
         user_id = self.request.user.pk
@@ -188,14 +235,18 @@ class QRcouponsListView(generics.ListAPIView):
         return queryset
 
     def list(self,request, *args, **kwargs):
-        queryset=self.get_queryset()
-        # print(queryset)
+        queryset=self.filter_queryset(self.get_queryset())
+
         if queryset.exists():
+            paginate = prepare_paginated_response(self, request, queryset)
+            if paginate:
+                return Response(custom_api_response(content=paginate.content, metadata=paginate.metadata),
+                                status=status.HTTP_200_OK)
+
             serilizer=self.get_serializer(queryset,many=True)
             return Response(custom_api_response(serilizer),status=status.HTTP_200_OK)
         error = {"detail": ERROR_API['200'][1]}
         error_codes = [ERROR_API['200'][0]]
-        #return Response(custom_api_response(content={'error':'no coupons'}),status.HTTP_400_BAD_REQUEST)
         return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_400_BAD_REQUEST)
 
 
