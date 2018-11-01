@@ -1,5 +1,6 @@
 from rest_framework.decorators import api_view, permission_classes
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 
 from rest_framework import status
 from rest_framework.response import Response
@@ -28,12 +29,12 @@ from history.utils import history_like_event
 
 class MyCouponsListView(generics.ListAPIView):
     serializer_class = WishListNestedSerializator
-    model = serializer_class.Meta.model
+    model = WishList
     permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
         user_id = self.request.user.pk
-        queryset = self.model.objects.filter(user_id=user_id)
+        queryset = self.model.objects.filter(user_id=user_id,offer__expire__gte=timezone.now())
         return queryset
 
     def list(self,request, *args, **kwargs):
