@@ -4,7 +4,7 @@ sys.path.append("..")
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
 from rest_framework.authtoken.serializers import AuthTokenSerializer
-from rest_framework.compat import authenticate
+
 from django.apps import apps
 from django.contrib.auth import get_user_model
 from django.conf import settings

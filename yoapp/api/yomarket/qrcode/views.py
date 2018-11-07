@@ -221,8 +221,6 @@ class QRcouponsListView(generics.ListAPIView):
 
     model = serializer_class.Meta.model
     permission_classes = (IsAuthenticated,)
-    filter_backends = (filters.SearchFilter, DjangoFilterBackend, filters.OrderingFilter)
-
 
     def get_queryset(self):
         user_id = self.request.user.pk
