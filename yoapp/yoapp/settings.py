@@ -56,8 +56,6 @@ INSTALLED_APPS = [
     'django_rest_passwordreset',
     #'rest_framework_tricks',
 
-    'drf_yasg',
-
     'common.apps.CommonConfig',
     'api.apps.ApiConfig',
     'account.apps.AccountConfig',
@@ -68,20 +66,6 @@ INSTALLED_APPS = [
     'history.apps.HistoryConfig',
     'targeting.apps.TargetingConfig',
 ]
-SWAGGER_SETTINGS = {
-   'SECURITY_DEFINITIONS': {
-      'Bearer': {
-            'description':"Use header { Authorization: token **************}",
-            'type': 'apiKey',
-            'name': 'Authorization',
-            'in': 'header',
-            'default':'token'
-      }
-
-   },
-    'USE_SESSION_AUTH': False
-
-}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -130,8 +114,12 @@ WSGI_APPLICATION = 'yoapp.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'mydatabase',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'yodb',
+        'USER': 'yodbuser',
+        'PASSWORD': 'yodbpassword',
+        'HOST': '127.0.0.1',
+        'PORT': '5432',
     }
 }
 
@@ -160,7 +148,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-# TIME_ZONE = 'UTC'
+#TIME_ZONE = 'UTC'
 TIME_ZONE = 'Etc/GMT-3'
 
 USE_I18N = True
@@ -204,6 +192,7 @@ REST_FRAMEWORK = {
     'DATETIME_FORMAT': "%Y-%m-%dT%H:%M:%S%Z:00",
 }
 
+
 #REST_SESSION_LOGIN = False
 
 # ACCOUNT_EMAIL_REQUIRED = False
@@ -220,7 +209,7 @@ ACCOUNT_AUTHENTICATION_METHOD = 'email'
 
 
 PUSH_NOTIFICATIONS_SETTINGS = {
-    "FCM_API_KEY": "AAAASwElybY:APA91bFaTT_zKLcLYqB0soW8PJmFFG7x1F3wiR0MGta9lLsU22uAVa0VD_3zzz-OremJKDEWEf52OD554byamcwAmZldgrQKfwAjjbhZz_5DYT-z1gcflUBFSWVQQ9lSE9KwDBNHULvfVKmQwxa7xNwuPHz-VfdTbw",
+    "FCM_API_KEY": "AAAAZpeTTNo:APA91bF1IITIT9tZt2BDbjfm44sQ-JqMNsYZAWfq94nSO_7bu3QYTwWE_uwe_gTRQitCKGeGXRRt75dwj-GT0sjKaCVdhAdf31d34gIvZN1T0w2igZonRVawpeDI16TEJ-z87KbahniPvJoGUR1qfJ5FSnwLzGV6aQ",
     'USER_MODEL': 'common.User',
     'UPDATE_ON_DUPLICATE_REG_ID':True
 }

@@ -2,8 +2,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.password_validation import validate_password as vp
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
-#from rest_framework.compat import authenticate
-from rest_framework.authentication import authenticate
+from rest_framework.compat import authenticate
 
 from common.utils import ROLES, DEFAULT_USER_ROLE
 from account.models import Profile
@@ -11,7 +10,7 @@ from ...utils import ERROR_API
 #from ...account.serializers import ProfileSerializer
 from ...common.category.serializers import CategorySerializer
 
-from yoapp import cipher
+
 UserModel = get_user_model()
 
 APP = ('desktop', 'mobile')
@@ -31,8 +30,6 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
     def validate_password(self, value):
         vp(value)
-        value=cipher.decrypt(value)
-
         return value
 
     def validate_username(self, value):
@@ -112,7 +109,6 @@ class LoginSerializer(serializers.Serializer):
     def validate(self, attrs):
         email = attrs.get('email')
         password = attrs.get('password')
-        password = cipher.decrypt(password)
         app = attrs.get('app')
         role = attrs.get('role')
 
