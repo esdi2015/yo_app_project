@@ -55,9 +55,7 @@ INSTALLED_APPS = [
     'django_celery_beat',
     'django_rest_passwordreset',
     #'rest_framework_tricks',
-
     'drf_yasg',
-
     'common.apps.CommonConfig',
     'api.apps.ApiConfig',
     'account.apps.AccountConfig',
@@ -68,6 +66,7 @@ INSTALLED_APPS = [
     'history.apps.HistoryConfig',
     'targeting.apps.TargetingConfig',
 ]
+
 SWAGGER_SETTINGS = {
    'SECURITY_DEFINITIONS': {
       'Bearer': {
@@ -130,8 +129,12 @@ WSGI_APPLICATION = 'yoapp.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'mydatabase',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'yodb',
+        'USER': 'yodbuser',
+        'PASSWORD': 'yodbpassword',
+        'HOST': '127.0.0.1',
+        'PORT': '5432',
     }
 }
 
