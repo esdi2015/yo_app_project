@@ -44,6 +44,7 @@ from django_rest_passwordreset.signals import reset_password_token_created, pre_
 from django_rest_passwordreset.views import get_password_reset_token_expiry_time
 from yomarket.models import Shop
 from api.views import CustomPagination, prepare_paginated_response
+from yoapp import cipher
 
 User = get_user_model()
 UserModel = get_user_model()
@@ -146,6 +147,7 @@ class UserResetPasswordConfirm(ResetPasswordConfirm):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         password = serializer.validated_data['password']
+        password=cipher.decrypt(password)
         token = serializer.validated_data['token']
 
         # get token validation time
