@@ -23,7 +23,7 @@ class ProfileSerializer(serializers.ModelSerializer):
         model = Profile
         fields = ('user', 'user_id', 'date_birth', 'photo', 'gender',
                   'points', 'rank', 'region', 'interests', 'age',
-                  'first_name', 'last_name', 'phone', 'payment_method', 'subscribe')
+                  'first_name', 'last_name', 'phone', 'payment_method', 'subscribe','notifications')
 
 
 class ProfileUpdateSerializer(ProfileSerializer):

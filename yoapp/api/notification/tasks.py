@@ -9,7 +9,7 @@ from notification.models import Notification_settings, Subscription, Notificatio
 from yomarket.models import Offer,QRcoupon
 from push_notifications.models import GCMDevice
 from notification.utils import make_email_msg,make_push_msg
-
+from common.models import User
 
 @shared_task(bind=True,ignore_result=True)
 def send_notification(self,notif_id):
@@ -53,21 +53,63 @@ def subscription_task(self):
 
     offers=Offer.objects.filter(created__gte=lrt)
     for offer in offers:
-
         subs=Subscription.objects.filter(category=offer.category,type='category')
         for sub in subs:
             if sub.discount_filter == False:
-                notif=Notification.objects.create(user=sub.user,offer=offer,type=sub.notification_type,title=offer.title,body=offer.description,message_type="new_offer")
-                send_notification.delay(notif.id)
+                if sub.user.profile.notifications=='enabled':
+                    notif=Notification.objects.create(user=sub.user,offer=offer,type='email',title=offer.title,body=offer.description,message_type="new_offer")
+                    send_notification.delay(notif.id)
+                    notif = Notification.objects.create(user=sub.user, offer=offer, type='push',title=offer.title, body=offer.description, message_type="new_offer")
+                    send_notification.delay(notif.id)
+
+                if sub.user.profile.notifications == 'push':
+                    notif = Notification.objects.create(user=sub.user, offer=offer, type='push', title=offer.title,body=offer.description,  message_type="new_offer")
+                    send_notification.delay(notif.id)
+
+                if sub.user.profile.notifications == 'email':
+                    notif = Notification.objects.create(user=sub.user, offer=offer, type='email', title=offer.title,body=offer.description,  message_type="new_offer")
+                    send_notification.delay(notif.id)
+
+
             elif sub.discount_value <= offer.discount:
-                notif=Notification.objects.create(user=sub.user,offer=offer,type=sub.notification_type,title=offer.title,body=offer.description,message_type="new_offer")
-                send_notification.delay(notif.id)
+                if sub.user.profile.notifications == 'enabled':
+                    notif = Notification.objects.create(user=sub.user, offer=offer, type='email', title=offer.title,
+                                                        body=offer.description, message_type="new_offer")
+                    send_notification.delay(notif.id)
+                    notif = Notification.objects.create(user=sub.user, offer=offer, type='push', title=offer.title,
+                                                        body=offer.description, message_type="new_offer")
+                    send_notification.delay(notif.id)
+
+                if sub.user.profile.notifications == 'push':
+                    notif = Notification.objects.create(user=sub.user, offer=offer, type='push', title=offer.title,
+                                                        body=offer.description, message_type="new_offer")
+                    send_notification.delay(notif.id)
+
+                if sub.user.profile.notifications == 'email':
+                    notif = Notification.objects.create(user=sub.user, offer=offer, type='email', title=offer.title,
+                                                        body=offer.description, message_type="new_offer")
+                    send_notification.delay(notif.id)
 
 
         subs = Subscription.objects.filter(shop=offer.shop, type='shop')
         for sub in subs:
-            notif=Notification.objects.create(user=sub.user,offer=offer,type=sub.notification_type,title=offer.title,body=offer.description,message_type="new_offer")
-            send_notification.delay(notif.id)
+            if sub.user.profile.notifications == 'enabled':
+                notif = Notification.objects.create(user=sub.user, offer=offer, type='email', title=offer.title,
+                                                    body=offer.description, message_type="new_offer")
+                send_notification.delay(notif.id)
+                notif = Notification.objects.create(user=sub.user, offer=offer, type='push', title=offer.title,
+                                                    body=offer.description, message_type="new_offer")
+                send_notification.delay(notif.id)
+
+            if sub.user.profile.notifications == 'push':
+                notif = Notification.objects.create(user=sub.user, offer=offer, type='push', title=offer.title,
+                                                    body=offer.description, message_type="new_offer")
+                send_notification.delay(notif.id)
+
+            if sub.user.profile.notifications == 'email':
+                notif = Notification.objects.create(user=sub.user, offer=offer, type='email', title=offer.title,
+                                                    body=offer.description, message_type="new_offer")
+                send_notification.delay(notif.id)
 
 
     settings.last_run_time=timezone.now()
@@ -116,9 +158,25 @@ def coupon_balance_task(self):
         if percent>=80:
             coupons_users = QRcoupon.objects.filter(offer=offer,is_redeemed=False,is_expired=False).values_list('user',flat=True)
             for user_id in coupons_users:
-                notif=Notification(user_id=user_id,offer=offer,title=offer.title,body=offer.description,type='email',message_type='few_coupons_left')
-                notif.save()
-                send_notification.delay(notif.id)
+                user=User.objects.get(id=user_id)
+
+                if user.profile.notifications == 'enabled':
+                    notif = Notification.objects.create(user=user, offer=offer, type='email', title=offer.title,
+                                                        body=offer.description, message_type="few_coupons_left")
+                    send_notification.delay(notif.id)
+                    notif = Notification.objects.create(user=user, offer=offer, type='push', title=offer.title,
+                                                        body=offer.description, message_type="few_coupons_left")
+                    send_notification.delay(notif.id)
+
+                if user.profile.notifications == 'push':
+                    notif = Notification.objects.create(user=user, offer=offer, type='push', title=offer.title,
+                                                        body=offer.description, message_type="few_coupons_left")
+                    send_notification.delay(notif.id)
+
+                if user.profile.notifications == 'email':
+                    notif = Notification.objects.create(user=user, offer=offer, type='email', title=offer.title,
+                                                        body=offer.description, message_type="few_coupons_left")
+                    send_notification.delay(notif.id)
 
             settings.list.append(offer.pk)
 

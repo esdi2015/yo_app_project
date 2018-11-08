@@ -16,7 +16,7 @@ def make_email_msg(notification,request=None):
         return answer
    elif notification.message_type=='few_coupons_left':
         html_message = render_to_string(request=request, template_name='few_coupons_left.html', context={"offer": notification.offer})
-        subject = 'HALAP Hurry up,only 10% of coupons remain: ' + notification.offer.title
+        subject = 'HALAP Hurry up,only 20% of coupons remain: ' + notification.offer.title
         message = html_message
         answer = {"html_message": html_message, 'subject': subject, 'message': message}
         return answer
@@ -42,4 +42,18 @@ def make_push_msg(notification):
 
 def last_coupon_redeemed_event(offer=None,user=None):
      Notification = apps.get_model('notification', 'Notification')
-     notif=Notification(offer=offer,title=offer.title,body=offer.description,message_type='last_coupon_redeemed',user=user,type='email').save()
+
+     if user.profile.notifications == 'enabled':
+         notif = Notification.objects.create(user=user, offer=offer, type='email', title=offer.title,
+                                             body=offer.description, message_type="last_coupon_redeemed")
+         notif = Notification.objects.create(user=user, offer=offer, type='push', title=offer.title,
+                                             body=offer.description, message_type="last_coupon_redeemed")
+
+     if user.profile.notifications == 'push':
+         notif = Notification.objects.create(user=user, offer=offer, type='push', title=offer.title,
+                                             body=offer.description, message_type="last_coupon_redeemed")
+
+     if user.profile.notifications == 'email':
+         notif = Notification.objects.create(user=user, offer=offer, type='email', title=offer.title,
+                                             body=offer.description, message_type="last_coupon_redeemed")
+

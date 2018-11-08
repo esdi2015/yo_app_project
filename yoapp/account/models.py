@@ -10,6 +10,14 @@ from . utils import GENDER_CHOICES, DEFAULT_USER_GENDER
 
 User=get_user_model()
 
+NOTIFICATION_TYPES = (
+    ('enabled', 'Enabled notifications'),
+    ('email', 'Email only'),
+    ('push', 'Push only'),
+    ('disabled','Disabled notifications')
+
+)
+
 
 class Profile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL,
@@ -25,6 +33,7 @@ class Profile(models.Model):
     subscribe = models.BooleanField(default=False)
     phone = models.CharField(max_length=16,blank=True,null=True)
     age = models.IntegerField(default=None, blank=True, null=True)
+    notifications = models.CharField(max_length=100, choices=NOTIFICATION_TYPES,default=NOTIFICATION_TYPES[0][0])
 
     def __str__(self):
         return 'Profile for user {}'.format(self.user.username)
