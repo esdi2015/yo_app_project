@@ -147,7 +147,6 @@ class UserResetPasswordConfirm(ResetPasswordConfirm):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         password = serializer.validated_data['password']
-        password=cipher.decrypt(password)
         token = serializer.validated_data['token']
 
         # get token validation time

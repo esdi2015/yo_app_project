@@ -31,7 +31,6 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
     def validate_password(self, value):
         vp(value)
-        value=cipher.decrypt(value)
 
         return value
 
@@ -112,7 +111,6 @@ class LoginSerializer(serializers.Serializer):
     def validate(self, attrs):
         email = attrs.get('email')
         password = attrs.get('password')
-        password = cipher.decrypt(password)
         app = attrs.get('app')
         role = attrs.get('role')
 
