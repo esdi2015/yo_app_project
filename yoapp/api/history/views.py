@@ -10,7 +10,7 @@ from history.models import History
 from .serializer import HistorySerializer
 from django_filters.rest_framework import DjangoFilterBackend
 
-class MyHistoryView(generics.ListAPIView):
+class MyHistoryView(generics.ListAPIView,generics.DestroyAPIView):
     serializer_class = HistorySerializer
     permission_classes = (IsAuthenticated,)
 
@@ -32,3 +32,12 @@ class MyHistoryView(generics.ListAPIView):
         error_codes = [ERROR_API['201'][0]]
         return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_400_BAD_REQUEST)
 
+
+    def destroy(self, request, *args, **kwargs):
+        event = request.query_params.get('event')
+        if event == 'offer_search':
+            queryset=History.objects.filter(user=self.request.user,event='offer_search').delete()
+            return Response({'status': 'OK'})
+        elif event == 'shop_search':
+            queryset=History.objects.filter(user=self.request.user,event='shop_search').delete()
+            return Response({'status': 'OK'})
