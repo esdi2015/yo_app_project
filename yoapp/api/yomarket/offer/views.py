@@ -17,6 +17,7 @@ from statistic.utlis import count_shown
 from history.utils import history_view_event, history_offer_search_event
 from ...utils import ERROR_API
 
+from yomarket.models import QRcoupon
 
 OfferModel = apps.get_model('yomarket', 'Offer')
 ShopModel = apps.get_model('yomarket', 'Shop')
@@ -80,6 +81,15 @@ class OfferListView(generics.ListCreateAPIView):
             queryset = OfferModel.objects.all()
         else:
             queryset = OfferModel.objects.filter(expire__gte=datetime.datetime.now()).all()
+            good_ids=[]
+            for each in queryset:
+                try:
+                    coupon = QRcoupon.objects.get(is_redeemed=False, is_expired=False,user_id=self.request.user, offer=each)
+                except QRcoupon.DoesNotExist:
+                    good_ids.append(each.id)
+            queryset = OfferModel.objects.filter(id__in=good_ids).all()
+
+
         return queryset
 
 
