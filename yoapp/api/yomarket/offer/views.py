@@ -55,9 +55,13 @@ class OfferListFilter(FilterSet):
         return queryset
 
     def filter_offer_type(self, queryset, name, value):
-        if value:
+        if value=='DAILY':
             queryset = queryset.filter(offer_type=value).all()[:1]
             return queryset
+        elif value=='REGULAR':
+            queryset = queryset.filter(offer_type=value).all()
+            return queryset
+
 
 class OfferListView(generics.ListCreateAPIView):
     serializer_class = OfferSerializer
@@ -79,7 +83,7 @@ class OfferListView(generics.ListCreateAPIView):
     def get_queryset(self):
         if (self.request.user.is_authenticated == True) and (self.request.user.role in ['MANAGER', 'OWNER']):
             queryset = OfferModel.objects.all()
-        else:
+        elif self.request.user.is_authenticated == True:
             queryset = OfferModel.objects.filter(expire__gte=datetime.datetime.now()).all()
             good_ids=[]
             for each in queryset:
@@ -88,6 +92,8 @@ class OfferListView(generics.ListCreateAPIView):
                 except QRcoupon.DoesNotExist:
                     good_ids.append(each.id)
             queryset = OfferModel.objects.filter(id__in=good_ids).all()
+        else:
+            queryset = OfferModel.objects.filter(expire__gte=datetime.datetime.now()).all()
 
 
         return queryset
