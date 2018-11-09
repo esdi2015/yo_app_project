@@ -8,10 +8,14 @@ from ..views import custom_api_response
 from rest_framework import generics
 from history.models import History
 from .serializer import HistorySerializer
+from django_filters.rest_framework import DjangoFilterBackend
 
 class MyHistoryView(generics.ListAPIView):
     serializer_class = HistorySerializer
     permission_classes = (IsAuthenticated,)
+
+    filter_backends = (DjangoFilterBackend,)
+    filter_fields = ('event',)
 
     def get_queryset(self):
         user = self.request.user
@@ -19,7 +23,7 @@ class MyHistoryView(generics.ListAPIView):
         return queryset
 
     def list(self,request, *args, **kwargs):
-        queryset=self.get_queryset()
+        queryset=self.filter_queryset(self.get_queryset())
         queryset=queryset.order_by('date').reverse()
         if queryset.exists():
             serilizer=self.get_serializer(queryset,many=True)

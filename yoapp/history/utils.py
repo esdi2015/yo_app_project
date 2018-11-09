@@ -68,3 +68,13 @@ def history_subscription_event(obj=None,user=None):
 def history_profile_update_event(user=None):
         History(event='profile_update',user=user).save()
         return True
+
+
+def history_offer_search_event(search_text=None,user=None):
+        History(event='offer_search',search_text=search_text,user=user).save()
+        return True
+
+
+def history_shop_search_event(search_text=None, user=None):
+    History(event='shop_search', search_text=search_text, user=user).save()
+    return True

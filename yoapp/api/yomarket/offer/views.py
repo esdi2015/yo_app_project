@@ -14,7 +14,7 @@ from ...views import custom_api_response
 from .serializers import OfferSerializer
 
 from statistic.utlis import count_shown
-from history.utils import history_view_event
+from history.utils import history_view_event, history_offer_search_event
 from ...utils import ERROR_API
 
 
@@ -27,6 +27,9 @@ class OfferListFilter(FilterSet):
     is_expired = BooleanFilter(method='filter_is_expired')
     category_ids = CharFilter(method='filter_category_ids')
     shop_ids = CharFilter(method='filter_shop_ids')
+    offer_type = CharFilter(method='filter_offer_type')
+
+
 
     class Meta:
         model = OfferModel
@@ -50,6 +53,10 @@ class OfferListFilter(FilterSet):
             queryset = queryset.filter(expire__lt=datetime.datetime.now())
         return queryset
 
+    def filter_offer_type(self, queryset, name, value):
+        if value:
+            queryset = queryset.filter(offer_type=value).all()[:1]
+            return queryset
 
 class OfferListView(generics.ListCreateAPIView):
     serializer_class = OfferSerializer
@@ -111,6 +118,11 @@ class OfferListView(generics.ListCreateAPIView):
         category_id = request.query_params.get('category_id')
         if category_id != None:
             history_view_event(obj=category_id,user=request.user)
+
+        search_text = request.query_params.get('search')
+        if search_text != None:
+            history_offer_search_event(search_text,user=request.user)
+
 
         paginate = prepare_paginated_response(self, request, queryset)
         if paginate:

@@ -12,7 +12,7 @@ from ...views import custom_api_response
 from .serializers import ShopSerializer, ShopListSerializer, ShopCreateUpdateSerializer
 from api.utils import ERROR_API
 
-from history.utils import history_view_event
+from history.utils import history_view_event,history_shop_search_event
 
 ShopModel = apps.get_model('yomarket', 'Shop')
 
@@ -83,6 +83,10 @@ class ShopViewSet(viewsets.ModelViewSet):
             error_codes = [ERROR_API['251'][0]]
             return Response(custom_api_response(errors=error, error_codes=error_codes),
                             status=status.HTTP_400_BAD_REQUEST)
+
+        search_text = request.query_params.get('search')
+        if search_text != None:
+            history_shop_search_event(search_text, user=request.user)
 
         paginate = prepare_paginated_response(self, request, queryset)
         if paginate:
