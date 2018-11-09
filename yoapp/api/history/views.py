@@ -24,7 +24,7 @@ class MyHistoryView(generics.ListAPIView):
 
     def list(self,request, *args, **kwargs):
         queryset=self.filter_queryset(self.get_queryset())
-        queryset=queryset.order_by('date').reverse()
+        queryset=queryset.order_by('date').reverse()[:10]
         if queryset.exists():
             serilizer=self.get_serializer(queryset,many=True)
             return Response(custom_api_response(serilizer),status=status.HTTP_200_OK)
