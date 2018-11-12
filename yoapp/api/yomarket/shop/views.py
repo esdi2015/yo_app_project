@@ -86,7 +86,8 @@ class ShopViewSet(viewsets.ModelViewSet):
 
         search_text = request.query_params.get('search')
         if search_text != None:
-            history_shop_search_event(search_text, user=request.user)
+            if request.user.is_authenticated == True:
+                history_shop_search_event(search_text, user=request.user)
 
         paginate = prepare_paginated_response(self, request, queryset)
         if paginate:

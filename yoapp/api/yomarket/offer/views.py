@@ -137,7 +137,8 @@ class OfferListView(generics.ListCreateAPIView):
 
         search_text = request.query_params.get('search')
         if search_text != None:
-            history_offer_search_event(search_text,user=request.user)
+            if request.user.is_authenticated==True:
+                history_offer_search_event(search_text,user=request.user)
 
 
         paginate = prepare_paginated_response(self, request, queryset)
