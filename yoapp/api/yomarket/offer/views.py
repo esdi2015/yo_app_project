@@ -83,24 +83,61 @@ class OfferListView(generics.ListCreateAPIView):
     def get_queryset(self):
         if (self.request.user.is_authenticated == True) and (self.request.user.role in ['MANAGER', 'OWNER']):
             queryset = OfferModel.objects.all()
-        elif self.request.user.is_authenticated == True:
-            queryset = OfferModel.objects.filter(expire__gte=datetime.datetime.now()).all()
+
+        if (self.request.user.is_authenticated == True) and (self.request.user.role == 'CUSTOMER'):
+            queryset = OfferModel.objects.filter(expire__gte=datetime.datetime.now())
             good_ids=[]
             for each in queryset:
                 try:
                     coupon = QRcoupon.objects.get(is_redeemed=False, is_expired=False,user_id=self.request.user, offer=each)
                 except QRcoupon.DoesNotExist:
                     good_ids.append(each.id)
-            queryset = OfferModel.objects.filter(id__in=good_ids).all()
-        else:
-            queryset = OfferModel.objects.filter(expire__gte=datetime.datetime.now()).all()
+            queryset = OfferModel.objects.filter(id__in=good_ids)
+
+
+            targeting = self.request.query_params.get('targeting')
+
+            if targeting == 'true':
+
+
+                if not self.request.user.profile.interests.exists():
+                    pass
+                else:
+                    target_categs = self.request.user.profile.interests.all()
+                    target_ids = []
+
+                    for each in target_categs:
+                        set = OfferModel.objects.filter(category=each, available=True,id__in=good_ids,offer_type='REGULAR')[:5]
+                        target_ids = target_ids + [x.id for x in set]
+
+                    all_set = queryset.filter(offer_type='REGULAR').exclude(id__in=target_ids)
+                    targeted_set = OfferModel.objects.filter(id__in=target_ids).order_by('?')
+                    return all_set,targeted_set
+
+
+            else:
+                queryset = OfferModel.objects.filter(expire__gte=datetime.datetime.now())
 
 
         return queryset
 
 
     def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
+
+        targeting = self.request.query_params.get('targeting')
+
+        if targeting=='true':
+            all_set, targeted_set = self.get_queryset()
+            queryset = list(targeted_set)+list(all_set)
+            if queryset==[]:
+                error = {"detail": ERROR_API['204'][1]}
+                error_codes = [ERROR_API['204'][0]]
+                return Response(custom_api_response(errors=error, error_codes=error_codes),
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        else:
+            queryset=self.get_queryset()
+            queryset=self.filter_queryset(queryset)
 
         if request.user.is_authenticated == True:
             if request.user.role == 'OWNER':
@@ -110,25 +147,29 @@ class OfferListView(generics.ListCreateAPIView):
 
             if request.user.role in ['OWNER', 'MANAGER']:
                 shops_ids = [x.id for x in shops]
-                queryset = queryset.filter(shop_id__in=shops_ids).all()
+                queryset = self.filter_queryset(self.get_queryset())
+                queryset = queryset.filter(shop_id__in=shops_ids)
 
-        if not queryset.exists():
-            try:
-                offer_type = self.request.GET['offer_type']
-            except Exception as e:
-                offer_type = None
 
-            if offer_type == 'DAILY':
-                error = {"detail": ERROR_API['205'][1]}
-                error_codes = [ERROR_API['205'][0]]
-            elif offer_type == 'REGULAR':
-                error = {"detail": ERROR_API['206'][1]}
-                error_codes = [ERROR_API['206'][0]]
-            else:
-                error = {"detail": ERROR_API['204'][1]}
-                error_codes = [ERROR_API['204'][0]]
 
-            return Response(custom_api_response(errors=error, error_codes=error_codes),
+        if targeting != 'true':
+            if not queryset.exists():
+                try:
+                    offer_type = self.request.GET['offer_type']
+                except Exception as e:
+                    offer_type = None
+
+                if offer_type == 'DAILY':
+                    error = {"detail": ERROR_API['205'][1]}
+                    error_codes = [ERROR_API['205'][0]]
+                elif offer_type == 'REGULAR':
+                    error = {"detail": ERROR_API['206'][1]}
+                    error_codes = [ERROR_API['206'][0]]
+                else:
+                    error = {"detail": ERROR_API['204'][1]}
+                    error_codes = [ERROR_API['204'][0]]
+
+                return Response(custom_api_response(errors=error, error_codes=error_codes),
                             status=status.HTTP_400_BAD_REQUEST)
 
         category_id = request.query_params.get('category_id')
