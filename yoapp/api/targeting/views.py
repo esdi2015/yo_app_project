@@ -43,6 +43,7 @@ class OnboardingOfferListView(generics.ListCreateAPIView):
             all_set = OfferModel.objects.filter(available=True,offer_type='REGULAR').exclude(id__in=target_ids)
             targeted_set = OfferModel.objects.filter(id__in=target_ids).order_by('?')
             queryset=list(targeted_set)+list(all_set)
+            queryset=queryset[:10]
 
         return queryset
 
