@@ -81,10 +81,15 @@ class OfferListView(generics.ListCreateAPIView):
             return [IsAuthenticated(), ]
 
     def get_queryset(self):
+        if self.request.user.is_anonymous:
+            queryset = OfferModel.objects.filter(expire__gte=datetime.datetime.now())
+
+            return queryset
+
         if (self.request.user.is_authenticated == True) and (self.request.user.role in ['MANAGER', 'OWNER']):
             queryset = OfferModel.objects.all()
 
-        if (self.request.user.is_authenticated == True) and (self.request.user.role == 'CUSTOMER'):
+        if self.request.user.is_authenticated == True and self.request.user.role == 'CUSTOMER':
             queryset = OfferModel.objects.filter(expire__gte=datetime.datetime.now())
             good_ids=[]
             for each in queryset:
@@ -101,7 +106,8 @@ class OfferListView(generics.ListCreateAPIView):
 
 
                 if not self.request.user.profile.interests.exists():
-                    pass
+                    empty_list=[]
+                    return queryset,empty_list
                 else:
                     target_categs = self.request.user.profile.interests.all()
                     target_ids = []
@@ -118,6 +124,8 @@ class OfferListView(generics.ListCreateAPIView):
             else:
                 queryset = OfferModel.objects.filter(expire__gte=datetime.datetime.now())
 
+        else:
+            queryset = OfferModel.objects.filter(expire__gte=datetime.datetime.now())
 
         return queryset
 
@@ -126,8 +134,12 @@ class OfferListView(generics.ListCreateAPIView):
 
         targeting = self.request.query_params.get('targeting')
 
-        if targeting=='true' and request.user.role=='CUSTOMER':
-            all_set, targeted_set = self.get_queryset()
+        if self.request.user.is_anonymous:
+            queryset = self.get_queryset()
+            queryset = self.filter_queryset(queryset)
+
+        elif targeting=='true' and self.request.user.role=='CUSTOMER':
+            all_set,targeted_set = self.get_queryset()
             queryset = list(targeted_set)+list(all_set)
             if queryset==[]:
                 error = {"detail": ERROR_API['204'][1]}
