@@ -126,7 +126,7 @@ class OfferListView(generics.ListCreateAPIView):
 
         targeting = self.request.query_params.get('targeting')
 
-        if targeting=='true':
+        if targeting=='true' and request.user.role=='CUSTOMER':
             all_set, targeted_set = self.get_queryset()
             queryset = list(targeted_set)+list(all_set)
             if queryset==[]:
