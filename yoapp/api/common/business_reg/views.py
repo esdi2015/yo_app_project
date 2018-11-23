@@ -26,7 +26,9 @@ class BusinessRequest(generics.GenericAPIView):
 
             int_of_success = send_mail(from_email=DEFAULT_FROM_EMAIL, recipient_list=[email,],subject='YO-HALAP: New business request',message=message)
             if int_of_success == 1:
-                return Response('ok',status=status.HTTP_200_OK)
+                error = {"detail": ERROR_API['500'][1]}
+                error_codes = [ERROR_API['500'][0]]
+                return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_200_OK)
             else:
                 error = {"detail": ERROR_API['123'][1]}
                 error_codes = [ERROR_API['123'][0]]

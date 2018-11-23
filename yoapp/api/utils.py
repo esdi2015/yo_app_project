@@ -43,6 +43,7 @@ ERROR_API = {
 
     "251": (251, "Shops not found"),
 
+    "500": (500, "Ok"),
 
 }
 
