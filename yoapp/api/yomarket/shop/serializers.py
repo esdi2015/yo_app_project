@@ -31,12 +31,11 @@ class ShopSerializer(serializers.ModelSerializer):
     schedule_id = serializers.IntegerField(allow_null=True, required=False)
 
     def get_is_subscribed (self, obj):
-        try:
-            wish = Subscription.objects.get(user_id=self.context['request'].user.id, shop=obj)
-            return True
-        except Subscription.DoesNotExist:
-            return False
-
+            wish = Subscription.objects.filter(user_id=self.context['request'].user.id, shop=obj)
+            if wish.exists():
+                return True
+            else:
+                return False
     class Meta:
         model = ShopModel
         fields = ('id', 'title', 'address', 'description', 'user', 'user_id', 'manager', 'manager_id',
