@@ -22,6 +22,7 @@ ERROR_API = {
     "121": (121, "Twitter credentials error"),
     "122": (122, "Users not found"),
     "123": (123, "Message delivery error"),
+    "124": (124, "Invalid page."),
 
     "151": (151, "This password is too short. It must contain at least 8 characters."),
     "152": (152, "This password is too common."),

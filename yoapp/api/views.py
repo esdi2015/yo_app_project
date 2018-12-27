@@ -33,6 +33,8 @@ def custom_exception_handler(exc, context):
                 api_error_codes.append(ERROR_API['118'][0])
             elif detail == ERROR_API['119'][1]:
                 api_error_codes.append(ERROR_API['119'][0])
+            elif detail == ERROR_API['124'][1]:
+                api_error_codes.append(ERROR_API['124'][0])
             #else:
             metadata = {'api_error_codes': api_error_codes}
             response.data['metadata'] = metadata
