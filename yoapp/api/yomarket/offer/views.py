@@ -99,7 +99,6 @@ class OfferListView(generics.ListCreateAPIView):
                     good_ids.append(each.id)
             queryset = OfferModel.objects.filter(id__in=good_ids)
 
-
             targeting = self.request.query_params.get('targeting')
 
             if targeting == 'true':
@@ -122,7 +121,7 @@ class OfferListView(generics.ListCreateAPIView):
 
 
             else:
-                queryset = OfferModel.objects.filter(expire__gte=datetime.datetime.now())
+                pass
 
         else:
             queryset = OfferModel.objects.filter(expire__gte=datetime.datetime.now())
