@@ -23,6 +23,7 @@ ERROR_API = {
     "122": (122, "Users not found"),
     "123": (123, "Message delivery error"),
     "124": (124, "Invalid page."),
+    "125": (125, "Card already registered"),
 
     "151": (151, "This password is too short. It must contain at least 8 characters."),
     "152": (152, "This password is too common."),
@@ -31,6 +32,8 @@ ERROR_API = {
     "161": (161, "The submitted data was not a file. Check the encoding type on the form."),
     "162": (162, "Date has wrong format. Use one of these formats instead: YYYY[-MM[-DD]]."),
     "163": (163, "Wrong data entered"),
+    "164": (164, "Wrong cardholder. Permission denied."),
+    "165": (165, "No card found."),
 
     "200": (200, "No coupons"),
     "201": (201, "No history data"),

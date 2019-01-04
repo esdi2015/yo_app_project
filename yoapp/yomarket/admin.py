@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.admin import SimpleListFilter
-from .models import Shop, Offer, QRcoupon, Transaction, WishList, Schedule, SecondaryInfo
+from .models import Shop, Offer, QRcoupon, Transaction, WishList, Schedule, SecondaryInfo, CardHolder
 from common.models import User
 from yoapp.utils import ExportCsvMixin
 
@@ -19,7 +19,7 @@ class OfferAdmin(admin.ModelAdmin, ExportCsvMixin):
     actions = ['export_as_csv']
 
     def has_add_permission(self, request, obj=None):
-        return False
+        return True
 
 
 class ScheduleInline(admin.StackedInline):
@@ -52,7 +52,7 @@ class ShopAdmin(admin.ModelAdmin, ExportCsvMixin):
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
     def has_add_permission(self, request, obj=None):
-        return False
+        return True
 
     def categories_display(self, obj):
         return ", ".join([
@@ -63,7 +63,7 @@ class ShopAdmin(admin.ModelAdmin, ExportCsvMixin):
 
 
 class QRcouponAdmin(admin.ModelAdmin):
-    list_display = ('id','uuid_id','type','user','offer','expiry_date','is_redeemed','is_expired')
+    list_display = ('id','uuid_id','type','user','offer','expiry_date','is_redeemed','is_expired','date_created')
 
 
 class TransactionAdmin(admin.ModelAdmin):
@@ -81,6 +81,8 @@ class ScheduleAdmin(admin.ModelAdmin):
 class SecondaryInfoAdmin(admin.ModelAdmin):
     list_display = ('offer', 'title', 'text')
 
+class CardHolderAdmin(admin.ModelAdmin):
+    list_display = ('user',  'tranzila_tk',  'exp_date')
 
 
 
@@ -91,3 +93,4 @@ admin.site.register(Transaction, TransactionAdmin)
 admin.site.register(WishList, WishListAdmin)
 admin.site.register(Schedule, ScheduleAdmin)
 admin.site.register(SecondaryInfo,SecondaryInfoAdmin)
+admin.site.register(CardHolder,CardHolderAdmin)

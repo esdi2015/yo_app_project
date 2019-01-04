@@ -10,10 +10,11 @@ from django_filters.rest_framework import DjangoFilterBackend, FilterSet, CharFi
 from ...utils import ERROR_API
 
 from ...views import custom_api_response
-from .serializers import TransactionSerializer,MyTransactionSerializer
+from .serializers import TransactionSerializer,MyTransactionSerializer,CardHolderSerializer
 from rest_framework import generics
-from yomarket.models import Transaction
+from yomarket.models import Transaction ,CardHolder, Offer
 from api.views import CustomPagination, prepare_paginated_response
+from rest_framework.decorators import api_view, permission_classes
 
 
 TransactionModel = apps.get_model('yomarket', 'Transaction')
@@ -147,3 +148,119 @@ class TransactionViewSet(viewsets.ModelViewSet):
             error_codes = [ERROR_API['203'][0]]
             return Response(custom_api_response(errors=error, error_codes=error_codes),
                             status=status.HTTP_400_BAD_REQUEST)
+
+
+import requests
+
+@api_view(['POST'])
+@permission_classes((IsAuthenticated,))
+def make_payment(request):
+    cardholder_id = request.data.get('cardholder_id')
+    offer_id = request.data.get('offer_id')
+
+
+
+    if cardholder_id == None or offer_id == None:
+        error = {"detail": ERROR_API['163'][1]}
+        error_codes = [ERROR_API['163'][0]]
+        return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_200_OK)
+
+
+
+
+    try:
+        offer = Offer.objects.get(id=offer_id)
+    except Offer.DoesNotExist:
+        error = {"detail": ERROR_API['204'][1]}
+        error_codes = [ERROR_API['204'][0]]
+        return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_200_OK)
+
+
+
+    try:
+        card = CardHolder.objects.get(id=cardholder_id)
+    except CardHolder.DoesNotExist:
+        error = {"detail": ERROR_API['165'][1]}
+        error_codes = [ERROR_API['165'][0]]
+        return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_200_OK)
+
+
+
+
+    if card.user != request.user:
+        error = {"detail": ERROR_API['164'][1]}
+        error_codes = [ERROR_API['164'][0]]
+        return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_200_OK)
+
+
+
+
+    # url = 'https://secure5.tranzila.com/cgi-bin/tranzila71u.cgi?'
+    # params = {
+    #     "supplier": 'yoo',
+    #     "sum": offer.price,
+    #     "expdate": card.exp_date.strftime('%m%y'),
+    #     "currency": 1,
+    #     "TranzilaPW": "Tran3P2yoo",
+    #     "TranzilaTK": card.tranzila_tk,
+    #     "cred_type":1,
+    # }
+    #
+    # r = requests.get(url, params=params)
+    #
+    # print(r.headers)
+    # print(r.content)
+    #
+
+
+    return Response('ok')
+
+
+
+class CardHolderViewSet(viewsets.ModelViewSet):
+    serializer_class = CardHolderSerializer
+
+
+    def get_queryset(self):
+        if self.request.user.is_authenticated:
+            queryset =CardHolder.objects.filter(user=self.request.user)
+            return queryset
+        else:
+            queryset = None
+            return queryset
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        if not queryset.exists():
+            error = {"detail": ERROR_API['251'][1]}
+            error_codes = [ERROR_API['251'][0]]
+            return Response(custom_api_response(errors=error, error_codes=error_codes),status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data,context={'user':self.request.user})
+        serializer.is_valid(raise_exception=True)
+        holder = CardHolder.objects.filter(**serializer.data,user=self.request.user)
+        if holder.exists():
+            error = {"detail": ERROR_API['125'][1]}
+            error_codes = [ERROR_API['125'][0]]
+            return Response(custom_api_response(errors=error, error_codes=error_codes),status=status.HTTP_400_BAD_REQUEST)
+        else:
+            holder=serializer.save()
+            serializer =self.get_serializer(holder)
+            return Response(custom_api_response(serializer=serializer), status=status.HTTP_201_CREATED, )
+
+    def destroy(self, request, *args, **kwargs):
+         instance = self.get_object()
+         if self.request.user == instance.user:
+             instance.delete()
+             error = {"detail": ERROR_API['500'][1]}
+             error_codes = [ERROR_API['500'][0]]
+             return Response(custom_api_response(errors=error, error_codes=error_codes),status=status.HTTP_200_OK)
+         else:
+             error = {"detail": ERROR_API['164'][1]}
+             error_codes = [ERROR_API['164'][0]]
+             return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_200_OK)
+

@@ -218,3 +218,9 @@ class SecondaryInfo(models.Model):
     offer = models.ForeignKey(Offer, on_delete=models.CASCADE)
     title = models.CharField(max_length=100)
     text = models.CharField(max_length=500)
+
+
+class CardHolder(models.Model):
+    user = models.ForeignKey('common.User', related_name='card_user', on_delete=models.CASCADE)
+    tranzila_tk = models.CharField(max_length=30,blank=False,null=False)
+    exp_date = models.DateField(blank=False,null=False)
