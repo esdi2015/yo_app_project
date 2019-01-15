@@ -112,7 +112,7 @@ class OfferListView(generics.ListCreateAPIView):
                     target_ids = []
 
                     for each in target_categs:
-                        set = OfferModel.objects.filter(category=each, available=True,id__in=good_ids,offer_type='REGULAR')[:5]
+                        set = OfferModel.objects.filter(category=each, available=True,offer_type='REGULAR',expire__gte=datetime.datetime.now())[:5]
                         target_ids = target_ids + [x.id for x in set]
 
                     all_set = queryset.filter(offer_type='REGULAR').exclude(id__in=target_ids)
