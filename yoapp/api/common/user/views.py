@@ -247,12 +247,100 @@ class UserResetPasswordRequestToken(ResetPasswordRequestToken):
                 # send a signal that the password token was created
                 # let whoever receives this signal handle sending the email for the password reset
                 reset_password_token_created.send(sender=self.__class__, reset_password_token=token)
-        # done
         return Response({'status': 'OK'})
 
 
 user_reset_password_confirm = UserResetPasswordConfirm.as_view()
 user_reset_password_request_token = UserResetPasswordRequestToken.as_view()
+
+
+from django.contrib.sites.models import Site
+from django.core.mail.message import EmailMultiAlternatives
+
+from django.template.loader import render_to_string
+
+def make_verification_mail(user,request):
+    password_reset_token_validation_time = get_password_reset_token_expiry_time()
+    now_minus_expiry_time = timezone.now() - timedelta(hours=password_reset_token_validation_time)
+    ResetPasswordToken.objects.filter(created_at__lte=now_minus_expiry_time).delete()
+    user = User.objects.get(pk=user.pk)
+    if user.password_reset_tokens.all().count() > 0:
+        token = user.password_reset_tokens.all()[0]
+    else:
+        token = ResetPasswordToken.objects.create(
+            user=user,
+            user_agent=request.META['HTTP_USER_AGENT'],
+            ip_address=request.META['REMOTE_ADDR'])
+    current_site = Site.objects.get_current()
+
+    context = {
+        'current_user': token.user,
+        'username': token.user.username,
+        'email': token.user.email,
+        'reset_password_url': "{protocol}://localhost:8000/api/v1/verify/{token}/".format(token=token.key,
+                                                                                   domain=current_site.domain,
+                                                                                   protocol="http"),
+        'site_name': current_site.name,
+        'token': token.key
+    }
+
+    # render email text
+    email_html_message = render_to_string('email/user_email_verification.html', context)
+    email_plaintext_message = render_to_string('email/user_email_verification.txt', context)
+
+    msg = EmailMultiAlternatives(
+        # title:
+        _("Password Reset for {title}".format(title=current_site.name)),
+        # message:
+        email_plaintext_message,
+        # from:
+        "noreply@somehost.local",
+        # to:
+        [token.user.email]
+    )
+    msg.attach_alternative(email_html_message, "text/html")
+    msg.send()
+
+    return True
+
+
+
+
+
+from django.shortcuts import redirect
+@api_view(['GET'])
+@permission_classes(())
+def verify_email_view(request,key):
+    password_reset_token_validation_time = get_password_reset_token_expiry_time()
+    reset_password_token = ResetPasswordToken.objects.filter(key=key).first()
+
+    if reset_password_token is None:
+        error = {"detail": ERROR_API['113'][1]}
+        error_codes = [ERROR_API['113'][0]]
+        return Response(custom_api_response(errors=error, error_codes=error_codes),
+                        status=status.HTTP_400_BAD_REQUEST)
+
+    expiry_date = reset_password_token.created_at + timedelta(hours=password_reset_token_validation_time)
+
+    if timezone.now() > expiry_date:
+        # delete expired token
+        reset_password_token.delete()
+        # return Response({'status': 'expired'}, status=status.HTTP_404_NOT_FOUND)
+        error = {"detail": ERROR_API['114'][1]}
+        error_codes = [ERROR_API['114'][0]]
+        return Response(custom_api_response(errors=error, error_codes=error_codes),
+                        status=status.HTTP_400_BAD_REQUEST)
+
+    if reset_password_token.user.is_active==False:
+        user = User.objects.get(pk=reset_password_token.user.pk)
+        user.is_active=True
+        user.save()
+        ResetPasswordToken.objects.filter(user=reset_password_token.user).delete()
+        return redirect('/verified/')
+
+    return redirect('/verified/')
+
+
 
 
 @api_view(['POST'])
@@ -285,6 +373,7 @@ def register_view(request):
             del serializer.validated_data['subscribe']
 
         instance = serializer.save()
+        make_verification_mail(user=instance,request=request)
         instance_id = instance.id
         user_profile = Profile.objects.filter(user_id=instance_id).first()
         profile_serialiser = ProfileSerializer(instance=user_profile, data=new_profile_data)

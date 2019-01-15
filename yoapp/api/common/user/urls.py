@@ -1,9 +1,9 @@
 from django.conf.urls import re_path, include, url
 from rest_framework import routers
 from .views import UserViewSet, Logout, UserMe, UserIsExists, google_oauth, facebook_oauth, \
-    user_reset_password_request_token, user_reset_password_confirm, free_managers_view,twitter_login
+    user_reset_password_request_token, user_reset_password_confirm, free_managers_view,twitter_login, verify_email_view
 from . import views as api_view
-
+from django.urls import path
 
 router = routers.DefaultRouter()
 router.include_format_suffixes = False
@@ -23,6 +23,7 @@ urlpatterns += [
     #url(r'^password-reset/', include('django_rest_passwordreset.urls', namespace='password_reset')),
     url(r'^password-reset/$', user_reset_password_request_token, name='reset_password_request'),
     url(r'^password-reset/confirm/$', user_reset_password_confirm, name='reset_password_confirm'),
+    url(r'^verify-email/(?P<key>\w+)/$', verify_email_view, name='verify_email_view'),
     #url(r'^password-reset/confirm/', include('django_rest_passwordreset.urls', namespace='password_reset_confirm')),
     #url(r'^forgot-password/$', api_view.login_view, name='user_forgot_password'),
     url(r'^free-managers/', free_managers_view, name='free_managers'),

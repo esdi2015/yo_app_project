@@ -232,8 +232,8 @@ class CardHolderViewSet(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
         if not queryset.exists():
-            error = {"detail": ERROR_API['251'][1]}
-            error_codes = [ERROR_API['251'][0]]
+            error = {"detail": ERROR_API['165'][1]}
+            error_codes = [ERROR_API['165'][0]]
             return Response(custom_api_response(errors=error, error_codes=error_codes),status=status.HTTP_400_BAD_REQUEST)
 
         serializer = self.get_serializer(queryset, many=True)
