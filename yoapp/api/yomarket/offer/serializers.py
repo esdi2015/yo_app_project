@@ -8,6 +8,9 @@ from django.utils import timezone
 
 OfferModel = apps.get_model('yomarket', 'Offer')
 
+class CartAddSerializer(serializers.Serializer):
+    offers_ids = serializers.ListField()
+
 
 class SecondaryInfoSerializer(serializers.ModelSerializer):
 

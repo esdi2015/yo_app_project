@@ -8,16 +8,16 @@ from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend, FilterSet, BooleanFilter, CharFilter
 from django.contrib.auth import get_user_model
 import datetime
-
+from django.db.models import Q
 from api.views import CustomPagination, prepare_paginated_response
 from ...views import custom_api_response
-from .serializers import OfferSerializer
+from .serializers import OfferSerializer, CartAddSerializer
 
 from statistic.utlis import count_shown
 from history.utils import history_view_event, history_offer_search_event
 from ...utils import ERROR_API
-
-from yomarket.models import QRcoupon
+from django.shortcuts import  get_object_or_404
+from yomarket.models import QRcoupon, ShoppingCart
 
 OfferModel = apps.get_model('yomarket', 'Offer')
 ShopModel = apps.get_model('yomarket', 'Shop')
@@ -91,13 +91,13 @@ class OfferListView(generics.ListCreateAPIView):
 
         if self.request.user.is_authenticated == True and self.request.user.role == 'CUSTOMER':
             queryset = OfferModel.objects.filter(expire__gte=datetime.datetime.now())
-            good_ids=[]
-            for each in queryset:
-                try:
-                    coupon = QRcoupon.objects.get(is_redeemed=False, is_expired=False,user_id=self.request.user, offer=each)
-                except QRcoupon.DoesNotExist:
-                    good_ids.append(each.id)
-            queryset = OfferModel.objects.filter(id__in=good_ids)
+            # good_ids=[]
+            # for each in queryset:
+            #     try:
+            #         coupon = QRcoupon.objects.get(is_redeemed=False, is_expired=False,user_id=self.request.user, offer=each)
+            #     except QRcoupon.DoesNotExist:
+            #         good_ids.append(each.id)
+            # queryset = OfferModel.objects.filter(id__in=good_ids)
 
             targeting = self.request.query_params.get('targeting')
 
@@ -249,6 +249,58 @@ class OfferDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 
 
+class CartView(generics.ListAPIView,generics.CreateAPIView,generics.DestroyAPIView):
+    serializer_class = OfferSerializer
+    permission_classes = (IsAuthenticated,)
 
+    def get_queryset(self):
+        cart,created = ShoppingCart.objects.get_or_create(user=self.request.user)
+        return cart
 
+    def list(self, request, *args, **kwargs):
+        cart = self.get_queryset()
+        offers = cart.offers.all().filter(expire__gte=datetime.datetime.now())
+        serializer = self.get_serializer(offers,many=True)
+        return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
 
+    def create(self, request, *args, **kwargs):
+        cart = self.get_queryset()
+        serializer = CartAddSerializer(data=self.request.data)
+        if serializer.is_valid():
+            offers_ids = serializer.validated_data['offers_ids']
+        else:
+            error = {"detail": ERROR_API['163'][1]}
+            error_codes = [ERROR_API['163'][0]]
+            return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_400_BAD_REQUEST)
+
+        offers = OfferModel.objects.filter(Q(expire__gte=datetime.datetime.now())&Q(pk__in=offers_ids))
+
+        for offer in offers:
+            cart.offers.add(offer)
+            cart.save()
+
+        error = {"detail": ERROR_API['500'][1]}
+        error_codes = [ERROR_API['500'][0]]
+        return Response(custom_api_response(errors=error, error_codes=error_codes),status=status.HTTP_200_OK)
+
+    def delete(self, request, *args, **kwargs):
+        cart = self.get_queryset()
+
+        serializer = CartAddSerializer(data=self.request.data)
+        if serializer.is_valid():
+            offers_ids = serializer.validated_data['offers_ids']
+        else:
+            error = {"detail": ERROR_API['163'][1]}
+            error_codes = [ERROR_API['163'][0]]
+            return Response(custom_api_response(errors=error, error_codes=error_codes),
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        offers = OfferModel.objects.filter(pk__in=offers_ids)
+
+        for offer in offers:
+            cart.offers.remove(offer)
+            cart.save()
+
+        error = {"detail": ERROR_API['500'][1]}
+        error_codes = [ERROR_API['500'][0]]
+        return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_200_OK)

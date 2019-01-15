@@ -224,3 +224,11 @@ class CardHolder(models.Model):
     user = models.ForeignKey('common.User', related_name='card_user', on_delete=models.CASCADE)
     tranzila_tk = models.CharField(max_length=30,blank=False,null=False)
     exp_date = models.DateField(blank=False,null=False)
+
+
+
+class ShoppingCart(models.Model):
+    user = models.ForeignKey('common.User', related_name='cart_user', on_delete=models.CASCADE)
+    offers = models.ManyToManyField(Offer,related_name='offers_cart',blank=True)
+
+
