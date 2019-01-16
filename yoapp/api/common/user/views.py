@@ -481,7 +481,7 @@ def google_oauth(request):
              return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_400_BAD_REQUEST)
         except UserModel.DoesNotExist:
             user = UserModel(email=email, last_name=last_name, first_name=first_name, google_id=google_id)
-            user.is_active()
+            user.is_active=True
             user.save()
             user.profile.photo.save(name, content, save = True)
             user.save()
