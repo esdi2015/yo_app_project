@@ -1,10 +1,9 @@
 You're receiving this e-mail because you requested a email verification for your user account at {{ site_name }}.
 
-Token for change the password:
+Press link:
 
 {{ token }}
 
-Your username, in case you've forgotten: {{ username }}
 
 Thanks for using our site!
 

@@ -277,7 +277,7 @@ def make_verification_mail(user,request):
         'current_user': token.user,
         'username': token.user.username,
         'email': token.user.email,
-        'reset_password_url': "{protocol}://localhost:8000/api/v1/verify/{token}/".format(token=token.key,
+        'reset_password_url': "{protocol}://192.168.2.175:8000/api/v1/verify-email/{token}/".format(token=token.key,
                                                                                    domain=current_site.domain,
                                                                                    protocol="http"),
         'site_name': current_site.name,
@@ -290,7 +290,7 @@ def make_verification_mail(user,request):
 
     msg = EmailMultiAlternatives(
         # title:
-        _("Password Reset for {title}".format(title=current_site.name)),
+        _("Email verification for {title}".format(title=current_site.name)),
         # message:
         email_plaintext_message,
         # from:
