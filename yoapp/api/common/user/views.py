@@ -408,12 +408,13 @@ def login_view(request):
     serializer = serializer_class(data=request.data)
     if serializer.is_valid():
         user = serializer.validated_data['user']
+        first_login = False
+        if user.last_login == None:
+            first_login = True
         token = create_token(TokenModel, user, serializer)
         django_login(request, user)
         profile = get_profile_data(user.id, request)
 
-        if user.last_login==None:
-            first_login=True
         content = {'token': token.key, 'email': user.email, 'id': user.id, 'first_login': first_login,
                    'first_name': user.first_name, 'last_name': user.last_name, 'profile': profile}
         return Response(custom_api_response(serializer, content), status=status.HTTP_200_OK)

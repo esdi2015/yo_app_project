@@ -138,7 +138,7 @@ class LoginSerializer(serializers.Serializer):
 
 
             else:
-                if user.role == 'ADMIN':
+                if user.role == 'ADMIN' and app==APP[1]:
                     # msg = _('Unable to log in with ADMIN role.')
                     msg = _(ERROR_API['107'][1])
                     api_error_code = ERROR_API['107'][0]
