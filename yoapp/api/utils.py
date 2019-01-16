@@ -1,5 +1,5 @@
 ERROR_API = {
-    "101": (101, "Unable to log in with provided credentials or user not active."),
+    "101": (101, "Unable to log in with provided credentials."),
     "102": (102, "User with this username already exists."),
     "103": (103, "User with this email already exists."),
     "104": (104, "User does not exists"),
@@ -24,6 +24,7 @@ ERROR_API = {
     "123": (123, "Message delivery error"),
     "124": (124, "Invalid page."),
     "125": (125, "Card already registered"),
+    "126": (126, "User not active."),
 
     "151": (151, "This password is too short. It must contain at least 8 characters."),
     "152": (152, "This password is too common."),

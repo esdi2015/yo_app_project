@@ -117,15 +117,26 @@ class LoginSerializer(serializers.Serializer):
         if email and password:
             user = authenticate(request=self.context.get('request'),
                                 email=email, password=password)
-
             # The authenticate call simply returns None for is_active=False
             # users. (Assuming the default ModelBackend authentication
             # backend.)
-            if not user:
-                msg = _(ERROR_API['101'][1])
-                api_error_code = ERROR_API['101'][0]
-                #raise serializers.ValidationError(msg, code='authorization')
-                raise serializers.ValidationError(msg, code=api_error_code)
+            if user==None:
+                try:
+                    user=UserModel.objects.get(email=email)
+                    if user.is_active==False:
+                        msg = _(ERROR_API['126'][1])
+                        api_error_code = ERROR_API['126'][0]
+                        raise serializers.ValidationError(msg, code=api_error_code)
+                    else:
+                        msg = _(ERROR_API['101'][1])
+                        api_error_code = ERROR_API['101'][0]
+                        raise serializers.ValidationError(msg, code=api_error_code)
+                except UserModel.DoesNotExist:
+                    msg = _(ERROR_API['101'][1])
+                    api_error_code = ERROR_API['101'][0]
+                    raise serializers.ValidationError(msg, code=api_error_code)
+
+
             else:
                 if user.role == 'ADMIN':
                     # msg = _('Unable to log in with ADMIN role.')
