@@ -29,13 +29,18 @@ class OfferListFilter(FilterSet):
     category_ids = CharFilter(method='filter_category_ids')
     shop_ids = CharFilter(method='filter_shop_ids')
     offer_type = CharFilter(method='filter_offer_type')
-
+    offer_status = CharFilter(method='filter_offer_status')
 
 
     class Meta:
         model = OfferModel
         fields = ('category_id', 'shop_id', 'discount_type', 'offer_type', 'is_expired',
                   'category_ids', 'status', 'shop_ids')
+
+    def filter_offer_status(self,queryset,name,value):
+        if value:
+            queryset = queryset.filter(status=value)
+        return queryset
 
     def filter_category_ids(self, queryset, name, value):
         if value:
@@ -120,10 +125,10 @@ class OfferListView(generics.ListCreateAPIView):
                     return all_set,targeted_set
 
 
-            else:
-                pass
-
         else:
+            if self.request.user.is_authenticated == True and self.request.user.role == 'ADMIN':
+                queryset = OfferModel.objects.all()
+
             queryset = OfferModel.objects.filter(expire__gte=datetime.datetime.now())
 
         return queryset

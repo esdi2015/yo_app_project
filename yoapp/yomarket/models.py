@@ -28,6 +28,7 @@ OFFER_TYPES = (
 
 OFFER_STATUSES = (
     ('DRAFT', 'Draft'),
+    ('REJECTED','Rejected'),щ
     ('PUBLISHED', 'Published')
 )
 
