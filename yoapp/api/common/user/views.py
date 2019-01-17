@@ -548,13 +548,17 @@ def facebook_oauth(request):
              return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_400_BAD_REQUEST)
         except UserModel.DoesNotExist:
             user = UserModel(email=email, last_name=last_name, first_name=first_name, fb_id=fb_id)
-            user.is_active=True
             user.save()
             user.profile.photo.save(name,content,save=True)
-            first_login = True
+            make_verification_mail(user=user, request=request)
             user = UserModel.objects.get(email=email)
+            error = {"detail": ERROR_API['305'][1]}
+            error_codes = [ERROR_API['305'][0]]
+            return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_200_OK)
 
     if user.fb_id == fb_id:
+        if user.last_login == None:
+            first_login = True
         token = create_login_token(user)
         profile = get_profile_data(user.id, request)
         content = {'token': token.key, 'email': user.email, 'id': user.id, 'first_login': first_login,
@@ -640,12 +644,14 @@ def twitter_login(request):
             return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_400_BAD_REQUEST)
         except UserModel.DoesNotExist:
             user = UserModel(email=email, twitter_id=twitter_id)
-            user.is_active=True
             user.save()
-            first_login = True
-
+            error = {"detail": ERROR_API['305'][1]}
+            error_codes = [ERROR_API['305'][0]]
+            return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_200_OK)
 
     if user.twitter_id == twitter_id:
+        if user.last_login == None:
+            first_login = True
         token = create_login_token(user)
         profile = get_profile_data(user.id, request)
         content = {'token': token.key, 'email': user.email, 'id': user.id, 'first_login': first_login,'profile': profile}

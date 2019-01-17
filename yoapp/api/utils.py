@@ -48,6 +48,8 @@ ERROR_API = {
 
     "251": (251, "Shops not found"),
 
+    "305": (305, "Registered.Please verify email"),
+
     "500": (500, "Ok"),
 
 }
