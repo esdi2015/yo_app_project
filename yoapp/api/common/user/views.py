@@ -557,6 +557,10 @@ def facebook_oauth(request):
             return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_200_OK)
 
     if user.fb_id == fb_id:
+        if user.is_active != True:
+            error = {"detail": ERROR_API['126'][1]}
+            error_codes = [ERROR_API['126'][0]]
+            return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_400_BAD_REQUEST)
         if user.last_login == None:
             first_login = True
         token = create_login_token(user)
@@ -650,6 +654,12 @@ def twitter_login(request):
             return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_200_OK)
 
     if user.twitter_id == twitter_id:
+        if user.is_active!=True:
+            error = {"detail": ERROR_API['126'][1]}
+            error_codes = [ERROR_API['126'][0]]
+            return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_400_BAD_REQUEST)
+
+
         if user.last_login == None:
             first_login = True
         token = create_login_token(user)
