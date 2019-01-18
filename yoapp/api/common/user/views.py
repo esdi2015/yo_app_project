@@ -649,6 +649,7 @@ def twitter_login(request):
         except UserModel.DoesNotExist:
             user = UserModel(email=email, twitter_id=twitter_id)
             user.save()
+            make_verification_mail(user=user, request=request)
             error = {"detail": ERROR_API['305'][1]}
             error_codes = [ERROR_API['305'][0]]
             return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_200_OK)
