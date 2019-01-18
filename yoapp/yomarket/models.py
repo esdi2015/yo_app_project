@@ -228,8 +228,10 @@ class CardHolder(models.Model):
 
 
 
-class ShoppingCart(models.Model):
-    user = models.ForeignKey('common.User', related_name='cart_user', on_delete=models.CASCADE)
-    offers = models.ManyToManyField(Offer,related_name='offers_cart',blank=True)
+class CartProduct(models.Model):
+    user=models.ForeignKey('common.User', related_name='cart_for_user', on_delete=models.CASCADE,null=True)
+    offer = models.ForeignKey(Offer,related_name='product_offer',on_delete=models.CASCADE)
+    quantity = models.IntegerField(default=1)
+    added_to_cart = models.DateTimeField(auto_now=True)
 
 

@@ -45,6 +45,7 @@ ERROR_API = {
     "206": (206, "No regular offers"),
     "207": (207, "Offer not found"),
     "208": (208, "Invalid code or no coupon"),
+    "210": (210, "Cart is empty"),
 
     "251": (251, "Shops not found"),
 

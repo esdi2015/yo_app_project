@@ -11,13 +11,15 @@ import datetime
 from django.db.models import Q
 from api.views import CustomPagination, prepare_paginated_response
 from ...views import custom_api_response
-from .serializers import OfferSerializer, CartAddSerializer
+from .serializers import OfferSerializer,\
+                        CartProductListSerializer,\
+                        CartProductCreateSerializer
 
 from statistic.utlis import count_shown
 from history.utils import history_view_event, history_offer_search_event
 from ...utils import ERROR_API
 from django.shortcuts import  get_object_or_404
-from yomarket.models import QRcoupon, ShoppingCart
+from yomarket.models import QRcoupon,CartProduct
 
 OfferModel = apps.get_model('yomarket', 'Offer')
 ShopModel = apps.get_model('yomarket', 'Shop')
@@ -254,58 +256,65 @@ class OfferDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 
 
-class CartView(generics.ListAPIView,generics.CreateAPIView,generics.DestroyAPIView):
-    serializer_class = OfferSerializer
+class ShoppingCartView(generics.ListAPIView,generics.CreateAPIView,generics.UpdateAPIView,generics.DestroyAPIView):
     permission_classes = (IsAuthenticated,)
 
+    def get_serializer_class(self):
+        if self.request.method=='POST' or self.request.method == 'DELETE':
+            return CartProductCreateSerializer
+        else:
+            return CartProductListSerializer
+
     def get_queryset(self):
-        cart,created = ShoppingCart.objects.get_or_create(user=self.request.user)
-        return cart
+        cart_products = CartProduct.objects.filter(user=self.request.user)
+        return cart_products
+
 
     def list(self, request, *args, **kwargs):
-        cart = self.get_queryset()
-        offers = cart.offers.all().filter(expire__gte=datetime.datetime.now())
-        serializer = self.get_serializer(offers,many=True)
-        return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
+        cart_products = self.get_queryset()
+        if cart_products.exists():
+            serializer = self.get_serializer(cart_products,many=True)
+            return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
+        else:
+            error = {"detail": ERROR_API['210'][1]}
+            error_codes = [ERROR_API['210'][0]]
+            return Response(custom_api_response(errors=error, error_codes=error_codes),
+                            status=status.HTTP_400_BAD_REQUEST)
 
     def create(self, request, *args, **kwargs):
-        cart = self.get_queryset()
-        serializer = CartAddSerializer(data=self.request.data)
+        serializer=self.get_serializer(data=self.request.data)
         if serializer.is_valid():
-            offers_ids = serializer.validated_data['offers_ids']
+            try:
+                instance=CartProduct.objects.get(user=request.user,offer=serializer.validated_data['offer'])
+                serializer.update(instance,serializer.validated_data)
+            except CartProduct.DoesNotExist:
+                cart = serializer.save()
         else:
             error = {"detail": ERROR_API['163'][1]}
             error_codes = [ERROR_API['163'][0]]
-            return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_400_BAD_REQUEST)
-
-        offers = OfferModel.objects.filter(Q(expire__gte=datetime.datetime.now())&Q(pk__in=offers_ids))
-
-        for offer in offers:
-            cart.offers.add(offer)
-            cart.save()
-
-        error = {"detail": ERROR_API['500'][1]}
-        error_codes = [ERROR_API['500'][0]]
-        return Response(custom_api_response(errors=error, error_codes=error_codes),status=status.HTTP_200_OK)
+            return Response(custom_api_response(errors=error, error_codes=error_codes),
+                            status=status.HTTP_400_BAD_REQUEST)
+        return Response(custom_api_response(serializer=serializer), status=status.HTTP_200_OK)
 
     def delete(self, request, *args, **kwargs):
-        cart = self.get_queryset()
-
-        serializer = CartAddSerializer(data=self.request.data)
+        serializer = self.get_serializer(data=self.request.data)
         if serializer.is_valid():
-            offers_ids = serializer.validated_data['offers_ids']
+            try:
+                instance = CartProduct.objects.get(user=request.user, offer=serializer.validated_data['offer'])
+                instance.delete()
+                error = {"detail": ERROR_API['500'][1]}
+                error_codes = [ERROR_API['500'][0]]
+                return Response(custom_api_response(errors=error, error_codes=error_codes),
+                                status=status.HTTP_200_OK)
+            except CartProduct.DoesNotExist:
+                error = {"detail": ERROR_API['163'][1]}
+                error_codes = [ERROR_API['163'][0]]
+                return Response(custom_api_response(errors=error, error_codes=error_codes),
+                                status=status.HTTP_400_BAD_REQUEST)
+
         else:
             error = {"detail": ERROR_API['163'][1]}
             error_codes = [ERROR_API['163'][0]]
             return Response(custom_api_response(errors=error, error_codes=error_codes),
                             status=status.HTTP_400_BAD_REQUEST)
 
-        offers = OfferModel.objects.filter(pk__in=offers_ids)
-
-        for offer in offers:
-            cart.offers.remove(offer)
-            cart.save()
-
-        error = {"detail": ERROR_API['500'][1]}
-        error_codes = [ERROR_API['500'][0]]
-        return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_200_OK)

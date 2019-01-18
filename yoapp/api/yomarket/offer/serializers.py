@@ -1,15 +1,13 @@
 from django.apps import apps
 from rest_framework import serializers
 from ..shop.serializers import ShopSerializer
-from yomarket.models import WishList, SecondaryInfo,QRcoupon
+from yomarket.models import WishList, SecondaryInfo,QRcoupon,CartProduct
 import datetime
 from django.utils import timezone
 
 
 OfferModel = apps.get_model('yomarket', 'Offer')
 
-class CartAddSerializer(serializers.Serializer):
-    offers_ids = serializers.ListField()
 
 
 class SecondaryInfoSerializer(serializers.ModelSerializer):
@@ -67,3 +65,30 @@ class OfferSerializer(serializers.ModelSerializer):
     def validate_catedory_id(value):
         if value.isnumeric() == False:
             raise serializers.ValidationError('must be numeric.')
+
+
+
+
+
+class CartProductListSerializer(serializers.ModelSerializer):
+    offer = OfferSerializer(read_only=True)
+    class Meta:
+        model = CartProduct
+        fields = ('id','offer','quantity')
+
+class CartProductCreateSerializer(CartProductListSerializer):
+    offer = serializers.PrimaryKeyRelatedField(queryset=OfferModel.objects.all())
+
+    def create(self, validated_data):
+        cart_product=CartProduct(user=self.context['request'].user,**validated_data)
+        cart_product.save()
+        return cart_product
+
+    def update(self, instance, validated_data):
+        instance.quantity = validated_data.get('quantity', instance.quantity)
+        instance.save()
+        return instance
+
+    class Meta:
+        model = CartProduct
+        fields = ('offer','quantity')
