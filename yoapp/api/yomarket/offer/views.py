@@ -255,7 +255,8 @@ class OfferDetailView(generics.RetrieveUpdateDestroyAPIView):
         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
 
 
-
+from rest_framework.decorators import api_view
+@api_view(['GET',])
 def offer_search_view(request):
     search_field = request.GET.get('search')
     if search_field != None:
@@ -269,7 +270,6 @@ def offer_search_view(request):
             error_codes = [ERROR_API['207'][0]]
             return Response(custom_api_response(errors=error, error_codes=error_codes),
                             status=status.HTTP_404_NOT_FOUND)
-
     else:
         error = {"detail": ERROR_API['163'][1]}
         error_codes = [ERROR_API['163'][0]]
