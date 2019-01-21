@@ -87,6 +87,7 @@ class OfferListView(generics.ListCreateAPIView):
         else :
             return [IsAuthenticated(), ]
 
+
     def get_queryset(self):
         if self.request.user.is_anonymous:
             queryset = OfferModel.objects.filter(expire__gte=datetime.datetime.now())
@@ -254,6 +255,26 @@ class OfferDetailView(generics.RetrieveUpdateDestroyAPIView):
         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
 
 
+
+def offer_search_view(request):
+    search_field = request.GET.get('search')
+    if search_field != None:
+        offers =OfferModel.objects.filter(Q(title__icontains=search_field) | Q(description__icontains=search_field) | Q(short_description__icontains=search_field))
+        offers= offers.filter(status='PUBLISHED',available=True)
+        if offers.exists():
+            serializer = OfferSerializer(offers,many=True)
+            return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
+        else:
+            error = {"detail": ERROR_API['207'][1]}
+            error_codes = [ERROR_API['207'][0]]
+            return Response(custom_api_response(errors=error, error_codes=error_codes),
+                            status=status.HTTP_404_NOT_FOUND)
+
+    else:
+        error = {"detail": ERROR_API['163'][1]}
+        error_codes = [ERROR_API['163'][0]]
+        return Response(custom_api_response(errors=error, error_codes=error_codes),
+                        status=status.HTTP_400_BAD_REQUEST)
 
 
 class ShoppingCartView(generics.ListAPIView,generics.CreateAPIView,generics.UpdateAPIView,generics.DestroyAPIView):
