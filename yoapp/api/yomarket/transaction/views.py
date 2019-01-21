@@ -152,65 +152,63 @@ class TransactionViewSet(viewsets.ModelViewSet):
 
 import requests
 
-@api_view(['POST'])
-@permission_classes((IsAuthenticated,))
+@api_view(['GET'])
+# @permission_classes((IsAuthenticated,))
 def make_payment(request):
-    cardholder_id = request.data.get('cardholder_id')
-    offer_id = request.data.get('offer_id')
-
-
-
-    if cardholder_id == None or offer_id == None:
-        error = {"detail": ERROR_API['163'][1]}
-        error_codes = [ERROR_API['163'][0]]
-        return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_200_OK)
-
-
-
-
-    try:
-        offer = Offer.objects.get(id=offer_id)
-    except Offer.DoesNotExist:
-        error = {"detail": ERROR_API['204'][1]}
-        error_codes = [ERROR_API['204'][0]]
-        return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_200_OK)
-
-
-
-    try:
-        card = CardHolder.objects.get(id=cardholder_id)
-    except CardHolder.DoesNotExist:
-        error = {"detail": ERROR_API['165'][1]}
-        error_codes = [ERROR_API['165'][0]]
-        return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_200_OK)
-
-
-
-
-    if card.user != request.user:
-        error = {"detail": ERROR_API['164'][1]}
-        error_codes = [ERROR_API['164'][0]]
-        return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_200_OK)
-
-
-
-
-    # url = 'https://secure5.tranzila.com/cgi-bin/tranzila71u.cgi?'
-    # params = {
-    #     "supplier": 'yoo',
-    #     "sum": offer.price,
-    #     "expdate": card.exp_date.strftime('%m%y'),
-    #     "currency": 1,
-    #     "TranzilaPW": "Tran3P2yoo",
-    #     "TranzilaTK": card.tranzila_tk,
-    #     "cred_type":1,
-    # }
+    # cardholder_id = request.data.get('cardholder_id')
+    # offer_id = request.data.get('offer_id')
     #
-    # r = requests.get(url, params=params)
     #
-    # print(r.headers)
-    # print(r.content)
     #
+    # if cardholder_id == None or offer_id == None:
+    #     error = {"detail": ERROR_API['163'][1]}
+    #     error_codes = [ERROR_API['163'][0]]
+    #     return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_200_OK)
+    #
+    #
+    #
+    #
+    # try:
+    #     offer = Offer.objects.get(id=offer_id)
+    # except Offer.DoesNotExist:
+    #     error = {"detail": ERROR_API['204'][1]}
+    #     error_codes = [ERROR_API['204'][0]]
+    #     return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_200_OK)
+    #
+    #
+    #
+    # try:
+    #     card = CardHolder.objects.get(id=cardholder_id)
+    # except CardHolder.DoesNotExist:
+    #     error = {"detail": ERROR_API['165'][1]}
+    #     error_codes = [ERROR_API['165'][0]]
+    #     return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_200_OK)
+    #
+    #
+    #
+    #
+    # if card.user != request.user:
+    #     error = {"detail": ERROR_API['164'][1]}
+    #     error_codes = [ERROR_API['164'][0]]
+    #     return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_200_OK)
+    #
+    #
+    #
+
+    url = 'https://secure5.tranzila.com/cgi-bin/tranzila71u.cgi'
+    params = {
+        "supplier": 'yoo',
+        "TranzilaPW":'We19ba1',
+        "ccno":"5355074017294831",
+        "TranzilaTK": 1,
+    }
+
+    r = requests.get(url, params=params)
+
+    print(r.headers)
+    print(r.content)
+    print(r)
+
 
 
     return Response('ok')
