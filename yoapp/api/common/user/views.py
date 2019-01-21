@@ -564,6 +564,8 @@ def facebook_oauth(request):
         if user.last_login == None:
             first_login = True
         token = create_login_token(user)
+        user.last_login=timezone.now()
+        user.save()
         profile = get_profile_data(user.id, request)
         content = {'token': token.key, 'email': user.email, 'id': user.id, 'first_login': first_login,
                    'first_name': user.first_name, 'last_name': user.last_name, 'profile': profile}
@@ -664,6 +666,8 @@ def twitter_login(request):
         if user.last_login == None:
             first_login = True
         token = create_login_token(user)
+        user.last_login = timezone.now()
+        user.save()
         profile = get_profile_data(user.id, request)
         content = {'token': token.key, 'email': user.email, 'id': user.id, 'first_login': first_login,'profile': profile}
         return Response(custom_api_response(content=content), status=status.HTTP_200_OK)
