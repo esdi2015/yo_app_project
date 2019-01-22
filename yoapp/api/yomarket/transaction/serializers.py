@@ -37,3 +37,7 @@ class CardHolderSerializer(serializers.ModelSerializer):
         holder=CardHolder(**self.validated_data,user=user)
         holder.save()
         return holder
+
+class CardHolderCreateSerializer(serializers.Serializer):
+    card_number = serializers.CharField()
+    exp_date = serializers.DateField()

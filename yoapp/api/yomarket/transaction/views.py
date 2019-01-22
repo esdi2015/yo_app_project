@@ -7,10 +7,11 @@ from rest_framework import viewsets
 # from rest_framework import generics
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend, FilterSet, CharFilter
-from ...utils import ERROR_API
-
+from ...utils import ERROR_API, PAYMENT_ERRORS
+from yoapp.settings import TRANZILLA_PW,TRANZILLA_TERMINAL
 from ...views import custom_api_response
-from .serializers import TransactionSerializer,MyTransactionSerializer,CardHolderSerializer
+from .serializers import TransactionSerializer,MyTransactionSerializer,\
+                         CardHolderSerializer, CardHolderCreateSerializer
 from rest_framework import generics
 from yomarket.models import Transaction ,CardHolder, Offer
 from api.views import CustomPagination, prepare_paginated_response
@@ -152,64 +153,9 @@ class TransactionViewSet(viewsets.ModelViewSet):
 
 import requests
 
-@api_view(['GET'])
+@api_view(['POST'])
 # @permission_classes((IsAuthenticated,))
 def make_payment(request):
-    # cardholder_id = request.data.get('cardholder_id')
-    # offer_id = request.data.get('offer_id')
-    #
-    #
-    #
-    # if cardholder_id == None or offer_id == None:
-    #     error = {"detail": ERROR_API['163'][1]}
-    #     error_codes = [ERROR_API['163'][0]]
-    #     return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_200_OK)
-    #
-    #
-    #
-    #
-    # try:
-    #     offer = Offer.objects.get(id=offer_id)
-    # except Offer.DoesNotExist:
-    #     error = {"detail": ERROR_API['204'][1]}
-    #     error_codes = [ERROR_API['204'][0]]
-    #     return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_200_OK)
-    #
-    #
-    #
-    # try:
-    #     card = CardHolder.objects.get(id=cardholder_id)
-    # except CardHolder.DoesNotExist:
-    #     error = {"detail": ERROR_API['165'][1]}
-    #     error_codes = [ERROR_API['165'][0]]
-    #     return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_200_OK)
-    #
-    #
-    #
-    #
-    # if card.user != request.user:
-    #     error = {"detail": ERROR_API['164'][1]}
-    #     error_codes = [ERROR_API['164'][0]]
-    #     return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_200_OK)
-    #
-    #
-    #
-
-    url = 'https://secure5.tranzila.com/cgi-bin/tranzila71u.cgi'
-    params = {
-        "supplier": 'yoo',
-        "TranzilaPW":'We19ba1',
-        "ccno":"5355074017294831",
-        "TranzilaTK": 1,
-    }
-
-    r = requests.get(url, params=params)
-
-    print(r.headers)
-    print(r.content)
-    print(r)
-
-
 
     return Response('ok')
 
@@ -238,17 +184,56 @@ class CardHolderViewSet(viewsets.ModelViewSet):
         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
 
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data,context={'user':self.request.user})
-        serializer.is_valid(raise_exception=True)
-        holder = CardHolder.objects.filter(**serializer.data,user=self.request.user)
-        if holder.exists():
-            error = {"detail": ERROR_API['125'][1]}
-            error_codes = [ERROR_API['125'][0]]
-            return Response(custom_api_response(errors=error, error_codes=error_codes),status=status.HTTP_400_BAD_REQUEST)
+        serializer = CardHolderCreateSerializer(data=request.data,context={'user':self.request.user})
+        if serializer.is_valid():
+            card_number=serializer.validated_data['card_number']
+            exp_date = serializer.validated_data['exp_date']
+
+            url = 'https://secure5.tranzila.com/cgi-bin/tranzila71u.cgi'
+            params = {
+                "supplier": TRANZILLA_TERMINAL,
+                "TranzilaPW": TRANZILLA_PW,
+                "ccno": card_number,
+                "TranzilaTK": 1,
+            }
+            r = requests.get(url, params=params)
+            token = r.text.strip().split(sep="=")[1]
+
+            url = 'https://secure5.tranzila.com/cgi-bin/tranzila71u.cgi'
+            params = {
+                "supplier": TRANZILLA_TERMINAL,
+                "TranzilaPW": TRANZILLA_PW,
+                "expdate": "11/21",
+                "TranzilaTK": token,
+                'tranmode': 'V',
+                'sum': 0.01,
+                'cred_type': 1,
+                'cy': 1,
+                    }
+            r = requests.get(url, params=params)
+            response = dict(x.split('=') for x in r.text.split('&'))
+
+            if response['Response']=='000':
+                holder = CardHolder.objects.filter(tranzila_tk=token,exp_date=exp_date,user=self.request.user)
+                if holder.exists():
+                    error = {"detail": ERROR_API['125'][1]}
+                    error_codes = [ERROR_API['125'][0]]
+                    return Response(custom_api_response(errors=error, error_codes=error_codes),status=status.HTTP_400_BAD_REQUEST)
+                else:
+                    holder=CardHolder(user=request.user,exp_date=exp_date,tranzila_tk=token)
+                    holder.save()
+                    serializer =self.get_serializer(holder)
+                    return Response(custom_api_response(serializer=serializer), status=status.HTTP_201_CREATED, )
+            else:
+                error = {"payment_error_code":PAYMENT_ERRORS[response['Response']][0],"detail": PAYMENT_ERRORS[response['Response']][1]}
+                error_codes = [ERROR_API['900'][0]]
+                return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_400_BAD_REQUEST)
         else:
-            holder=serializer.save()
-            serializer =self.get_serializer(holder)
-            return Response(custom_api_response(serializer=serializer), status=status.HTTP_201_CREATED, )
+            error = {"detail": ERROR_API['164'][1]}
+            error_codes = [ERROR_API['164'][0]]
+            return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_200_OK)
+
+
 
     def destroy(self, request, *args, **kwargs):
          instance = self.get_object()
