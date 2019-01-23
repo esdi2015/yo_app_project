@@ -1,6 +1,8 @@
 from django.contrib import admin
 from django.contrib.admin import SimpleListFilter
-from .models import Shop, Offer, QRcoupon, Transaction, WishList, Schedule, SecondaryInfo, CardHolder, CartProduct
+from .models import Shop, Offer, QRcoupon, Transaction,\
+                    WishList, Schedule, SecondaryInfo,\
+                    CardHolder, CartProduct, OrderProduct,Order
 from common.models import User
 from yoapp.utils import ExportCsvMixin
 
@@ -95,3 +97,5 @@ admin.site.register(Schedule, ScheduleAdmin)
 admin.site.register(SecondaryInfo,SecondaryInfoAdmin)
 admin.site.register(CardHolder,CardHolderAdmin)
 admin.site.register(CartProduct)
+admin.site.register(OrderProduct)
+admin.site.register(Order)

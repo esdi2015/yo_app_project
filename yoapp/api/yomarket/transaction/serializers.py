@@ -1,9 +1,9 @@
 from django.apps import apps
 from rest_framework import serializers
-from yomarket.models import CardHolder
+from yomarket.models import CardHolder,Order,OrderProduct
 
 TransactionModel = apps.get_model('yomarket', 'Transaction')
-from api.yomarket.offer.serializers import OfferSerializer
+from api.yomarket.offer.serializers import OfferSerializer,ShopSerializer
 
 class TransactionSerializer(serializers.ModelSerializer):
     customer = serializers.StringRelatedField()
@@ -41,3 +41,26 @@ class CardHolderSerializer(serializers.ModelSerializer):
 class CardHolderCreateSerializer(serializers.Serializer):
     card_number = serializers.CharField()
     exp_date = serializers.DateField()
+
+
+class CheckoutSerializer(serializers.Serializer):
+    cart_product_ids = serializers.ListField()
+    cardholder_id = serializers.CharField(max_length=20)
+    total_sum = serializers.FloatField()
+    shop_id = serializers.CharField(max_length=20)
+
+
+class OrderProductListSerializer(serializers.ModelSerializer):
+    offer = OfferSerializer(read_only=True)
+    class Meta:
+        model = OrderProduct
+        fields = ('id', 'offer', 'quantity')
+
+
+class OrderListSerializer(serializers.ModelSerializer):
+    shop = ShopSerializer(read_only=True)
+    order_product = OrderProductListSerializer(read_only=True,many=True)
+    class Meta:
+        model = Order
+        fields = ('id', 'created', 'total_sum','status', 'shop','order_product')
+

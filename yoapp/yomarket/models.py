@@ -235,3 +235,28 @@ class CartProduct(models.Model):
     added_to_cart = models.DateTimeField(auto_now=True)
 
 
+
+ORDER_STATUSES = (
+    ('PAID', 'Paid'),
+    ('APPROVED','Approved'),
+    ('SHIPPED', 'Shipped'),
+    ('DELIVERED', 'Delivered'),
+    ('CANCELED', 'Canceled'),
+
+)
+
+
+
+
+class Order(models.Model):
+    shop=models.ForeignKey(Shop,related_name='order_shop',on_delete=models.CASCADE)
+    user = models.ForeignKey('common.User', related_name='order_for_user', on_delete=models.CASCADE)
+    created = models.DateTimeField(auto_now_add=True)
+    total_sum = models.DecimalField(max_digits=15,decimal_places=2)
+    status = models.CharField(max_length=50,choices=ORDER_STATUSES)
+
+
+class OrderProduct(models.Model):
+    offer = models.ForeignKey(Offer,related_name='offer_for_order_product',on_delete=models.CASCADE)
+    quantity = models.IntegerField(default=1)
+    order = models.ForeignKey(Order,related_name='order_product',on_delete=models.CASCADE)

@@ -1,5 +1,7 @@
 from django.conf.urls import re_path, include, url
-from .views import TransactionViewSet, MyTransactionView,ManagerTransactionView , CardHolderViewSet,make_payment
+from .views import TransactionViewSet, MyTransactionView,\
+                    ManagerTransactionView , CardHolderViewSet,CheckoutOrderView,\
+                    OrderView
 from . import views as api_view
 from rest_framework import routers
 
@@ -14,7 +16,9 @@ urlpatterns = [
     url(r'^manager-transactions/$', ManagerTransactionView.as_view()),
     url(r'^cardholder/$', CardHolderViewSet.as_view({'get': 'list','post':'create','delete':'destroy'})),
     url(r'^cardholder/(?P<pk>\d+)/$', CardHolderViewSet.as_view({'delete': 'destroy'})),
-    url(r'^pay/$', make_payment),
+    url(r'^pay/$', CheckoutOrderView.as_view()),
+    url(r'^order/$', OrderView.as_view()),
+    url(r'^order/(?P<pk>\d+)/$', OrderView.as_view()),
 
 ]
 

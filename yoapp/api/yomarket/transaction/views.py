@@ -11,9 +11,10 @@ from ...utils import ERROR_API, PAYMENT_ERRORS
 from yoapp.settings import TRANZILLA_PW,TRANZILLA_TERMINAL
 from ...views import custom_api_response
 from .serializers import TransactionSerializer,MyTransactionSerializer,\
-                         CardHolderSerializer, CardHolderCreateSerializer
+                         CardHolderSerializer, CardHolderCreateSerializer,\
+                         CheckoutSerializer, OrderListSerializer
 from rest_framework import generics
-from yomarket.models import Transaction ,CardHolder, Offer
+from yomarket.models import Transaction ,CardHolder, Offer,CartProduct,OrderProduct,Order,Shop
 from api.views import CustomPagination, prepare_paginated_response
 from rest_framework.decorators import api_view, permission_classes
 
@@ -247,3 +248,161 @@ class CardHolderViewSet(viewsets.ModelViewSet):
              error_codes = [ERROR_API['164'][0]]
              return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_200_OK)
 
+
+
+
+class CheckoutOrderView(generics.CreateAPIView):
+    permission_classes = (IsAuthenticated,)
+
+    def pay(self,cardholder,total):
+        url = 'https://secure5.tranzila.com/cgi-bin/tranzila71u.cgi'
+        params = {
+            "supplier": TRANZILLA_TERMINAL,
+            "TranzilaPW": TRANZILLA_PW,
+            "expdate": cardholder.exp_date.strftime("%m%y"),
+            "TranzilaTK": cardholder.tranzila_tk,
+            'sum': total,
+            'cred_type': 1,
+            'cy': 1,}
+
+        r = requests.get(url, params=params)
+        response = dict(x.split('=') for x in r.text.split('&'))
+
+        if response['Response'] == '000':
+            return True
+        else:
+            error = {"payment_error_code": PAYMENT_ERRORS[response['Response']][0],
+                     "detail": PAYMENT_ERRORS[response['Response']][1]}
+            error_codes = [ERROR_API['900'][0]]
+            return Response(custom_api_response(errors=error, error_codes=error_codes),
+                            status=status.HTTP_400_BAD_REQUEST)
+
+    def get_total_sum(self,cart_products):
+        total = 0
+        for cart_product in cart_products:
+            total = (cart_product.offer.price * cart_product.quantity)
+        return total
+
+    def make_order_products(self,cart_products,order):
+        order_products=[]
+        for cart_product in cart_products:
+            product=OrderProduct(order=order,offer=cart_product.offer,
+                                 quantity=cart_product.quantity)
+        return order_products
+
+    def save_order_products(self,order_products):
+        for order_product in order_products:
+            order_product.save()
+
+    def get_cardholder(self,cardholder_id):
+        try:
+            cardholder = CardHolder.objects.get(pk=cardholder_id)
+            if cardholder.user.pk==self.request.user.pk:
+                return cardholder
+            else:
+                error = {"detail": ERROR_API['127'][1]}
+                error_codes = [ERROR_API['127'][0]]
+                return Response(custom_api_response(errors=error, error_codes=error_codes),
+                                status=status.HTTP_400_BAD_REQUEST)
+        except CardHolder.DoesNotExist:
+            error = {"detail": ERROR_API['165'][1]}
+            error_codes = [ERROR_API['165'][0]]
+            return Response(custom_api_response(errors=error, error_codes=error_codes),
+                            status=status.HTTP_400_BAD_REQUEST)
+
+    def delete_cart_products(self,cart_products):
+        for cart_product in cart_products:
+            cart_product.delete()
+
+
+    def get_shop(self,shop_id):
+        try:
+            shop = Shop.objects.get(pk=shop_id)
+            return shop
+        except Shop.DoesNotExist:
+            error = {"detail": ERROR_API['251'][1]}
+            error_codes = [ERROR_API['251'][0]]
+            return Response(custom_api_response(errors=error, error_codes=error_codes),
+                            status=status.HTTP_400_BAD_REQUEST)
+
+    def create(self, request, *args, **kwargs):
+        serializer=CheckoutSerializer(data=request.data)
+        if serializer.is_valid():
+
+            cart_product_ids = serializer.validated_data['cart_product_ids']
+            cardholder_id = serializer.validated_data['cardholder_id']
+            total_sum = serializer.validated_data['total_sum']
+            shop_id = serializer.validated_data['shop_id']
+
+            cart_products = CartProduct.objects.filter(pk__in=cart_product_ids)
+
+            total = self.get_total_sum(cart_products)
+            if total!=total_sum:
+                error = {"detail": ERROR_API['901'][1]}
+                error_codes = [ERROR_API['901'][0]]
+                return Response(custom_api_response(errors=error, error_codes=error_codes),
+                                status=status.HTTP_400_BAD_REQUEST)
+
+
+
+            shop = self.get_shop(shop_id)
+
+            order=Order(shop=shop,user=request.user,total_sum=total,status='PAID')
+
+            cardholder = self.get_cardholder(cardholder_id)
+
+            paid = self.pay(cardholder,total)
+
+            if paid==True:
+                order.save()
+                self.save_order_products()
+                self.delete_cart_products(cart_products)
+
+                serializer = OrderListSerializer(order, context={'request': request})
+                return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
+
+        else:
+            error = {"detail": ERROR_API['163'][1]}
+            error_codes = [ERROR_API['163'][0]]
+            return Response(custom_api_response(errors=error, error_codes=error_codes),
+                            status=status.HTTP_400_BAD_REQUEST)
+
+
+class OrderView(generics.ListAPIView,generics.UpdateAPIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get_serializer_class(self):
+        if self.request.method=='GET':
+            serializer = OrderListSerializer
+
+        return serializer
+
+    def get_queryset(self):
+        if self.request.user.role=="CUSTOMER":
+            orders = Order.objects.filter(user__pk=self.request.user.pk)
+            return orders
+        if self.request.user.role=="MANAGER":
+            orders = Order.objects.filter(shop__manager__pk=self.request.user.pk)
+            return orders
+        if self.request.user.role=="OWNER":
+            orders = Order.objects.filter(shop__user__pk=self.request.user.pk)
+
+
+
+    def list(self, request, *args, **kwargs):
+        serializer=self.get_serializer(self.get_queryset(),many=True)
+        return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
+
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer=OrderListSerializer(instance=instance,data=request.data,partial=True)
+        if serializer.is_valid():
+            instance=serializer.save()
+            serializer=OrderListSerializer(instance,context={'request':request})
+            return Response(custom_api_response(serializer), status=status.HTTP_200_OK )
+        else:
+            error = {"detail": ERROR_API['163'][1]}
+            error_codes = [ERROR_API['163'][0]]
+            return Response(custom_api_response(errors=error, error_codes=error_codes),
+                            status=status.HTTP_400_BAD_REQUEST)

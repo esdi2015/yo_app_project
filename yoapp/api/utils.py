@@ -25,6 +25,7 @@ ERROR_API = {
     "124": (124, "Invalid page."),
     "125": (125, "Card already registered"),
     "126": (126, "User not active."),
+    "127": (127, "User mismatch."),
 
     "151": (151, "This password is too short. It must contain at least 8 characters."),
     "152": (152, "This password is too common."),
@@ -54,6 +55,7 @@ ERROR_API = {
     "500": (500, "Ok"),
 
     "900": (900, "Payment error"),
+    "901": (901, "Amount mismatch"),
 
 }
 
