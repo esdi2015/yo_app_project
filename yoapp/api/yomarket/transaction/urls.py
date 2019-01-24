@@ -1,7 +1,7 @@
 from django.conf.urls import re_path, include, url
 from .views import TransactionViewSet, MyTransactionView,\
                     ManagerTransactionView , CardHolderViewSet,CheckoutOrderView,\
-                    OrderView
+                    OrderView, test_view
 from . import views as api_view
 from rest_framework import routers
 
@@ -19,6 +19,7 @@ urlpatterns = [
     url(r'^pay/$', CheckoutOrderView.as_view()),
     url(r'^order/$', OrderView.as_view()),
     url(r'^order/(?P<pk>\d+)/$', OrderView.as_view()),
+    url(r'^test/$', test_view),
 
 ]
 

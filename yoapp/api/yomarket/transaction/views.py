@@ -406,3 +406,12 @@ class OrderView(generics.ListAPIView,generics.UpdateAPIView):
             error_codes = [ERROR_API['163'][0]]
             return Response(custom_api_response(errors=error, error_codes=error_codes),
                             status=status.HTTP_400_BAD_REQUEST)
+
+from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+@csrf_exempt
+def test_view(request):
+    print(request.body)
+    print(request.POST)
+    print(request.GET)
+    return HttpResponse('ok')
