@@ -14,12 +14,15 @@ from .serializers import TransactionSerializer,MyTransactionSerializer,\
                          CardHolderSerializer, CardHolderCreateSerializer,\
                          CheckoutSerializer, OrderListSerializer
 from rest_framework import generics
-from yomarket.models import Transaction ,CardHolder, Offer,CartProduct,OrderProduct,Order,Shop
+from yomarket.models import Transaction ,CardHolder, Offer,CartProduct,\
+                            OrderProduct,Order,Shop
 from api.views import CustomPagination, prepare_paginated_response
 from rest_framework.decorators import api_view, permission_classes
+from django.contrib.auth import get_user_model
 
 
 TransactionModel = apps.get_model('yomarket', 'Transaction')
+UserModel = get_user_model()
 
 
 class TransactionListFilter(FilterSet):
@@ -185,54 +188,39 @@ class CardHolderViewSet(viewsets.ModelViewSet):
         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
 
     def create(self, request, *args, **kwargs):
-        serializer = CardHolderCreateSerializer(data=request.data,context={'user':self.request.user})
-        if serializer.is_valid():
-            card_number=serializer.validated_data['card_number']
-            exp_date = serializer.validated_data['exp_date']
+        response=request.POST['Response']
 
-            url = 'https://secure5.tranzila.com/cgi-bin/tranzila71u.cgi'
-            params = {
-                "supplier": TRANZILLA_TERMINAL,
-                "TranzilaPW": TRANZILLA_PW,
-                "ccno": card_number,
-                "TranzilaTK": 1,
-            }
-            r = requests.get(url, params=params)
-            token = r.text.strip().split(sep="=")[1]
+        if response=='000':
+            tranzilaTK=request.POST['TranzilaTK']
+            expmonth = request.POST['expmonth']
+            expyear = request.POST['expyear']
+            userid = request.POST['userid']
 
-            url = 'https://secure5.tranzila.com/cgi-bin/tranzila71u.cgi'
-            params = {
-                "supplier": TRANZILLA_TERMINAL,
-                "TranzilaPW": TRANZILLA_PW,
-                "expdate": "11/21",
-                "TranzilaTK": token,
-                'tranmode': 'V',
-                'sum': 0.01,
-                'cred_type': 1,
-                'cy': 1,
-                    }
-            r = requests.get(url, params=params)
-            response = dict(x.split('=') for x in r.text.split('&'))
+            user = UserModel.objects.get(pk=userid)
 
-            if response['Response']=='000':
-                holder = CardHolder.objects.filter(tranzila_tk=token,exp_date=exp_date,user=self.request.user)
-                if holder.exists():
-                    error = {"detail": ERROR_API['125'][1]}
-                    error_codes = [ERROR_API['125'][0]]
-                    return Response(custom_api_response(errors=error, error_codes=error_codes),status=status.HTTP_400_BAD_REQUEST)
-                else:
-                    holder=CardHolder(user=request.user,exp_date=exp_date,tranzila_tk=token)
-                    holder.save()
-                    serializer =self.get_serializer(holder)
-                    return Response(custom_api_response(serializer=serializer), status=status.HTTP_201_CREATED, )
+            holder = CardHolder.objects.filter(tranzila_tk=tranzilaTK, user=user)
+            if holder.exists():
+                error = {"detail": ERROR_API['125'][1]}
+                error_codes = [ERROR_API['125'][0]]
+                return Response(custom_api_response(errors=error, error_codes=error_codes),
+                                status=status.HTTP_400_BAD_REQUEST)
             else:
-                error = {"payment_error_code":PAYMENT_ERRORS[response['Response']][0],"detail": PAYMENT_ERRORS[response['Response']][1]}
-                error_codes = [ERROR_API['900'][0]]
-                return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_400_BAD_REQUEST)
+                expyear = int(expyear)
+                expmonth = int(expmonth)
+                expyear = expyear + 2000
+                expdate = datetime(day=1, month=expmonth, year=expyear)
+                holder = CardHolder(user=user, exp_date=expdate, tranzila_tk=tranzilaTK)
+                holder.save()
+                error = {"detail": ERROR_API['500'][1]}
+                error_codes = [ERROR_API['500'][0]]
+                return Response(custom_api_response(errors=error, error_codes=error_codes),
+                                status=status.HTTP_201_CREATED)
         else:
-            error = {"detail": ERROR_API['164'][1]}
-            error_codes = [ERROR_API['164'][0]]
-            return Response(custom_api_response(errors=error, error_codes=error_codes), status=status.HTTP_200_OK)
+            error = {"payment_error_code": PAYMENT_ERRORS[response][0],
+                     "detail": PAYMENT_ERRORS[response][1]}
+            error_codes = [ERROR_API['900'][0]]
+            return Response(custom_api_response(errors=error, error_codes=error_codes),
+                            status=status.HTTP_400_BAD_REQUEST)
 
 
 
@@ -407,11 +395,16 @@ class OrderView(generics.ListAPIView,generics.UpdateAPIView):
             return Response(custom_api_response(errors=error, error_codes=error_codes),
                             status=status.HTTP_400_BAD_REQUEST)
 
+from datetime import datetime
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 @csrf_exempt
 def test_view(request):
-    print(request.body)
-    print(request.POST)
-    print(request.GET)
+    expyear= int('23')
+    expmonth = int('03')
+    expyear=expyear+2000
+    z = datetime(day=1,month=expmonth,year=expyear)
+    holder = CardHolder(user=request.user, exp_date=z, tranzila_tk='dsadsadsadsa')
+    holder.save()
+
     return HttpResponse('ok')
