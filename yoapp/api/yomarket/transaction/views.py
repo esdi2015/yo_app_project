@@ -167,6 +167,7 @@ def make_payment(request):
 
 class CardHolderViewSet(viewsets.ModelViewSet):
     serializer_class = CardHolderSerializer
+    permission_classes = (AllowAny,)
 
 
     def get_queryset(self):
