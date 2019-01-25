@@ -15,11 +15,11 @@ from .serializers import TransactionSerializer,MyTransactionSerializer,\
                          CheckoutSerializer, OrderListSerializer
 from rest_framework import generics
 from yomarket.models import Transaction ,CardHolder, Offer,CartProduct,\
-                            OrderProduct,Order,Shop
+                            OrderProduct,Order,Shop,CouponSetting,Coupon
 from api.views import CustomPagination, prepare_paginated_response
 from rest_framework.decorators import api_view, permission_classes
 from django.contrib.auth import get_user_model
-
+from yomarket.utils import recalculate_rank
 
 TransactionModel = apps.get_model('yomarket', 'Transaction')
 UserModel = get_user_model()
@@ -163,7 +163,7 @@ def make_payment(request):
 
     return Response('ok')
 
-
+from django.shortcuts import redirect
 
 class CardHolderViewSet(viewsets.ModelViewSet):
     serializer_class = CardHolderSerializer
@@ -204,7 +204,8 @@ class CardHolderViewSet(viewsets.ModelViewSet):
                 error = {"detail": ERROR_API['125'][1]}
                 error_codes = [ERROR_API['125'][0]]
                 return Response(custom_api_response(errors=error, error_codes=error_codes),
-                                status=status.HTTP_400_BAD_REQUEST)
+                                status=status.HTTP_400_BAD_REQUEST,headers={'error_code':ERROR_API['125'][0],
+                                                                            'error_detail':ERROR_API['125'][1]})
             else:
                 expyear = int(expyear)
                 expmonth = int(expmonth)
@@ -215,13 +216,16 @@ class CardHolderViewSet(viewsets.ModelViewSet):
                 error = {"detail": ERROR_API['500'][1]}
                 error_codes = [ERROR_API['500'][0]]
                 return Response(custom_api_response(errors=error, error_codes=error_codes),
-                                status=status.HTTP_201_CREATED)
+                                status=status.HTTP_201_CREATED,headers={'error_code':ERROR_API['500'][0],
+                                                                        'error_detail':ERROR_API['500'][1]})
         else:
             error = {"payment_error_code": PAYMENT_ERRORS[response][0],
                      "detail": PAYMENT_ERRORS[response][1]}
             error_codes = [ERROR_API['900'][0]]
             return Response(custom_api_response(errors=error, error_codes=error_codes),
-                            status=status.HTTP_400_BAD_REQUEST)
+                            status=status.HTTP_400_BAD_REQUEST,headers={'error_code':ERROR_API['900'][0],
+                                                                        'payment_error_code':PAYMENT_ERRORS[response][0],
+                                                                        'error_detail':PAYMENT_ERRORS[response][1]})
 
 
 
@@ -345,8 +349,10 @@ class CheckoutOrderView(generics.CreateAPIView):
             if paid==True:
                 order.save()
                 self.save_order_products()
+                self.request.user.profile.points=self.request.user.profile.points + int(total)
+                self.request.user.profile.save()
+                recalculate_rank(self.request.user)
                 self.delete_cart_products(cart_products)
-
                 serializer = OrderListSerializer(order, context={'request': request})
                 return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
 
@@ -396,16 +402,90 @@ class OrderView(generics.ListAPIView,generics.UpdateAPIView):
             return Response(custom_api_response(errors=error, error_codes=error_codes),
                             status=status.HTTP_400_BAD_REQUEST)
 
+
+
+
+
+
+
+from  .serializers import CouponMakeSerilalizer,CouponCustomerListSerializer
+
+class CouponView(generics.CreateAPIView,generics.ListAPIView):
+    permission_classes = (IsAuthenticated,)
+
+
+    def get_queryset(self):
+        if self.request.user.role=='CUSTOMER':
+            if self.request.query_params.get('shopid')!=None:
+                queryset = Coupon.objects.filter(user=self.request.user,
+                                                 status='AVAILABLE',
+                                                 shop__pk=int(self.request.query_params['shopid']))
+                return queryset
+            queryset = Coupon.objects.filter(user=self.request.user,status='AVAILABLE')
+            return queryset
+
+    def user_can_get_coupon(self,user, shop):
+        settings = CouponSetting.objects.filter(rank__lte=user.profile.rank, shop=shop)
+        can_get= False
+        settings_list= list()
+        for setting in settings:
+            coupons_count = Coupon.objects.filter(setting=setting).count()
+            if coupons_count < setting.coupons_per_user:
+                settings_list.append(setting)
+                can_get=True
+        return can_get, settings_list
+
+
+
+    def create(self, request, *args, **kwargs):
+        serializer = CouponMakeSerilalizer(data=request.data)
+        if serializer.is_valid():
+            shop=serializer.validated_data['shop']
+            can_get,settings=self.user_can_get_coupon(user=request.user,shop=shop)
+            if can_get:
+                coupons=list()
+                for setting in settings:
+                    coupon= Coupon(user=request.user,
+                                   discount=setting.discount,
+                                   discount_type=setting.discount_type,
+                                   shop=setting.shop,
+                                   setting=setting)
+                    coupon.save()
+                    coupons.append(coupon)
+
+                serializer=CouponCustomerListSerializer(coupons,many=True,context={'request':self.request})
+                return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
+            else:
+                error = {"detail": ERROR_API['211'][1]}
+                error_codes = [ERROR_API['211'][0]]
+                return Response(custom_api_response(errors=error, error_codes=error_codes),
+                                status=status.HTTP_400_BAD_REQUEST)
+
+        error = {"detail": ERROR_API['163'][1]}
+        error_codes = [ERROR_API['163'][0]]
+        return Response(custom_api_response(errors=error, error_codes=error_codes),
+                        status=status.HTTP_400_BAD_REQUEST)
+
+
+    def list(self, request, *args, **kwargs):
+        queryset=self.get_queryset()
+        if queryset.exists():
+            serializer = CouponCustomerListSerializer(queryset,many=True,context={'request':self.request})
+            return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
+        else:
+            error = {"detail": ERROR_API['200'][1]}
+            error_codes = [ERROR_API['200'][0]]
+            return Response(custom_api_response(errors=error, error_codes=error_codes),
+                            status=status.HTTP_400_BAD_REQUEST)
+
+from rest_framework.decorators import api_view
 from datetime import datetime
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
+from yomarket.utils import recalculate_rank
 @csrf_exempt
+@api_view(['GET'])
+@permission_classes((IsAuthenticated, ))
 def test_view(request):
-    expyear= int('23')
-    expmonth = int('03')
-    expyear=expyear+2000
-    z = datetime(day=1,month=expmonth,year=expyear)
-    holder = CardHolder(user=request.user, exp_date=z, tranzila_tk='dsadsadsadsa')
-    holder.save()
 
-    return HttpResponse('ok')
+    return  Response('ok',headers={'dsadsasad':'dsadsadassadsad'})

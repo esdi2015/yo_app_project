@@ -260,3 +260,35 @@ class OrderProduct(models.Model):
     offer = models.ForeignKey(Offer,related_name='offer_for_order_product',on_delete=models.CASCADE)
     quantity = models.IntegerField(default=1)
     order = models.ForeignKey(Order,related_name='order_product',on_delete=models.CASCADE)
+
+
+DISCOUNT_TYPES = (
+    ('ABSOLUTE', 'ABSOLUTE'),
+    ('PERCENT', 'PERCENT'),
+)
+
+
+class CouponSetting(models.Model):
+    coupons_per_user = models.IntegerField(default=1)
+    discount_type = models.CharField(choices=DISCOUNT_TYPES, default=DISCOUNT_TYPES[0][0],max_length=30)
+    discount = models.IntegerField(default=0)
+    rank = models.IntegerField(default=1)
+    shop = models.ForeignKey(Shop,related_name='coupon_setting',on_delete=models.CASCADE)
+
+
+COUPON_STATUSES = (
+    ('AVAILABLE', 'Available'),
+    ('USED', 'Used'),
+    ('EXPIRED', 'Expired'),
+)
+
+class Coupon(models.Model):
+    discount_type = models.CharField(choices=DISCOUNT_TYPES, default=DISCOUNT_TYPES[0][0],max_length=30)
+    discount = models.IntegerField(default=0)
+    user = models.ForeignKey('common.User',related_name='user_coupons',on_delete=models.CASCADE)
+    shop = models.ForeignKey(Shop,related_name='coupons',on_delete=models.CASCADE)
+    status = models.CharField(choices=COUPON_STATUSES,default=COUPON_STATUSES[0][0],max_length=30)
+    order = models.ForeignKey(Order,related_name='order_coupon',blank=True,on_delete=models.DO_NOTHING,null=True)
+    created = models.DateTimeField(auto_now_add=True)
+    used = models.DateTimeField(blank=True,null=True)
+    setting = models.ForeignKey(CouponSetting,on_delete=models.CASCADE,related_name='setting',null=True)

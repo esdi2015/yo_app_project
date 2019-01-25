@@ -1,7 +1,7 @@
 from django.apps import apps
 from rest_framework import serializers
 from ..shop.serializers import ShopSerializer
-from yomarket.models import WishList, SecondaryInfo,QRcoupon,CartProduct
+from yomarket.models import WishList, SecondaryInfo,QRcoupon,CartProduct,Coupon,CouponSetting
 import datetime
 from django.utils import timezone
 
@@ -27,6 +27,17 @@ class OfferSerializer(serializers.ModelSerializer):
     secondary_info = serializers.SerializerMethodField()
     is_expired = serializers.SerializerMethodField()
     is_visible = serializers.SerializerMethodField()
+    can_get_coupons = serializers.SerializerMethodField()
+
+
+    def get_can_get_coupons(self,obj):
+        settings = CouponSetting.objects.filter(rank__lte=self.context['request'].user.profile.rank, shop=obj.shop)
+        can_get = False
+        for setting in settings:
+            coupons_count = Coupon.objects.filter(setting=setting).count()
+            if coupons_count < setting.coupons_per_user:
+                can_get = True
+        return can_get
 
     def get_is_liked(self, obj):
         try:
@@ -60,7 +71,7 @@ class OfferSerializer(serializers.ModelSerializer):
         fields = ('id', 'category', 'category_id', 'shop', 'shop_id', 'title', 'image', 'short_description',
                   'description', 'price', 'discount', 'discount_type', 'code_data', 'created', 'code_type',
                   'offer_type', 'expire','is_liked','secondary_info','redeemed_codes_count','codes_count',
-                  'is_expired', 'is_visible', 'status')
+                  'is_expired', 'is_visible', 'status','can_get_coupons')
 
     def validate_catedory_id(value):
         if value.isnumeric() == False:
