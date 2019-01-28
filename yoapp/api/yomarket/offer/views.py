@@ -294,8 +294,18 @@ class ShoppingCartView(generics.ListAPIView,generics.CreateAPIView,generics.Upda
     def list(self, request, *args, **kwargs):
         cart_products = self.get_queryset()
         if cart_products.exists():
-            serializer = self.get_serializer(cart_products,many=True)
-            return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
+            for cart_product in cart_products:
+                if cart_product.offer.available == False :
+                    cart_product.delete()
+
+            if cart_products.exists():
+                serializer = self.get_serializer(cart_products,many=True)
+                return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
+            else:
+                error = {"detail": ERROR_API['210'][1]}
+                error_codes = [ERROR_API['210'][0]]
+                return Response(custom_api_response(errors=error, error_codes=error_codes),
+                                status=status.HTTP_400_BAD_REQUEST)
         else:
             error = {"detail": ERROR_API['210'][1]}
             error_codes = [ERROR_API['210'][0]]
