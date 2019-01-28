@@ -132,8 +132,10 @@ def send_invoice(order,user):
         device = GCMDevice.objects.get(user=user)
         msg = {'data': {'extra': {"order_id": order.id},
                         'title': 'Thanks you for order',
-                        'message': order}}
-        device.send_message(**msg)
+                        'message':" Thanks you for order"}}
+        device.send_message(data={'extra': {"order_id": order.id},
+                        'title': 'Thanks you for order',
+                        'message':" Thanks you for order"})
         print('fcm')
 
     except GCMDevice.DoesNotExist:
