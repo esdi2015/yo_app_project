@@ -350,7 +350,6 @@ class CheckoutOrderView(generics.CreateAPIView):
             fullname =serializer.validated_data.get('fullname')
             phone =serializer.validated_data.get('phone')
             coupon_used=False
-            print('total_sum '+str(total_sum))
 
             cart_products = CartProduct.objects.filter(pk__in=cart_product_ids)
             points=0
@@ -401,7 +400,7 @@ class CheckoutOrderView(generics.CreateAPIView):
                 total = self.get_total_sum(cart_products)
                 if type(total) == type(Response()):
                     return total
-                if total != total_sum:
+                if float(total) != float(total_sum):
                     error = {"detail": ERROR_API['901'][1]}
                     error_codes = [ERROR_API['901'][0]]
                     return Response(custom_api_response(errors=error, error_codes=error_codes),
