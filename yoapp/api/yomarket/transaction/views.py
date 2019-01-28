@@ -20,7 +20,7 @@ from api.views import CustomPagination, prepare_paginated_response
 from rest_framework.decorators import api_view, permission_classes
 from django.contrib.auth import get_user_model
 from yomarket.utils import recalculate_rank
-
+from django.utils import timezone
 TransactionModel = apps.get_model('yomarket', 'Transaction')
 UserModel = get_user_model()
 
@@ -216,8 +216,7 @@ class CardHolderViewSet(viewsets.ModelViewSet):
                 error = {"detail": ERROR_API['500'][1]}
                 error_codes = [ERROR_API['500'][0]]
                 return Response(custom_api_response(errors=error, error_codes=error_codes),
-                                status=status.HTTP_201_CREATED,headers={'error_code':ERROR_API['500'][0],
-                                                                        'error_detail':ERROR_API['500'][1]})
+                                status=status.HTTP_201_CREATED,headers={'success':True})
         else:
             error = {"payment_error_code": PAYMENT_ERRORS[response][0],
                      "detail": PAYMENT_ERRORS[response][1]}
@@ -307,7 +306,6 @@ class CheckoutOrderView(generics.CreateAPIView):
         for cart_product in cart_products:
             cart_product.delete()
 
-
     def get_shop(self,shop_id):
         try:
             shop = Shop.objects.get(pk=shop_id)
@@ -318,6 +316,26 @@ class CheckoutOrderView(generics.CreateAPIView):
             return Response(custom_api_response(errors=error, error_codes=error_codes),
                             status=status.HTTP_400_BAD_REQUEST)
 
+    def get_coupon(self,coupon_id):
+        try:
+            coupon = Coupon.objects.get(pk=coupon_id)
+            return coupon
+        except Coupon.DoesNotExist:
+            error = {"detail": ERROR_API['200'][1]}
+            error_codes = [ERROR_API['200'][0]]
+            return Response(custom_api_response(errors=error, error_codes=error_codes),
+                            status=status.HTTP_400_BAD_REQUEST)
+
+
+    def get_discount_total(self,coupon,total):
+        if coupon.discount_type=='ABSOLUTE':
+            discount_total = total-coupon.discount
+            return discount_total
+        if coupon.discount_type=='PERCENT':
+            percent_value = (total/100.00)*coupon.discount
+            discount_total =total-percent_value
+            return discount_total
+
     def create(self, request, *args, **kwargs):
         serializer=CheckoutSerializer(data=request.data)
         if serializer.is_valid():
@@ -325,34 +343,81 @@ class CheckoutOrderView(generics.CreateAPIView):
             cart_product_ids = serializer.validated_data['cart_product_ids']
             cardholder_id = serializer.validated_data['cardholder_id']
             total_sum = serializer.validated_data['total_sum']
+            discount_sum = serializer.validated_data.get('discount_sum')
             shop_id = serializer.validated_data['shop_id']
-
+            coupon_id =serializer.validated_data.get('coupon_id')
             cart_products = CartProduct.objects.filter(pk__in=cart_product_ids)
-
-            total = self.get_total_sum(cart_products)
-            if total!=total_sum:
-                error = {"detail": ERROR_API['901'][1]}
-                error_codes = [ERROR_API['901'][0]]
-                return Response(custom_api_response(errors=error, error_codes=error_codes),
-                                status=status.HTTP_400_BAD_REQUEST)
-
-
-
-            shop = self.get_shop(shop_id)
-
-            order=Order(shop=shop,user=request.user,total_sum=total,status='PAID')
-
+            points=0
             cardholder = self.get_cardholder(cardholder_id)
+            if type(cardholder) == type(Response()):
+                return cardholder
+            if coupon_id!=None:
+                if discount_sum==None:
+                    error = {"detail": ERROR_API['902'][1]}
+                    error_codes = [ERROR_API['902'][0]]
+                    return Response(custom_api_response(errors=error, error_codes=error_codes),
+                                    status=status.HTTP_400_BAD_REQUEST)
+                else:
+                    coupon = self.get_coupon(coupon_id)
+                    if type(coupon) == type(Response()):
+                        return coupon
+                    total = self.get_total_sum(cart_products)
+                    if type(total) == type(Response()):
+                        return total
+                    discount_total = self.get_discount_total(coupon,total)
+                    if type(discount_total) == type(Response()):
+                        return discount_total
+                    if discount_total != discount_sum:
+                        error = {"detail": ERROR_API['901'][1]}
+                        error_codes = [ERROR_API['901'][0]]
+                        return Response(custom_api_response(errors=error, error_codes=error_codes),
+                                        status=status.HTTP_400_BAD_REQUEST)
+                    else:
+                        shop = self.get_shop(shop_id)
+                        if type(shop) == type(Response()):
+                            return shop
 
-            paid = self.pay(cardholder,total)
+
+                        order = Order(shop=shop, user=request.user, total_sum=discount_total, status='PAID')
+                        order_products=self.make_order_products(cart_products,order)
+
+                        paid = self.pay(cardholder, discount_total)
+                        points=discount_total
+                        if type(paid) == type(Response()):
+                            return paid
+            else:
+                total = self.get_total_sum(cart_products)
+                if type(total) == type(Response()):
+                    return total
+                if total != total_sum:
+                    error = {"detail": ERROR_API['901'][1]}
+                    error_codes = [ERROR_API['901'][0]]
+                    return Response(custom_api_response(errors=error, error_codes=error_codes),
+                                    status=status.HTTP_400_BAD_REQUEST)
+                else:
+                    shop = self.get_shop(shop_id)
+                    if type(shop) == type(Response()):
+                        return shop
+                    shop = self.get_shop(shop_id)
+                    order = Order(shop=shop, user=request.user, total_sum=total, status='PAID')
+                    order_products=self.make_order_products(cart_products, order)
+                    points=total
+                    paid = self.pay(cardholder, total)
+                    if type(paid) == type(Response()):
+                        return paid
+
 
             if paid==True:
                 order.save()
-                self.save_order_products()
-                self.request.user.profile.points=self.request.user.profile.points + int(total)
+                self.save_order_products(order_products=order_products)
+                self.delete_cart_products(cart_products)
+                coupon.status='USED'
+                coupon.used = timezone.now()
+                coupon.order=order
+                coupon.save()
+                self.request.user.profile.points=self.request.user.profile.points + int(points)
                 self.request.user.profile.save()
                 recalculate_rank(self.request.user)
-                self.delete_cart_products(cart_products)
                 serializer = OrderListSerializer(order, context={'request': request})
                 return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
 
@@ -484,8 +549,11 @@ from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from yomarket.utils import recalculate_rank
 @csrf_exempt
-@api_view(['GET'])
+@api_view()
 @permission_classes((IsAuthenticated, ))
 def test_view(request):
 
     return  Response('ok',headers={'dsadsasad':'dsadsadassadsad'})
+
+
+

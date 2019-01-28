@@ -47,6 +47,8 @@ class CheckoutSerializer(serializers.Serializer):
     cart_product_ids = serializers.ListField()
     cardholder_id = serializers.CharField(max_length=20)
     total_sum = serializers.FloatField()
+    discount_sum = serializers.FloatField(required=False)
+    coupon_id = serializers.CharField(max_length=20,required=False)
     shop_id = serializers.CharField(max_length=20)
 
 
