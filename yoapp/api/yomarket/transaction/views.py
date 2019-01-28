@@ -164,7 +164,7 @@ def make_payment(request):
     return Response('ok')
 
 from django.shortcuts import redirect
-
+from decimal import *
 class CardHolderViewSet(viewsets.ModelViewSet):
     serializer_class = CardHolderSerializer
     permission_classes = (AllowAny,)
@@ -270,7 +270,7 @@ class CheckoutOrderView(generics.CreateAPIView):
                             status=status.HTTP_400_BAD_REQUEST)
 
     def get_total_sum(self,cart_products):
-        total = 0
+        total = Decimal()
         for cart_product in cart_products:
             total = total + (cart_product.offer.price * cart_product.quantity)
         return total
@@ -350,7 +350,7 @@ class CheckoutOrderView(generics.CreateAPIView):
             fullname =serializer.validated_data.get('fullname')
             phone =serializer.validated_data.get('phone')
             coupon_used=False
-
+            print('total_sum '+str(total_sum))
 
             cart_products = CartProduct.objects.filter(pk__in=cart_product_ids)
             points=0
