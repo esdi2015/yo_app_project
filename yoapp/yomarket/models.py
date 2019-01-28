@@ -254,7 +254,8 @@ class Order(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     total_sum = models.DecimalField(max_digits=15,decimal_places=2)
     status = models.CharField(max_length=50,choices=ORDER_STATUSES)
-
+    phone = models.CharField(max_length=30,blank=True,null=True)
+    fullname = models.CharField(max_length=150,blank=True,null=True)
 
 class OrderProduct(models.Model):
     offer = models.ForeignKey(Offer,related_name='offer_for_order_product',on_delete=models.CASCADE)

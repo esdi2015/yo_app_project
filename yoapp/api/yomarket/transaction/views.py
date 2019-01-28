@@ -346,6 +346,10 @@ class CheckoutOrderView(generics.CreateAPIView):
             discount_sum = serializer.validated_data.get('discount_sum')
             shop_id = serializer.validated_data['shop_id']
             coupon_id =serializer.validated_data.get('coupon_id')
+            fullname =serializer.validated_data.get('fullname')
+            phone =serializer.validated_data.get('phone')
+
+
             cart_products = CartProduct.objects.filter(pk__in=cart_product_ids)
             points=0
             cardholder = self.get_cardholder(cardholder_id)
@@ -378,7 +382,12 @@ class CheckoutOrderView(generics.CreateAPIView):
                             return shop
 
 
-                        order = Order(shop=shop, user=request.user, total_sum=discount_total, status='PAID')
+                        order = Order(shop=shop,
+                                      user=request.user,
+                                      total_sum=discount_total,
+                                      status='PAID',
+                                      fullname=fullname,
+                                      phone=phone)
                         order_products=self.make_order_products(cart_products,order)
 
                         paid = self.pay(cardholder, discount_total)
@@ -399,7 +408,12 @@ class CheckoutOrderView(generics.CreateAPIView):
                     if type(shop) == type(Response()):
                         return shop
                     shop = self.get_shop(shop_id)
-                    order = Order(shop=shop, user=request.user, total_sum=total, status='PAID')
+                    order = Order(shop=shop,
+                                  user=request.user,
+                                  total_sum=total,
+                                  status='PAID',
+                                  fullname=fullname,
+                                  phone=phone)
                     order_products=self.make_order_products(cart_products, order)
                     points=total
                     paid = self.pay(cardholder, total)

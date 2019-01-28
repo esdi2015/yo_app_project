@@ -50,6 +50,8 @@ class CheckoutSerializer(serializers.Serializer):
     discount_sum = serializers.FloatField(required=False)
     coupon_id = serializers.CharField(max_length=20,required=False)
     shop_id = serializers.CharField(max_length=20)
+    fullname = serializers.CharField(max_length=150)
+    phone = serializers.CharField(max_length=30)
 
 
 class OrderProductListSerializer(serializers.ModelSerializer):
@@ -64,7 +66,7 @@ class OrderListSerializer(serializers.ModelSerializer):
     order_product = OrderProductListSerializer(read_only=True,many=True)
     class Meta:
         model = Order
-        fields = ('id', 'created', 'total_sum','status', 'shop','order_product')
+        fields = ('id', 'created', 'total_sum','status', 'shop','order_product','phone','fullname')
 
 
 class CouponMakeSerilalizer(serializers.Serializer):
