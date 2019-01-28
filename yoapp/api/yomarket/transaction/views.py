@@ -19,7 +19,7 @@ from yomarket.models import Transaction ,CardHolder, Offer,CartProduct,\
 from api.views import CustomPagination, prepare_paginated_response
 from rest_framework.decorators import api_view, permission_classes
 from django.contrib.auth import get_user_model
-from yomarket.utils import recalculate_rank
+from yomarket.utils import recalculate_rank,send_invoice
 from django.utils import timezone
 TransactionModel = apps.get_model('yomarket', 'Transaction')
 UserModel = get_user_model()
@@ -261,18 +261,18 @@ class CheckoutOrderView(generics.CreateAPIView):
         response = dict(x.split('=') for x in r.text.split('&'))
 
         if response['Response'] == '000':
-            return True
+            return True,True
         else:
             error = {"payment_error_code": PAYMENT_ERRORS[response['Response']][0],
                      "detail": PAYMENT_ERRORS[response['Response']][1]}
             error_codes = [ERROR_API['900'][0]]
-            return Response(custom_api_response(errors=error, error_codes=error_codes),
+            return False,Response(custom_api_response(errors=error, error_codes=error_codes),
                             status=status.HTTP_400_BAD_REQUEST)
 
     def get_total_sum(self,cart_products):
         total = 0
         for cart_product in cart_products:
-            total = (cart_product.offer.price * cart_product.quantity)
+            total = total + (cart_product.offer.price * cart_product.quantity)
         return total
 
     def make_order_products(self,cart_products,order):
@@ -280,6 +280,7 @@ class CheckoutOrderView(generics.CreateAPIView):
         for cart_product in cart_products:
             product=OrderProduct(order=order,offer=cart_product.offer,
                                  quantity=cart_product.quantity)
+            order_products.append(product)
         return order_products
 
     def save_order_products(self,order_products):
@@ -348,6 +349,7 @@ class CheckoutOrderView(generics.CreateAPIView):
             coupon_id =serializer.validated_data.get('coupon_id')
             fullname =serializer.validated_data.get('fullname')
             phone =serializer.validated_data.get('phone')
+            coupon_used=False
 
 
             cart_products = CartProduct.objects.filter(pk__in=cart_product_ids)
@@ -365,6 +367,7 @@ class CheckoutOrderView(generics.CreateAPIView):
                     coupon = self.get_coupon(coupon_id)
                     if type(coupon) == type(Response()):
                         return coupon
+                    coupon_used = True
                     total = self.get_total_sum(cart_products)
                     if type(total) == type(Response()):
                         return total
@@ -387,13 +390,13 @@ class CheckoutOrderView(generics.CreateAPIView):
                                       total_sum=discount_total,
                                       status='PAID',
                                       fullname=fullname,
-                                      phone=phone)
+                                      phone=phone,coupon=coupon)
+                        order.save()
                         order_products=self.make_order_products(cart_products,order)
 
-                        paid = self.pay(cardholder, discount_total)
+                        paid,response = self.pay(cardholder, discount_total)
                         points=discount_total
-                        if type(paid) == type(Response()):
-                            return paid
+
             else:
                 total = self.get_total_sum(cart_products)
                 if type(total) == type(Response()):
@@ -414,9 +417,11 @@ class CheckoutOrderView(generics.CreateAPIView):
                                   status='PAID',
                                   fullname=fullname,
                                   phone=phone)
+                    order.save()
+
                     order_products=self.make_order_products(cart_products, order)
                     points=total
-                    paid = self.pay(cardholder, total)
+                    paid,response = self.pay(cardholder, total)
                     if type(paid) == type(Response()):
                         return paid
 
@@ -425,15 +430,20 @@ class CheckoutOrderView(generics.CreateAPIView):
                 order.save()
                 self.save_order_products(order_products=order_products)
                 self.delete_cart_products(cart_products)
-                coupon.status='USED'
-                coupon.used = timezone.now()
-                coupon.order=order
-                coupon.save()
+                if coupon_used:
+                    coupon.status='USED'
+                    coupon.used = timezone.now()
+                    coupon.order=order
+                    coupon.save()
+                send_invoice(order,request.user)
                 self.request.user.profile.points=self.request.user.profile.points + int(points)
                 self.request.user.profile.save()
                 recalculate_rank(self.request.user)
                 serializer = OrderListSerializer(order, context={'request': request})
                 return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
+            else:
+                order.delete()
+                return response
 
         else:
             error = {"detail": ERROR_API['163'][1]}

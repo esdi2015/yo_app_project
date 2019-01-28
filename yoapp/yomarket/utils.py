@@ -1,4 +1,7 @@
-
+from push_notifications.models import GCMDevice
+from django.core.mail.message import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from yoapp.settings import DEFAULT_FROM_EMAIL
 
 RANK_SYSTEM = {
     "1": (150, "Rank 1. 150 points."),
@@ -121,5 +124,30 @@ def recalculate_rank(user):
 
     user.profile.rank=user_rank
     user.profile.save()
+    return True
+
+
+def send_invoice(order,user):
+    try:
+        device = GCMDevice.objects.get(user=user)
+        msg = {'data': {'extra': {"order_id": order.id},
+                        'title': 'Thanks you for order',
+                        'message': order}}
+        device.send_message(**msg)
+        print('fcm')
+
+    except GCMDevice.DoesNotExist:
+            print('hit no fcm')
+            pass
+
+    context = {'order':order}
+
+    email_html_message = render_to_string('invoice/invoice-template.html', context)
+    email_plaintext_message = render_to_string('invoice/invoice-template.txt', context)
+
+    msg = EmailMultiAlternatives("Thank you for order. HALAP",email_plaintext_message,from_email=DEFAULT_FROM_EMAIL,to=(user.email,))
+    msg.attach_alternative(email_html_message, "text/html")
+    msg.send()
+    print('hit email')
 
     return True

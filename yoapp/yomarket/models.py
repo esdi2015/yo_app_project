@@ -246,16 +246,16 @@ ORDER_STATUSES = (
 )
 
 
-
-
 class Order(models.Model):
-    shop=models.ForeignKey(Shop,related_name='order_shop',on_delete=models.CASCADE)
+    shop = models.ForeignKey(Shop, related_name='order_shop', on_delete=models.CASCADE)
     user = models.ForeignKey('common.User', related_name='order_for_user', on_delete=models.CASCADE)
     created = models.DateTimeField(auto_now_add=True)
-    total_sum = models.DecimalField(max_digits=15,decimal_places=2)
-    status = models.CharField(max_length=50,choices=ORDER_STATUSES)
-    phone = models.CharField(max_length=30,blank=True,null=True)
-    fullname = models.CharField(max_length=150,blank=True,null=True)
+    total_sum = models.DecimalField(max_digits=15, decimal_places=2)
+    status = models.CharField(max_length=50, choices=ORDER_STATUSES)
+    phone = models.CharField(max_length=30, blank=True, null=True)
+    fullname = models.CharField(max_length=150, blank=True, null=True)
+    coupon = models.ForeignKey('yomarket.Coupon', related_name='order_coupon',blank=True,null=True,on_delete=models.DO_NOTHING)
+
 
 class OrderProduct(models.Model):
     offer = models.ForeignKey(Offer,related_name='offer_for_order_product',on_delete=models.CASCADE)
@@ -293,3 +293,5 @@ class Coupon(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     used = models.DateTimeField(blank=True,null=True)
     setting = models.ForeignKey(CouponSetting,on_delete=models.CASCADE,related_name='setting',null=True)
+
+

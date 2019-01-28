@@ -26,18 +26,18 @@ def make_email_msg(notification,request=None):
 
 def make_push_msg(notification):
     if notification.message_type == 'new_offer':
-        return {'extra':{"offer_id":notification.offer.id},
+        return {'data':{'extra':{"offer_id":notification.offer.id},
                 'title':'New offer is available:',
-                'message': notification.offer.title }
+                'message': notification.offer.title }}
     if notification.message_type == 'last_coupon_redeemed':
-        return {'extra':{"offer_id":notification.offer.id},
+        return {'data':{'extra':{"offer_id":notification.offer.id},
                 'title':'Sorry, last coupoun was redeemed:',
-                'message': notification.offer.title }
+                'message': notification.offer.title }}
     if notification.message_type == 'few_coupons_left':
-        return {'extra':{"offer_id":notification.offer.id},
+        return {'data':{'extra':{"offer_id":notification.offer.id},
                 'title':'Hurry, only 20% of coupons left:',
                 'message': notification.offer.title
-                }
+                }}
 
 
 def last_coupon_redeemed_event(offer=None,user=None):
