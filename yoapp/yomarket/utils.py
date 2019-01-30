@@ -127,7 +127,7 @@ def recalculate_rank(user):
 
 
 def send_invoice(order,user):
-        devices = FCMDevice.objects.get(user=user)
+        devices = FCMDevice.objects.filter(user=user)
 
         if devices.exists():
             msg = {'data': {'extra': {"order_id": order.id},'title': 'Thanks you for order','message':" Thanks you for order"}}

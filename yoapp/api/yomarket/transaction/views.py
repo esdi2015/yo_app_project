@@ -558,6 +558,7 @@ class CouponView(generics.CreateAPIView,generics.ListAPIView):
     def list(self, request, *args, **kwargs):
         queryset=self.get_queryset()
         if queryset.exists():
+            queryset.order_by('shop')
             serializer = CouponCustomerListSerializer(queryset,many=True,context={'request':self.request})
             return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
         else:
