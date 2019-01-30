@@ -4,10 +4,9 @@ from django.utils import timezone
 from django.db.models import Q
 from django.core.mail import send_mail
 from yoapp.settings import DEFAULT_FROM_EMAIL
-
+from fcm_django.models import FCMDevice
 from notification.models import Notification_settings, Subscription, Notification
 from yomarket.models import Offer,QRcoupon
-from push_notifications.models import GCMDevice
 from notification.utils import make_email_msg,make_push_msg
 from common.models import User
 
@@ -15,13 +14,16 @@ from common.models import User
 def send_notification(self,notif_id):
     notif = Notification.objects.get(id=notif_id)
     if notif.type == 'push':
-        try:
-            device = GCMDevice.objects.get(user=notif.user)
-            answer = make_push_msg(notif)
-            device.send_message(**answer)
-            notif.is_sent = True
-            notif.save()
-        except GCMDevice.DoesNotExist:
+        devices = FCMDevice.objects.filter(user=notif.user)
+        if devices.exists():
+            for device in devices:
+                device = FCMDevice.objects.get(user=notif.user)
+                answer = make_push_msg(notif)
+                device.send_message(**answer)
+                notif.is_sent = True
+                notif.save()
+
+        else:
             notif.error="no device"
             notif.save()
     elif notif.type == 'email':

@@ -1,8 +1,7 @@
-from push_notifications.models import GCMDevice
 from django.core.mail.message import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from yoapp.settings import DEFAULT_FROM_EMAIL
-
+from fcm_django.models import FCMDevice
 RANK_SYSTEM = {
     "1": (150, "Rank 1. 150 points."),
     "2": (250, "Rank 2. 250 points."),
@@ -128,28 +127,23 @@ def recalculate_rank(user):
 
 
 def send_invoice(order,user):
-    try:
-        device = GCMDevice.objects.get(user=user)
-        msg = {'data': {'extra': {"order_id": order.id},
-                        'title': 'Thanks you for order',
-                        'message':" Thanks you for order"}}
-        device.send_message(data={'extra': {"order_id": order.id},
-                        'title': 'Thanks you for order',
-                        'message':" Thanks you for order"})
-        print('fcm')
+        devices = FCMDevice.objects.get(user=user)
 
-    except GCMDevice.DoesNotExist:
-            print('hit no fcm')
+        if devices.exists():
+            msg = {'data': {'extra': {"order_id": order.id},'title': 'Thanks you for order','message':" Thanks you for order"}}
+
+        for device in devices:
+            device.send_message(**msg)
+
+        else:
             pass
 
-    context = {'order':order}
+        context = {'order':order}
 
-    email_html_message = render_to_string('invoice/invoice-template.html', context)
-    email_plaintext_message = render_to_string('invoice/invoice-template.txt', context)
+        email_html_message = render_to_string('invoice/invoice-template.html', context)
+        email_plaintext_message = render_to_string('invoice/invoice-template.txt', context)
 
-    msg = EmailMultiAlternatives("Thank you for order. HALAP",email_plaintext_message,from_email=DEFAULT_FROM_EMAIL,to=(user.email,))
-    msg.attach_alternative(email_html_message, "text/html")
-    msg.send()
-    print('hit email')
-
-    return True
+        msg = EmailMultiAlternatives("Thank you for order. HALAP",email_plaintext_message,from_email=DEFAULT_FROM_EMAIL,to=(user.email,))
+        msg.attach_alternative(email_html_message, "text/html")
+        msg.send()
+        return True
