@@ -31,12 +31,15 @@ class OfferSerializer(serializers.ModelSerializer):
 
 
     def get_can_get_coupons(self,obj):
-        settings = CouponSetting.objects.filter(rank__lte=self.context['request'].user.profile.rank, shop=obj.shop)
-        can_get = False
-        for setting in settings:
-            coupons_count = Coupon.objects.filter(setting=setting).count()
-            if coupons_count < setting.coupons_per_user:
-                can_get = True
+        if self.context['request'].user.is_authenticated == True:
+            settings = CouponSetting.objects.filter(rank__lte=self.context['request'].user.profile.rank, shop=obj.shop)
+            can_get = False
+            for setting in settings:
+                coupons_count = Coupon.objects.filter(setting=setting).count()
+                if coupons_count < setting.coupons_per_user:
+                    can_get = True
+        else:
+            can_get = False
         return can_get
 
     def get_is_liked(self, obj):
@@ -86,6 +89,13 @@ class CartProductListSerializer(serializers.ModelSerializer):
     class Meta:
         model = CartProduct
         fields = ('id','offer','quantity')
+
+class CartProductDeleteSerializer(serializers.ModelSerializer):
+    id = serializers.ListField()
+    class Meta:
+        model = CartProduct
+        fields = ('id',)
+
 
 class CartProductCreateSerializer(CartProductListSerializer):
     offer = serializers.PrimaryKeyRelatedField(queryset=OfferModel.objects.all())

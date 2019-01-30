@@ -434,7 +434,7 @@ class CheckoutOrderView(generics.CreateAPIView):
                     coupon.used = timezone.now()
                     coupon.order=order
                     coupon.save()
-                send_invoice(order,request.user)
+                # send_invoice(order,request.user)
                 self.request.user.profile.points=self.request.user.profile.points + int(points)
                 self.request.user.profile.save()
                 recalculate_rank(self.request.user)
@@ -507,7 +507,7 @@ class CouponView(generics.CreateAPIView,generics.ListAPIView):
             if self.request.query_params.get('shopid')!=None:
                 queryset = Coupon.objects.filter(user=self.request.user,
                                                  status='AVAILABLE',
-                                                 shop__pk=int(self.request.query_params['shopid']))
+                                                 shop__pk=int(self.request.query_params['shopid'])).order_by('shop')
                 return queryset
             queryset = Coupon.objects.filter(user=self.request.user,status='AVAILABLE')
             return queryset

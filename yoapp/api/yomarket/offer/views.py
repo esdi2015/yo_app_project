@@ -13,7 +13,8 @@ from api.views import CustomPagination, prepare_paginated_response
 from ...views import custom_api_response
 from .serializers import OfferSerializer,\
                         CartProductListSerializer,\
-                        CartProductCreateSerializer
+                        CartProductCreateSerializer,\
+                        CartProductDeleteSerializer
 
 from statistic.utlis import count_shown
 from history.utils import history_view_event, history_offer_search_event
@@ -281,8 +282,10 @@ class ShoppingCartView(generics.ListAPIView,generics.CreateAPIView,generics.Upda
     permission_classes = (IsAuthenticated,)
 
     def get_serializer_class(self):
-        if self.request.method=='POST' or self.request.method == 'DELETE':
+        if self.request.method=='POST':
             return CartProductCreateSerializer
+        elif self.request.method == 'DELETE':
+            return CartProductDeleteSerializer
         else:
             return CartProductListSerializer
 
@@ -330,18 +333,41 @@ class ShoppingCartView(generics.ListAPIView,generics.CreateAPIView,generics.Upda
     def delete(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=self.request.data)
         if serializer.is_valid():
-            try:
-                instance = CartProduct.objects.get(user=request.user, offer=serializer.validated_data['offer'])
-                instance.delete()
+            print(serializer.validated_data)
+
+            cart_products_ids = serializer.validated_data['id']
+
+            cart_products = CartProduct.objects.filter(pk__in=cart_products_ids)
+
+            if cart_products.exists():
+                for cart_product in cart_products:
+                    cart_product.delete()
+
                 error = {"detail": ERROR_API['500'][1]}
                 error_codes = [ERROR_API['500'][0]]
                 return Response(custom_api_response(errors=error, error_codes=error_codes),
                                 status=status.HTTP_200_OK)
-            except CartProduct.DoesNotExist:
+
+
+            else:
                 error = {"detail": ERROR_API['163'][1]}
                 error_codes = [ERROR_API['163'][0]]
                 return Response(custom_api_response(errors=error, error_codes=error_codes),
                                 status=status.HTTP_400_BAD_REQUEST)
+
+
+            # try:
+            #     instance = CartProduct.objects.get(user=request.user, offer=serializer.validated_data['offer'])
+            #     instance.delete()
+            #     error = {"detail": ERROR_API['500'][1]}
+            #     error_codes = [ERROR_API['500'][0]]
+            #     return Response(custom_api_response(errors=error, error_codes=error_codes),
+            #                     status=status.HTTP_200_OK)
+            # except CartProduct.DoesNotExist:
+            #     error = {"detail": ERROR_API['163'][1]}
+            #     error_codes = [ERROR_API['163'][0]]
+            #     return Response(custom_api_response(errors=error, error_codes=error_codes),
+            #                     status=status.HTTP_400_BAD_REQUEST)
 
         else:
             error = {"detail": ERROR_API['163'][1]}
