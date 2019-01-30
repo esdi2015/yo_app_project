@@ -296,11 +296,13 @@ class ShoppingCartView(generics.ListAPIView,generics.CreateAPIView,generics.Upda
 
     def list(self, request, *args, **kwargs):
         cart_products = self.get_queryset()
+        cart_products = cart_products.order_by('added_to_cart')
         if cart_products.exists():
             for cart_product in cart_products:
                 if cart_product.offer.available == False :
                     cart_product.delete()
-
+            cart_products = self.get_queryset()
+            cart_products = cart_products.order_by('added_to_cart')
             if cart_products.exists():
                 serializer = self.get_serializer(cart_products,many=True)
                 return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
