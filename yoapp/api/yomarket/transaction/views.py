@@ -434,7 +434,7 @@ class CheckoutOrderView(generics.CreateAPIView):
                     coupon.used = timezone.now()
                     coupon.order=order
                     coupon.save()
-                # send_invoice(order,request.user)
+                send_invoice(order,request.user)
                 self.request.user.profile.points=self.request.user.profile.points + int(points)
                 self.request.user.profile.save()
                 recalculate_rank(self.request.user)

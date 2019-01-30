@@ -91,7 +91,7 @@ class OfferListView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         if self.request.user.is_anonymous:
-            queryset = OfferModel.objects.filter(expire__gte=datetime.datetime.now())
+            queryset = OfferModel.objects.filter(expire__gte=datetime.datetime.now(),status='PUBLISHED',available=True)
 
             return queryset
 
@@ -99,7 +99,7 @@ class OfferListView(generics.ListCreateAPIView):
             queryset = OfferModel.objects.all()
 
         if self.request.user.is_authenticated == True and self.request.user.role == 'CUSTOMER':
-            queryset = OfferModel.objects.filter(expire__gte=datetime.datetime.now())
+            queryset = OfferModel.objects.filter(expire__gte=datetime.datetime.now(),status='PUBLISHED',available=True)
             # good_ids=[]
             # for each in queryset:
             #     try:
@@ -121,7 +121,7 @@ class OfferListView(generics.ListCreateAPIView):
                     target_ids = []
 
                     for each in target_categs:
-                        set = OfferModel.objects.filter(category=each, available=True,offer_type='REGULAR',expire__gte=datetime.datetime.now())[:5]
+                        set = OfferModel.objects.filter(category=each, available=True,offer_type='REGULAR',expire__gte=datetime.datetime.now(),status='PUBLISHED')[:5]
                         target_ids = target_ids + [x.id for x in set]
 
                     all_set = queryset.filter(offer_type='REGULAR').exclude(id__in=target_ids)
@@ -335,8 +335,6 @@ class ShoppingCartView(generics.ListAPIView,generics.CreateAPIView,generics.Upda
     def delete(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=self.request.data)
         if serializer.is_valid():
-            print(serializer.validated_data)
-
             cart_products_ids = serializer.validated_data['id']
 
             cart_products = CartProduct.objects.filter(pk__in=cart_products_ids)
