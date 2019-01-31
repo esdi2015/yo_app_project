@@ -4,7 +4,7 @@ from django.contrib.auth import (
     logout as django_logout
 )
 from django.contrib.auth import get_user_model
-
+from yoapp.settings import DEFAULT_FROM_EMAIL
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -277,7 +277,7 @@ def make_verification_mail(user,request):
         'current_user': token.user,
         'username': token.user.username,
         'email': token.user.email,
-        'reset_password_url': "{protocol}://192.168.2.175:8000/api/v1/verify-email/{token}/".format(token=token.key,
+        'reset_password_url': "{protocol}://{domain}/api/v1/verify-email/{token}/".format(token=token.key,
                                                                                    domain=current_site.domain,
                                                                                    protocol="http"),
         'site_name': current_site.name,
@@ -294,7 +294,7 @@ def make_verification_mail(user,request):
         # message:
         email_plaintext_message,
         # from:
-        "noreply@somehost.local",
+        DEFAULT_FROM_EMAIL,
         # to:
         [token.user.email]
     )

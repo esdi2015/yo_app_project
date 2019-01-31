@@ -36,7 +36,7 @@ def password_reset_token_created(sender, reset_password_token, *args, **kwargs):
         'username': reset_password_token.user.username,
         'email': reset_password_token.user.email,
         # ToDo: The URL can (and should) be constructed using pythons built-in `reverse` method.
-        'reset_password_url': "{protocol}://www.yocard.il.co/reset/{token}".format(token=change_password_token,
+        'reset_password_url': "{protocol}://{domain}/reset/{token}".format(token=change_password_token,
                                                                                   domain=current_site.domain,
                                                                                   protocol="http"),
         'site_name': current_site.name,
