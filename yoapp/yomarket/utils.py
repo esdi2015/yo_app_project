@@ -138,10 +138,11 @@ def send_invoice(order,user):
         else:
             pass
 
-        context = {'order':order}
+        context = {'order':order,
+                   'order_products':order.order_products.all()}
 
-        email_html_message = render_to_string('invoice/invoice-template.html', context)
-        email_plaintext_message = render_to_string('invoice/invoice-template.txt', context)
+        email_html_message = render_to_string('invoice/email.html', context)
+        email_plaintext_message = render_to_string('invoice/email.txt', context)
 
         msg = EmailMultiAlternatives("Thank you for order. HALAP",email_plaintext_message,from_email=DEFAULT_FROM_EMAIL,to=(user.email,))
         msg.attach_alternative(email_html_message, "text/html")
