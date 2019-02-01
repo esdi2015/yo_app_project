@@ -4,7 +4,7 @@
   <div style="display: flex; justify-content: center">
     <div style="width: 560px">
       <div style="width: 100%; display: flex; justify-content: center; background-color: d63013">
-        <img style="margin: 20px 0" src="{% static '/hand.png' %}">
+        <img style="margin: 20px 0" src="{{host}}{% static '/hand.png' %}">
       </div>
       <div style="width: 100%; text-align: center; padding: 30px 0; background-color: #FFCC99">
         <div style="padding: 0 80px;">
@@ -21,7 +21,7 @@
           <div id="iterator" style="margin-top: 40px">
             <div style="width: 90%; margin: auto; padding-bottom: 10px; text-align: center; display: flex; justify-content: space-around; border-width: 0 0 2px 0; border-color: black; border-style: solid">
               <div style="width: 40%">
-                <img style="width: 100%" src="{{order_product.offer.image.url}}">
+                <img style="width: 100%" src="{{host}}{{order_product.offer.image.url}}">
               </div>
               <div style="width: 40%; text-align: left">
                 <p style="font-weight: bold">{{order_product.offer.title}}</p>

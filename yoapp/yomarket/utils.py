@@ -126,7 +126,7 @@ def recalculate_rank(user):
     return True
 
 
-def send_invoice(order,user):
+def send_invoice(order,user,host):
         devices = FCMDevice.objects.filter(user=user)
 
         if devices.exists():
@@ -138,8 +138,10 @@ def send_invoice(order,user):
         else:
             pass
 
+        order_products = order.order_product.all()
         context = {'order':order,
-                   'order_products':order.order_products.all()}
+                   'order_products':order_products,
+                   'host':host}
 
         email_html_message = render_to_string('invoice/email.html', context)
         email_plaintext_message = render_to_string('invoice/email.txt', context)

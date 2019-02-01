@@ -330,10 +330,12 @@ class CheckoutOrderView(generics.CreateAPIView):
 
     def get_discount_total(self,coupon,total):
         if coupon.discount_type=='ABSOLUTE':
-            discount_total = total-coupon.discount
+            total=float(total)
+            discount_total = total- float(coupon.discount)
             return discount_total
         if coupon.discount_type=='PERCENT':
-            percent_value = (total/100.00)*coupon.discount
+            total=float(total)
+            percent_value = (total/100.00)*float(coupon.discount)
             discount_total =total-percent_value
             return discount_total
 
@@ -434,7 +436,8 @@ class CheckoutOrderView(generics.CreateAPIView):
                     coupon.used = timezone.now()
                     coupon.order=order
                     coupon.save()
-                send_invoice(order,request.user)
+                host= request.get_host()
+                send_invoice(order,request.user,host)
                 self.request.user.profile.points=self.request.user.profile.points + int(points)
                 self.request.user.profile.save()
                 recalculate_rank(self.request.user)
@@ -570,14 +573,19 @@ class CouponView(generics.CreateAPIView,generics.ListAPIView):
 from rest_framework.decorators import api_view
 from datetime import datetime
 from django.http import HttpResponse
+from django.shortcuts import render_to_response
 from django.views.decorators.csrf import csrf_exempt
 from yomarket.utils import recalculate_rank
-@csrf_exempt
-@api_view()
-@permission_classes((IsAuthenticated, ))
+from django.shortcuts import render
+
+
 def test_view(request):
+    order=Order.objects.get(pk=15)
+    order_products= order.order_product.all()
 
-    return  Response('ok',headers={'dsadsasad':'dsadsadassadsad'})
-
+    z={'data':{'extra':{"offer_id":'dsadsa'},
+                'title':'New offer is available:',
+                'message': 'dsdsa' }}
+    return render(request, 'invoice/email.html', context={'order':order,'order_products':order_products})
 
 
