@@ -12,7 +12,7 @@ from api.statistic.serializers import CategoryPieSerializer,\
                                       ShopPieSerializer,\
                                       OfferPieSerializer
 
-from statistic.models import StatisticTable
+from statistic.models import StatisticTable,Statistic
 
 
 from django.db.models.functions import TruncMonth,TruncDay,TruncHour,TruncYear
@@ -452,3 +452,60 @@ class StatisticGlobalOfferPie(generics.ListAPIView):
 
 
          return Response(custom_api_response(serializer))
+
+
+
+
+from django_filters.rest_framework import DjangoFilterBackend, FilterSet, CharFilter,DateFromToRangeFilter
+
+
+
+
+class StatisticFilter(FilterSet):
+    type = CharFilter(method='filter_type',)
+    date = DateFromToRangeFilter()
+
+    class Meta:
+        model = Statistic
+        fields = ('type','shop')
+
+    def filter_type(self,queryset,name,value):
+        if value:
+            queryset = queryset.filter(type=value)
+        return queryset
+
+
+from django.db.models import Sum
+
+class StatisticView(generics.ListAPIView):
+    serializer_class = OfferTakenRedeemedSerializer #####################
+    permission_classes = (IsAuthenticated, )
+    filter_class = StatisticFilter
+    filter_backends = (DjangoFilterBackend, )
+
+
+    def get_queryset(self):
+        if self.request.user.role == 'MANAGER':
+            queryset = Statistic.objects.filter(shop__manager=self.request.user)
+        if self.request.user.role == 'OWNER':
+            queryset = Statistic.objects.filter(shop__user=self.request.user)
+        else:
+            return None
+
+        return queryset
+
+
+
+    def list(self, request, *args, **kwargs):
+         queryset = self.get_queryset()
+         queryset = self.filter_queryset(queryset)
+
+         queryset = queryset.values('type').annotate(Sum('value'))
+
+         resp = dict()
+
+         for row in queryset:
+            resp[row['type']] = row['value__sum']
+
+         return Response(resp, status=status.HTTP_200_OK)
+

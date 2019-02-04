@@ -27,3 +27,24 @@ class StatisticTable(models.Model):
     class Meta:
         verbose_name = "statistic"
         verbose_name_plural = "statistics"
+
+
+
+TYPES =(
+    ('OTHER', 'Other'),
+    ('GENERAL_OFFER_VIEWS','General traffic'),
+    ('OFFER_PAGE_VIEWS', 'Offer page traffic'),
+    ('OFFER_ADDED_TO_CART', 'Added to cart traffic'),
+    ('OFFER_BOUGHT', 'Offer bought traffic'),
+    ('COUPON_TAKEN', 'Taken coupons traffic'),
+    ('COUPON_USED', 'Used coupons traffic'),
+
+)
+
+class Statistic(models.Model):
+    type = models.CharField(max_length=40,choices=TYPES,default=TYPES[0][0])
+    offer = models.ForeignKey(Offer, on_delete=models.CASCADE, null=True, blank=True)
+    shop = models.ForeignKey(Shop,on_delete=models.CASCADE,null=True,blank=True)
+    value = models.IntegerField(default=1)
+    date = models.DateTimeField(editable=True, default=timezone.now)
+
