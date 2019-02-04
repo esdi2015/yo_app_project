@@ -467,7 +467,7 @@ class StatisticFilter(FilterSet):
 
     class Meta:
         model = Statistic
-        fields = ('type','shop')
+        fields = ('type','shop','offer')
 
     def filter_type(self,queryset,name,value):
         if value:
