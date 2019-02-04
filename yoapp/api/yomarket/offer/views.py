@@ -16,11 +16,11 @@ from .serializers import OfferSerializer,\
                         CartProductCreateSerializer,\
                         CartProductDeleteSerializer
 
-from statistic.utlis import count_shown
+from statistic.utlis import count_shown, STATISTIC_OFFERS_VIEWS, STATISTIC_OFFER_PAGE_VIEWS, STATISTIC_ADDED_TO_CART
 from history.utils import history_view_event, history_offer_search_event
 from ...utils import ERROR_API
 from django.shortcuts import  get_object_or_404
-from yomarket.models import QRcoupon,CartProduct
+from yomarket.models import QRcoupon,CartProduct,Offer
 
 OfferModel = apps.get_model('yomarket', 'Offer')
 ShopModel = apps.get_model('yomarket', 'Shop')
@@ -204,8 +204,14 @@ class OfferListView(generics.ListCreateAPIView):
 
         paginate = prepare_paginated_response(self, request, queryset)
         if paginate:
+            offers_list=list()
+            for offer in paginate.content:
+                offers_list.append(offer['id'])
+            offers=Offer.objects.filter(id__in=offers_list)
+            STATISTIC_OFFERS_VIEWS(offers)
             return Response(custom_api_response(content=paginate.content, metadata=paginate.metadata), status=status.HTTP_200_OK)
 
+        STATISTIC_OFFERS_VIEWS(queryset)
         serializer = self.get_serializer(queryset, many=True)
         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
 
@@ -236,6 +242,7 @@ class OfferDetailView(generics.RetrieveUpdateDestroyAPIView):
             return Response(custom_api_response(errors=error, error_codes=error_codes),
                             status=status.HTTP_404_NOT_FOUND)
 
+        STATISTIC_OFFER_PAGE_VIEWS(instance)
         history_view_event(instance,user=request.user)
         count_shown(instance)
         serializer = self.get_serializer(instance)
@@ -325,6 +332,7 @@ class ShoppingCartView(generics.ListAPIView,generics.CreateAPIView,generics.Upda
                 serializer.update(instance,serializer.validated_data)
             except CartProduct.DoesNotExist:
                 cart = serializer.save()
+                STATISTIC_ADDED_TO_CART(cart.offer)
         else:
             error = {"detail": ERROR_API['163'][1]}
             error_codes = [ERROR_API['163'][0]]

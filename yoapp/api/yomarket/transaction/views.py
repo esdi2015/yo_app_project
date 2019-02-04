@@ -21,6 +21,7 @@ from rest_framework.decorators import api_view, permission_classes
 from django.contrib.auth import get_user_model
 from yomarket.utils import recalculate_rank,send_invoice
 from django.utils import timezone
+from statistic.utlis import STATISTIC_OFFER_BOUGHT,STATISTIC_COUPON_TAKEN,COUPON_USED
 TransactionModel = apps.get_model('yomarket', 'Transaction')
 UserModel = get_user_model()
 
@@ -430,12 +431,14 @@ class CheckoutOrderView(generics.CreateAPIView):
             if paid==True:
                 order.save()
                 self.save_order_products(order_products=order_products)
+                STATISTIC_OFFER_BOUGHT(order_products)
                 self.delete_cart_products(cart_products)
                 if coupon_used:
                     coupon.status='USED'
                     coupon.used = timezone.now()
                     coupon.order=order
                     coupon.save()
+                    COUPON_USED(coupon)
                 host= request.get_host()
                 send_invoice(order,request.user,host)
                 self.request.user.profile.points=self.request.user.profile.points + int(points)
@@ -543,7 +546,7 @@ class CouponView(generics.CreateAPIView,generics.ListAPIView):
                                    setting=setting)
                     coupon.save()
                     coupons.append(coupon)
-
+                STATISTIC_COUPON_TAKEN(coupons)
                 serializer=CouponCustomerListSerializer(coupons,many=True,context={'request':self.request})
                 return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
             else:
