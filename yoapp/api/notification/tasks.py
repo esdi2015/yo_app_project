@@ -19,7 +19,7 @@ def send_notification(self,notif_id):
             for device in devices:
                 device = FCMDevice.objects.get(user=notif.user)
                 answer = make_push_msg(notif)
-                device.send_message(**answer)
+                device.send_message(data=answer)
                 notif.is_sent = True
                 notif.save()
 

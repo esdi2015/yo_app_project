@@ -26,9 +26,9 @@ def make_email_msg(notification,request=None):
 
 def make_push_msg(notification):
     if notification.message_type == 'new_offer':
-        return {'data':{'extra':{"offer_id":notification.offer.id},
+        return {'extra':{"offer_id":notification.offer.id},
                 'title':'New offer is available:',
-                'message': notification.offer.title }}
+                'message': notification.offer.title }
     if notification.message_type == 'last_coupon_redeemed':
         return {'data':{'extra':{"offer_id":notification.offer.id},
                 'title':'Sorry, last coupoun was redeemed:',
