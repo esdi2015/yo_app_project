@@ -1,7 +1,7 @@
 from django.conf.urls import re_path, include, url
 from rest_framework import routers
 from .views import UserViewSet, Logout, UserMe, UserIsExists, google_oauth, facebook_oauth, \
-    user_reset_password_request_token, user_reset_password_confirm, free_managers_view,twitter_login, verify_email_view
+    user_reset_password_request_token, user_reset_password_confirm, free_managers_view,twitter_login, verify_email_view,verified_view
 from . import views as api_view
 from django.urls import path
 
@@ -28,5 +28,6 @@ urlpatterns += [
     #url(r'^forgot-password/$', api_view.login_view, name='user_forgot_password'),
     url(r'^free-managers/', free_managers_view, name='free_managers'),
     url(r'^login-twitter/', twitter_login),
+    url(r'^verified/', verified_view),
 
 ]

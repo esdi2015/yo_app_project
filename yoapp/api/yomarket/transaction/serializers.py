@@ -1,6 +1,6 @@
 from django.apps import apps
 from rest_framework import serializers
-from yomarket.models import CardHolder,Order,OrderProduct,Shop,Coupon
+from yomarket.models import CardHolder,Order,OrderProduct,Shop,Coupon,CouponSetting
 
 TransactionModel = apps.get_model('yomarket', 'Transaction')
 from api.yomarket.offer.serializers import OfferSerializer,ShopSerializer
@@ -72,10 +72,16 @@ class OrderListSerializer(serializers.ModelSerializer):
 class CouponMakeSerilalizer(serializers.Serializer):
     shop = serializers.PrimaryKeyRelatedField(queryset=Shop.objects.all())
 
+class CouponSettingSerilalizer(serializers.ModelSerializer):
+
+    class Meta:
+        model = CouponSetting
+        fields = ('minimal_price_order',)
 
 
 class CouponCustomerListSerializer(serializers.ModelSerializer):
     shop = ShopSerializer()
+    setting = CouponSettingSerilalizer()
     class Meta:
         model = Coupon
-        fields = ('id','discount','discount_type','shop','status','created')
+        fields = ('id','discount','discount_type','shop','status','created','setting')

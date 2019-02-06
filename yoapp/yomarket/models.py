@@ -255,7 +255,8 @@ class Order(models.Model):
     phone = models.CharField(max_length=30, blank=True, null=True)
     fullname = models.CharField(max_length=150, blank=True, null=True)
     coupon = models.ForeignKey('yomarket.Coupon', related_name='order_coupon',blank=True,null=True,on_delete=models.DO_NOTHING)
-
+    trans_index = models.CharField(default='',blank=True,null=True,max_length=15)
+    trans_auth = models.CharField(max_length=15,blank=True,null=True,default='')
 
 class OrderProduct(models.Model):
     offer = models.ForeignKey(Offer,related_name='offer_for_order_product',on_delete=models.CASCADE)
@@ -275,7 +276,7 @@ class CouponSetting(models.Model):
     discount = models.IntegerField(default=0)
     rank = models.IntegerField(default=1)
     shop = models.ForeignKey(Shop,related_name='coupon_setting',on_delete=models.CASCADE)
-
+    minimal_price_order = models.IntegerField(null=True)
 
 COUPON_STATUSES = (
     ('AVAILABLE', 'Available'),

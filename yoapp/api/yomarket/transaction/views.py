@@ -247,7 +247,7 @@ class CardHolderViewSet(viewsets.ModelViewSet):
 class CheckoutOrderView(generics.CreateAPIView):
     permission_classes = (IsAuthenticated,)
 
-    def pay(self,cardholder,total):
+    def pay(self,cardholder,total,order):
         url = 'https://secure5.tranzila.com/cgi-bin/tranzila71u.cgi'
         params = {
             "supplier": TRANZILLA_TERMINAL,
@@ -262,6 +262,9 @@ class CheckoutOrderView(generics.CreateAPIView):
         response = dict(x.split('=') for x in r.text.split('&'))
 
         if response['Response'] == '000':
+            order.trans_index = response['index']
+            order.trans_auth = response['ConfirmationCode']
+            order.save()
             return True,True
         else:
             error = {"payment_error_code": PAYMENT_ERRORS[response['Response']][0],
@@ -396,7 +399,7 @@ class CheckoutOrderView(generics.CreateAPIView):
                         order.save()
                         order_products=self.make_order_products(cart_products,order)
 
-                        paid,response = self.pay(cardholder, discount_total)
+                        paid,response = self.pay(cardholder, discount_total,order)
                         points=discount_total
 
             else:
@@ -423,7 +426,7 @@ class CheckoutOrderView(generics.CreateAPIView):
 
                     order_products=self.make_order_products(cart_products, order)
                     points=total
-                    paid,response = self.pay(cardholder, total)
+                    paid,response = self.pay(cardholder, total,order)
                     if type(paid) == type(Response()):
                         return paid
 
@@ -580,15 +583,12 @@ from django.shortcuts import render_to_response
 from django.views.decorators.csrf import csrf_exempt
 from yomarket.utils import recalculate_rank
 from django.shortcuts import render
+from fcm_django.models import FCMDevice
 
-
+@api_view()
 def test_view(request):
-    order=Order.objects.get(pk=15)
-    order_products= order.order_product.all()
-
-    z={'data':{'extra':{"offer_id":'dsadsa'},
-                'title':'New offer is available:',
-                'message': 'dsdsa' }}
-    return render(request, 'invoice/email.html', context={'order':order,'order_products':order_products})
+    device = FCMDevice.objects.get(id=3)
+    device.send_message(data={'test':'test'})
+    return Response('ok')
 
 

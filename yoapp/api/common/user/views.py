@@ -302,11 +302,15 @@ def make_verification_mail(user,request):
     msg.send()
 
     return True
+from django.shortcuts import render
+
+
+def verified_view(request):
+    return render(request, 'email/verified.html',)
 
 
 
-
-
+from django.shortcuts import render_to_response
 from django.shortcuts import redirect
 @api_view(['GET'])
 @permission_classes(())
