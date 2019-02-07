@@ -1,0 +1,14 @@
+Hello, new status for order № {{order.id}} is: {{order.status}}
+
+<p>Items ordered:<p>
+{% for order_product in order_products %}
+<p>Title: {{order_product.offer.title}}</p>
+<p>Price: {{order_product.offer.price}}</p>
+<p>Quantity: {{order_product.quantity }}</p>
+<p>-------------------------</p>
+
+{%endfor%}
+
+Total: {{order.total_sum}}
+<p></p>
+

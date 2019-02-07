@@ -1,0 +1,57 @@
+<html style="font-family:Arial, sans-serif;">
+{% load static %}
+<body>
+  <div style="display: flex; justify-content: center">
+    <div style="width: 560px">
+      <div style="width: 100%; display: flex; justify-content: center; background-color:#d63013">
+        <img style="margin: 20px auto" src="http://{{host}}{% static '/hand.png' %}">
+      </div>
+      <div style="width: 100%; text-align: center; padding: 30px 0; background-color: #FFCC99">
+        <div style="padding: 0 80px;">
+          <h1 style="font-weight: bold">Your order is confirmed.</h1>
+          <p>Hello, new status for order № {{order.id}} is: {{order.status}}</p>
+        </div>
+      </div>
+      <div style="width: 100%; text-align: center">
+        <h2>Items ordered</h2>
+        <div style="width: 100%; margin: 30px 0;">
+
+            {% for order_product in order_products %}
+          <div id="iterator" style="margin-top: 40px">
+            <div style="width: 90%; margin: auto; padding-bottom: 10px; text-align: center; display: flex; justify-content: space-around; border-width: 0 0 2px 0; border-color: black; border-style: solid">
+              <div style="width: 40%">
+                <img style="width: 100%" src="http://{{host}}{{order_product.offer.image.url}}">
+              </div>
+              <div style="width: 40%; text-align: left">
+                <p style="font-weight: bold">{{order_product.offer.title}}</p>
+                <p style="font-weight: bold">Item Price: <span style="font-weight: 300">&#8362; {{order_product.offer.price}}</span></p>
+                <p style="font-weight: bold">Qty: <span style="font-weight: 300">{{order_product.quantity}}</span></p>
+              </div>
+            </div>
+          </div>
+            {%endfor%}
+          <div style="margin-top: 20px; display: flex; flex-flow: column; align-items: center">
+
+
+
+            <div style="width: 50%; display: flex; justify-content: space-between; margin: 20px auto; text-align: center">
+                <span style="font-weight: bold; font-size: larger; margin: auto">
+                    Order Total:&nbsp;&#8362;{{order.total_sum}}
+                </span>
+              <!--<div style="font-weight: bold; font-size: larger">Order Total: </div>
+              <div style="font-weight: bold; font-size: larger">&#8362; {{order.total_sum}}</div>-->
+            </div>
+          </div>
+
+
+
+
+        </div>
+
+
+
+      </div>
+    </div>
+  </div>
+</body>
+</html>

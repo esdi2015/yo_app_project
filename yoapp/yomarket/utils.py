@@ -150,3 +150,33 @@ def send_invoice(order,user,host):
         msg.attach_alternative(email_html_message, "text/html")
         msg.send()
         return True
+
+
+def order_status_update_notification(order, host):
+    if order.user.profile.notifications == 'enabled' or order.user.profile.notifications == 'push':
+        devices = FCMDevice.objects.filter(user=order.user)
+        if devices.exists():
+            msg = {'data': {'extra': {"order_id": order.id}, 'title': 'Order new status.',
+                        'message': "New order status: "+str(order.status)}}
+
+            for device in devices:
+                device.send_message(**msg)
+
+            else:
+                pass
+
+
+    if order.user.profile.notifications == 'enabled' or order.user.profile.notifications == 'email':
+        order_products = order.order_product.all()
+        context = {'order': order,
+                   'order_products': order_products,
+                   'host': host}
+
+        email_html_message = render_to_string('invoice-status/email.html', context)
+        email_plaintext_message = render_to_string('invoice-status/email.txt', context)
+
+        msg = EmailMultiAlternatives("New order status. HALAP", email_plaintext_message, from_email=DEFAULT_FROM_EMAIL,
+                                 to=(order.user.email,))
+        msg.attach_alternative(email_html_message, "text/html")
+        msg.send()
+    return True

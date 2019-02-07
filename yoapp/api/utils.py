@@ -58,6 +58,8 @@ ERROR_API = {
     "900": (900, "Payment error"),
     "901": (901, "Amount mismatch"),
     "902": (902, "Coupon provided but no discount sum"),
+    "903": (902, "Transaction cancellation error."),
+    "905": (905, "Transaction successfully cancelled"),
 
 }
 

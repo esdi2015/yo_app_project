@@ -8,7 +8,7 @@ from rest_framework import viewsets
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend, FilterSet, CharFilter
 from ...utils import ERROR_API, PAYMENT_ERRORS
-from yoapp.settings import TRANZILLA_PW,TRANZILLA_TERMINAL
+from yoapp.settings import TRANZILLA_PW, TRANZILLA_TERMINAL, TRANZILLA_CANCEL_PW
 from ...views import custom_api_response
 from .serializers import TransactionSerializer,MyTransactionSerializer,\
                          CardHolderSerializer, CardHolderCreateSerializer,\
@@ -19,7 +19,7 @@ from yomarket.models import Transaction ,CardHolder, Offer,CartProduct,\
 from api.views import CustomPagination, prepare_paginated_response
 from rest_framework.decorators import api_view, permission_classes
 from django.contrib.auth import get_user_model
-from yomarket.utils import recalculate_rank,send_invoice
+from yomarket.utils import recalculate_rank,send_invoice, order_status_update_notification
 from django.utils import timezone
 from statistic.utlis import STATISTIC_OFFER_BOUGHT,STATISTIC_COUPON_TAKEN,COUPON_USED
 TransactionModel = apps.get_model('yomarket', 'Transaction')
@@ -264,6 +264,7 @@ class CheckoutOrderView(generics.CreateAPIView):
         if response['Response'] == '000':
             order.trans_index = response['index']
             order.trans_auth = response['ConfirmationCode']
+            order.tranzila_tk = cardholder.tranzila_tk
             order.save()
             return True,True
         else:
@@ -460,7 +461,7 @@ class CheckoutOrderView(generics.CreateAPIView):
                             status=status.HTTP_400_BAD_REQUEST)
 
 
-class OrderView(generics.ListAPIView,generics.UpdateAPIView):
+class OrderView(generics.ListAPIView,generics.UpdateAPIView,generics.DestroyAPIView):
     permission_classes = (IsAuthenticated,)
 
     def get_serializer_class(self):
@@ -491,6 +492,8 @@ class OrderView(generics.ListAPIView,generics.UpdateAPIView):
         serializer=OrderListSerializer(instance=instance,data=request.data,partial=True)
         if serializer.is_valid():
             instance=serializer.save()
+            host = request.get_host()
+            order_status_update_notification(instance, host)
             serializer=OrderListSerializer(instance,context={'request':request})
             return Response(custom_api_response(serializer), status=status.HTTP_200_OK )
         else:
@@ -499,7 +502,44 @@ class OrderView(generics.ListAPIView,generics.UpdateAPIView):
             return Response(custom_api_response(errors=error, error_codes=error_codes),
                             status=status.HTTP_400_BAD_REQUEST)
 
+    def delete(self, request, *args, **kwargs):
+        order = self.get_object()
+        if order.shop.manager == request.user or order.shop.user == request.user:
 
+            url = 'https://secure5.tranzila.com/cgi-bin/tranzila71u.cgi'
+            params = {
+                "supplier": TRANZILLA_TERMINAL,
+                "TranzilaPW": TRANZILLA_PW,
+                "CreditPass": TRANZILLA_CANCEL_PW,
+                "TranzilaTK": order.tranzila_tk,
+                "tranmode": 'D' + order.trans_index,
+                "authnr": order.trans_auth
+            }
+
+            r = requests.get(url, params=params)
+            response = dict(x.split('=') for x in r.text.split('&'))
+
+            if response['Response'] == '000':
+                order.status = 'CANCELED'
+                order.save()
+                host = request.get_host()
+                order_status_update_notification(order,host)
+                error = {"detail": ERROR_API['905'][1]}
+                error_codes = [ERROR_API['905'][0]]
+                return Response(custom_api_response(errors=error, error_codes=error_codes),
+                                status=status.HTTP_200_OK)
+
+            else:
+                error = {"detail": ERROR_API['903'][1]}
+                error_codes = [ERROR_API['903'][0]]
+                return Response(custom_api_response(errors=error, error_codes=error_codes),
+                                status=status.HTTP_200_OK)
+
+        else:
+            error = {"detail": ERROR_API['127'][1]}
+            error_codes = [ERROR_API['127'][0]]
+            return Response(custom_api_response(errors=error, error_codes=error_codes),
+                            status=status.HTTP_200_OK)
 
 
 

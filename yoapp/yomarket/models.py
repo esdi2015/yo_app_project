@@ -257,6 +257,7 @@ class Order(models.Model):
     coupon = models.ForeignKey('yomarket.Coupon', related_name='order_coupon',blank=True,null=True,on_delete=models.DO_NOTHING)
     trans_index = models.CharField(default='',blank=True,null=True,max_length=15)
     trans_auth = models.CharField(max_length=15,blank=True,null=True,default='')
+    tranzila_tk = models.CharField(max_length=50, null=True)
 
 class OrderProduct(models.Model):
     offer = models.ForeignKey(Offer,related_name='offer_for_order_product',on_delete=models.CASCADE)
