@@ -10,6 +10,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 from rest_framework import viewsets
 from rest_framework.views import APIView
+from rest_framework import generics
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
 from rest_auth.models import TokenModel
@@ -141,6 +142,28 @@ class UserViewSet(viewsets.ModelViewSet):
         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
 
 
+
+
+class UserChangePassword(generics.UpdateAPIView):
+    queryset = UserModel.objects.all()
+    serializer_class = CustomUserSerializer
+    permission_classes = (IsAuthenticated,)
+
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        if instance == self.request.user:
+            serializer = self.get_serializer(instance, data=request.data, partial=partial)
+            serializer.is_valid(raise_exception=True)
+            self.perform_update(serializer)
+            return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
+
+        else:
+            error = {"detail": ERROR_API['127'][1]}
+            error_codes = [ERROR_API['127'][0]]
+            return Response(custom_api_response(errors=error, error_codes=error_codes),
+                            status=status.HTTP_400_BAD_REQUEST)
 
 class UserResetPasswordConfirm(ResetPasswordConfirm):
     def post(self, request, *args, **kwargs):
