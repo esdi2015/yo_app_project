@@ -155,8 +155,8 @@ class UserChangePassword(generics.UpdateAPIView):
         instance = self.get_object()
         if instance == self.request.user:
             serializer = self.get_serializer(instance, data=request.data, partial=partial)
-            serializer.is_valid(raise_exception=True)
-            self.perform_update(serializer)
+            if serializer.is_valid():
+                self.perform_update(serializer)
             return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
 
         else:
