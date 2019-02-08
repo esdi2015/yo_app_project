@@ -461,8 +461,31 @@ class CheckoutOrderView(generics.CreateAPIView):
                             status=status.HTTP_400_BAD_REQUEST)
 
 
+
+
+
+
+
+
+class OrderListFilter(FilterSet):
+    type = CharFilter(method='status_type',)
+
+    class Meta:
+        model = Order
+        fields = ('status','shop')
+
+    def status_type(self,queryset,name,value):
+        if value:
+            queryset = queryset.filter(status=value)
+        return queryset
+
+
 class OrderView(generics.ListAPIView,generics.UpdateAPIView,generics.DestroyAPIView):
     permission_classes = (IsAuthenticated,)
+    filter_class = OrderListFilter
+    filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
+    ordering_fields = ('id', 'created')
+
 
     def get_serializer_class(self):
         if self.request.method=='GET':
@@ -483,7 +506,9 @@ class OrderView(generics.ListAPIView,generics.UpdateAPIView,generics.DestroyAPIV
 
 
     def list(self, request, *args, **kwargs):
-        serializer=self.get_serializer(self.get_queryset(),many=True)
+        queryset = self.get_queryset()
+        queryset = self.filter_queryset(queryset)
+        serializer=self.get_serializer(queryset,many=True)
         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
 
 
