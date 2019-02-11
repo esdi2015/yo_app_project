@@ -485,6 +485,7 @@ class OrderView(generics.ListAPIView,generics.UpdateAPIView,generics.DestroyAPIV
     filter_class = OrderListFilter
     filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
     ordering_fields = ('id', 'created')
+    pagination_class = CustomPagination
 
 
     def get_serializer_class(self):
@@ -509,6 +510,11 @@ class OrderView(generics.ListAPIView,generics.UpdateAPIView,generics.DestroyAPIV
         queryset = self.get_queryset()
         queryset = self.filter_queryset(queryset)
         serializer=self.get_serializer(queryset,many=True)
+        paginate = prepare_paginated_response(self, request, queryset)
+        if paginate:
+            return Response(custom_api_response(content=paginate.content, metadata=paginate.metadata),
+                            status=status.HTTP_200_OK)
+
         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
 
 
