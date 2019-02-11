@@ -1,7 +1,7 @@
 from django.conf.urls import re_path, include, url
 from .views import TransactionViewSet, MyTransactionView,\
                     ManagerTransactionView , CardHolderViewSet,CheckoutOrderView,\
-                    OrderView, test_view, CouponView
+                    OrderView, test_view, CouponView, CouponSettingsListView,CouponSettingsDetailView
 from . import views as api_view
 from rest_framework import routers
 
@@ -21,6 +21,8 @@ urlpatterns = [
     url(r'^order/(?P<pk>\d+)/$', OrderView.as_view()),
     url(r'^test/$', test_view),
     url(r'^coupons/$', CouponView.as_view()),
+    url(r'^coupons-settings/$', CouponSettingsListView.as_view()),
+    url(r'^coupons-settings/(?P<pk>\d+)/$', CouponSettingsDetailView.as_view()),
 
 ]
 

@@ -72,6 +72,18 @@ class OrderListSerializer(serializers.ModelSerializer):
 class CouponMakeSerilalizer(serializers.Serializer):
     shop = serializers.PrimaryKeyRelatedField(queryset=Shop.objects.all())
 
+
+
+class CouponSettingCreateSerilalizer(serializers.ModelSerializer):
+
+    class Meta:
+        model = CouponSetting
+        fields = ('id','minimal_price_order','shop','rank','discount','discount_type','coupons_per_user')
+
+
+
+
+
 class CouponSettingSerilalizer(serializers.ModelSerializer):
 
     class Meta:

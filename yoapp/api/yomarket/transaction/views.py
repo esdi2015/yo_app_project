@@ -12,7 +12,7 @@ from yoapp.settings import TRANZILLA_PW, TRANZILLA_TERMINAL, TRANZILLA_CANCEL_PW
 from ...views import custom_api_response
 from .serializers import TransactionSerializer,MyTransactionSerializer,\
                          CardHolderSerializer, CardHolderCreateSerializer,\
-                         CheckoutSerializer, OrderListSerializer
+                         CheckoutSerializer, OrderListSerializer, CouponSettingCreateSerilalizer
 from rest_framework import generics
 from yomarket.models import Transaction ,CardHolder, Offer,CartProduct,\
                             OrderProduct,Order,Shop,CouponSetting,Coupon
@@ -662,4 +662,71 @@ def test_view(request):
     device.send_message(data={'test':'test'})
     return Response('ok')
 
+
+
+class CouponSettingsListView(generics.ListCreateAPIView):
+    queryset = CouponSetting.objects.all()
+    serializer_class = CouponSettingCreateSerilalizer
+    filter_fields = ('shop', )
+    permission_classes = (IsAuthenticated,)
+
+    def get_queryset(self):
+        if self.request.user.role == "MANAGER":
+            queryset = CouponSetting.objects.filter(shop__manager_id=self.request.user.pk).all()
+            return queryset
+        if self.request.user.role == "OWNER":
+            queryset = CouponSetting.objects.filter(shop__user_id=self.request.user.pk).all()
+            return queryset
+
+
+    def list(self, request, *args, **kwargs):
+            queryset = self.get_queryset()
+            queryset = self.filter_queryset(self.get_queryset())
+
+            serializer = self.get_serializer(queryset, many=True)
+            return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data,many=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return Response(custom_api_response(serializer=serializer), status=status.HTTP_201_CREATED)
+
+
+class CouponSettingsDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = CouponSetting.objects.all()
+    serializer_class = CouponSettingCreateSerilalizer
+    permission_classes = (IsAuthenticated,)
+
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
+
+
+    def delete(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.shop.user.id == request.user.pk or instance.shop.manager.id == request.user.pk:
+            instance.delete()
+            error = {"detail": ERROR_API['500'][1]}
+            error_codes = [ERROR_API['500'][0]]
+            return Response(custom_api_response(errors=error, error_codes=error_codes),
+                            status=status.HTTP_200_OK)
+
+
+        else :
+            error = {"detail": ERROR_API['127'][1]}
+            error_codes = [ERROR_API['127'][0]]
+            return Response(custom_api_response(errors=error, error_codes=error_codes),
+                            status=status.HTTP_400_BAD_REQUEST)
 
