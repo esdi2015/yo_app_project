@@ -22,6 +22,7 @@ from django.contrib.auth import get_user_model
 from yomarket.utils import recalculate_rank,send_invoice, order_status_update_notification
 from django.utils import timezone
 from statistic.utlis import STATISTIC_OFFER_BOUGHT,STATISTIC_COUPON_TAKEN,COUPON_USED
+from decimal import *
 TransactionModel = apps.get_model('yomarket', 'Transaction')
 UserModel = get_user_model()
 
@@ -277,7 +278,10 @@ class CheckoutOrderView(generics.CreateAPIView):
     def get_total_sum(self,cart_products):
         total = Decimal()
         for cart_product in cart_products:
-            total = total + (cart_product.offer.price * cart_product.quantity)
+            price = Decimal(cart_product.offer.price)
+            quantity =  Decimal(cart_product.quantity)
+            total = total + (price * quantity)
+        total = total.quantize(Decimal('1.00'))
         return total
 
     def make_order_products(self,cart_products,order):
@@ -335,13 +339,18 @@ class CheckoutOrderView(generics.CreateAPIView):
 
     def get_discount_total(self,coupon,total):
         if coupon.discount_type=='ABSOLUTE':
-            total=float(total)
-            discount_total = total- float(coupon.discount)
+            discount_coupon = Decimal(coupon.discount)
+            discount_total = Decimal()
+            discount_total = total - discount_coupon
+            discount_total.quantize(Decimal('1.00'))
             return discount_total
         if coupon.discount_type=='PERCENT':
-            total=float(total)
-            percent_value = (total/100.00)*float(coupon.discount)
+            coupon_discount = Decimal(coupon.discount)
+            percent_value = Decimal()
+            abss=Decimal('100.00')
+            percent_value = (total/abss)*coupon_discount
             discount_total =total-percent_value
+            discount_total = discount_total.quantize(Decimal('1.00'))
             return discount_total
 
     def create(self, request, *args, **kwargs):
@@ -380,6 +389,8 @@ class CheckoutOrderView(generics.CreateAPIView):
                     discount_total = self.get_discount_total(coupon,total)
                     if type(discount_total) == type(Response()):
                         return discount_total
+                    discount_sum = Decimal(discount_sum)
+                    discount_sum = discount_sum.quantize(Decimal('1.00'))
                     if discount_total != discount_sum:
                         error = {"detail": ERROR_API['901'][1]}
                         error_codes = [ERROR_API['901'][0]]
@@ -407,7 +418,9 @@ class CheckoutOrderView(generics.CreateAPIView):
                 total = self.get_total_sum(cart_products)
                 if type(total) == type(Response()):
                     return total
-                if float(total) != float(total_sum):
+                total_sum = Decimal(total_sum)
+                total_sum = total_sum.quantize(Decimal('1.00'))
+                if total != total_sum:
                     error = {"detail": ERROR_API['901'][1]}
                     error_codes = [ERROR_API['901'][0]]
                     return Response(custom_api_response(errors=error, error_codes=error_codes),
