@@ -364,9 +364,9 @@ def verify_email_view(request,key):
         user.is_active=True
         user.save()
         ResetPasswordToken.objects.filter(user=reset_password_token.user).delete()
-        return redirect('/verified/')
+        return redirect('/api/v1/verified/')
 
-    return redirect('/verified/')
+    return redirect('/api/v1/verified/')
 
 
 
