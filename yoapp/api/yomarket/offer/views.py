@@ -97,7 +97,7 @@ class OfferListView(generics.ListCreateAPIView):
 
         if (self.request.user.is_authenticated == True) and (self.request.user.role in ['MANAGER', 'OWNER']):
             queryset = OfferModel.objects.all()
-
+            return queryset
         if self.request.user.is_authenticated == True and self.request.user.role == 'CUSTOMER':
             queryset = OfferModel.objects.filter(expire__gte=datetime.datetime.now(),status='PUBLISHED',available=True)
             # good_ids=[]
@@ -132,10 +132,10 @@ class OfferListView(generics.ListCreateAPIView):
         else:
             if self.request.user.is_authenticated == True and self.request.user.role == 'ADMIN':
                 queryset = OfferModel.objects.all()
+                return queryset
 
             queryset = OfferModel.objects.filter(expire__gte=datetime.datetime.now())
-
-        return queryset
+            return queryset
 
 
     def list(self, request, *args, **kwargs):
@@ -164,12 +164,11 @@ class OfferListView(generics.ListCreateAPIView):
                 shops = ShopModel.objects.filter(user_id=request.user.pk).all()
             elif request.user.role == 'MANAGER':
                 shops = ShopModel.objects.filter(manager_id=request.user.pk).all()
-
             if request.user.role in ['OWNER', 'MANAGER']:
                 shops_ids = [x.id for x in shops]
                 queryset = self.filter_queryset(self.get_queryset())
                 queryset = queryset.filter(shop_id__in=shops_ids)
-
+                print(self.get_queryset())
 
 
         if targeting != 'true':
@@ -249,8 +248,28 @@ class OfferDetailView(generics.RetrieveUpdateDestroyAPIView):
         return Response(custom_api_response(serializer), status=status.HTTP_200_OK)
 
     def update(self, request, *args, **kwargs):
-        partial = kwargs.pop('partial', False)
+
+        if self.request.user.role not in ['MANAGER','OWNER','ADMIN']:
+            error = {"detail": ERROR_API['117'][1]}
+            error_codes = [ERROR_API['117'][0]]
+            return Response(custom_api_response(errors=error, error_codes=error_codes),
+                            status=status.HTTP_400_BAD_REQUEST)
+
         instance = self.get_object()
+
+
+        if self.request.user != instance.shop.user:
+            if self.request.user != instance.shop.manager:
+                error = {"detail": ERROR_API['127'][1]}
+                error_codes = [ERROR_API['127'][0]]
+                return Response(custom_api_response(errors=error, error_codes=error_codes),
+                                status=status.HTTP_400_BAD_REQUEST)
+            else:
+                pass
+        else:
+            pass
+
+        partial = kwargs.pop('partial', False)
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
