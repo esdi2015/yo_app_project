@@ -15,7 +15,7 @@ class CategoryList(APIView):
     permission_classes = (AllowAny,)
 
     def get(self, request, format=None):
-        categories = CategoryModel.objects.all()
+        categories = CategoryModel.objects.all().order_by('order_num')
         serializer = CategorySerializer(categories, many=True)
         response = Response(custom_api_response(serializer), status=status.HTTP_200_OK)
         return response

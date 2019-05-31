@@ -51,6 +51,7 @@ class Category(MPTTModel):
     category_name = models.CharField(max_length=64, unique=True, null=True)
     parent = TreeForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='children')
     image = models.ImageField(upload_to='categories/%Y/%m/%d', blank=True)
+    order_num = models.IntegerField(null=True,blank=True,unique=True)
 
     class MPTTMeta:
         level_attr = 'mptt_level'
