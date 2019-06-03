@@ -257,17 +257,19 @@ class OfferDetailView(generics.RetrieveUpdateDestroyAPIView):
 
         instance = self.get_object()
 
-
-        if self.request.user != instance.shop.user:
-            if self.request.user != instance.shop.manager:
-                error = {"detail": ERROR_API['127'][1]}
-                error_codes = [ERROR_API['127'][0]]
-                return Response(custom_api_response(errors=error, error_codes=error_codes),
+        if self.request.user.role == 'ADMIN':
+            pass
+        else:
+            if self.request.user != instance.shop.user:
+                if self.request.user != instance.shop.manager:
+                    error = {"detail": ERROR_API['127'][1]}
+                    error_codes = [ERROR_API['127'][0]]
+                    return Response(custom_api_response(errors=error, error_codes=error_codes),
                                 status=status.HTTP_400_BAD_REQUEST)
+                else:
+                    pass
             else:
                 pass
-        else:
-            pass
 
         partial = kwargs.pop('partial', False)
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
