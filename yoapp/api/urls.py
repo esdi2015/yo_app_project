@@ -18,6 +18,7 @@ from .common.overview.urls import urlpatterns as overview_urls
 from .yomarket.secondary_info.urls import urlpatterns as secondary_info_urls
 from .targeting.urls import urlpatterns as targeting_urls
 from .common.business_reg.urls import urlpatterns as business_reg_urls
+from .common.documents.urls import urlpatterns as docs_urls
 
 urlpatterns = []
 urlpatterns = urlpatterns + \
@@ -38,7 +39,8 @@ urlpatterns = urlpatterns + \
               overview_urls + \
               secondary_info_urls +\
               targeting_urls +\
-              business_reg_urls
+              business_reg_urls +\
+              docs_urls
 
 
 
